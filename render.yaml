@@ -3,22 +3,14 @@ services:
     name: communitycare-app
     env: python
     plan: free
-    region: oregon  # or your preferred region
+    region: oregon
     buildCommand: |
       pip install -r requirements.txt
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
     envVars:
       - key: DATABASE_URL
-        fromDatabase:
-          name: communitycare-db
-          property: connectionString
+        value: postgresql://communitycare_user:3YInYGOvAJr8QvR0UxpMFP2aTapzHaHs@dpg-d3u5itn5r7bs73f91rrg-a/communitycare
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
         value: 3.11.4
-
-databases:
-  - name: communitycare-db
-    plan: free
-    databaseName: communitycare
-    user: communitycare_user
