@@ -511,6 +511,11 @@ async function loadMyReports() {
                             <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
                         </div>
                     ` : ''}
+                    <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
                 </div>
             `).join('');
         } else {
@@ -650,14 +655,17 @@ async function loadAllReports() {
                         <span>By: ${report.username}</span>
                         <span>${report.date}</span>
                     </div>
-                    <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px;">
-                        <select class="status-select" data-report-id="${report.id}" style="flex: 1; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0;">
+                    <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;">
                             <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
                         </select>
-                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.previousElementSibling.value)" style="padding: 8px 12px;">
+                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
                             Update
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                            <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
                     ${report.photo_data ? `
@@ -754,5 +762,6 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
