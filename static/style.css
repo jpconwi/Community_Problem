@@ -694,3 +694,24 @@ body {
         min-width: 100%;
     }
 }
+
+.resolution-notes {
+    margin-top: 10px;
+    padding: 12px;
+    background: #f0f9ff;
+    border-radius: 8px;
+    border-left: 4px solid #2563eb;
+}
+
+.resolution-notes strong {
+    color: #1e40af;
+    font-size: 14px;
+}
+
+.resolution-notes p {
+    margin: 8px 0 0 0;
+    color: #475569;
+    font-size: 14px;
+    line-height: 1.4;
+}
+
