@@ -132,6 +132,79 @@ with app.app_context():
 
 # Routes
 # Add these routes to app.py after the existing routes
+
+@app.route('/api/delete_report', methods=['POST'])
+def delete_report():
+    """Delete a report - users can delete their own, admins can delete any"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please login first!'})
+    
+    try:
+        data = request.get_json()
+        report_id = data.get('report_id')
+        
+        report = Report.query.get(report_id)
+        if not report:
+            return jsonify({'success': False, 'message': 'Report not found'})
+        
+        # Users can only delete their own reports, admins can delete any
+        user_role = session.get('role', 'user')
+        if user_role != 'admin' and report.user_id != session['user_id']:
+            return jsonify({'success': False, 'message': 'Unauthorized to delete this report'})
+        
+        # Delete associated notifications first
+        Notification.query.filter_by(report_id=report_id).delete()
+        
+        # Delete the report
+        db.session.delete(report)
+        db.session.commit()
+        
+        # Log admin action if admin deleted the report
+        if user_role == 'admin':
+            admin_log = AdminLog(
+                admin_id=session['user_id'],
+                action='delete_report',
+                target_type='report',
+                target_id=report_id,
+                details=f'Deleted report #{report_id} by user #{report.user_id}'
+            )
+            db.session.add(admin_log)
+            db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Report deleted successfully!'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to delete report'})
+
+@app.route('/api/delete_user_report', methods=['POST'])
+def delete_user_report():
+    """Endpoint specifically for users to delete their own reports"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please login first!'})
+    
+    try:
+        data = request.get_json()
+        report_id = data.get('report_id')
+        
+        report = Report.query.filter_by(id=report_id, user_id=session['user_id']).first()
+        if not report:
+            return jsonify({'success': False, 'message': 'Report not found or unauthorized'})
+        
+        # Delete associated notifications
+        Notification.query.filter_by(report_id=report_id).delete()
+        
+        # Delete the report
+        db.session.delete(report)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Report deleted successfully!'})
+        
+    except Exception as e:
+        db.session.rollback()
+        return jsonify({'success': False, 'message': 'Failed to delete report'})
+
+
 @app.route('/api/debug/check_admin')
 def check_admin():
     """Check if admin user exists and can login"""
@@ -466,6 +539,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
