@@ -639,4 +639,58 @@ body {
     .photo-actions {
         flex-direction: column;
     }
+
+}
+
+/* Delete button styles */
+.btn-danger {
+    background: #ef4444;
+    color: white;
+    border: 1px solid #ef4444;
+}
+
+.btn-danger:hover {
+    background: #dc2626;
+    border-color: #dc2626;
+}
+
+.btn-danger-outline {
+    background: white;
+    color: #ef4444;
+    border: 1px solid #ef4444;
+}
+
+.btn-danger-outline:hover {
+    background: #ef4444;
+    color: white;
+}
+
+/* Report actions */
+.report-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px solid #e2e8f0;
+}
+
+.admin-actions {
+    display: flex;
+    gap: 8px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+}
+
+/* Responsive adjustments */
+@media (max-width: 480px) {
+    .admin-actions {
+        flex-direction: column;
+    }
+    
+    .admin-actions select,
+    .admin-actions button {
+        flex: 1;
+        min-width: 100%;
+    }
 }
