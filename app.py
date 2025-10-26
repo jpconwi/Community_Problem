@@ -151,6 +151,35 @@ with app.app_context():
 # Routes
 # Add these routes to app.py after the existing routes
 
+@app.route('/api/update_report_with_resolution', methods=['POST'])
+def update_report_with_resolution():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        data = request.get_json()
+        report = Report.query.get(data.get('report_id'))
+        if report:
+            report.status = data.get('status')
+            report.resolution_notes = data.get('resolution_notes', '')
+            db.session.commit()
+            
+            # Create notification for the user
+            notification = Notification(
+                user_id=report.user_id,
+                report_id=report.id,
+                message=f'Your report "{report.problem_type}" has been resolved: {data.get("resolution_notes", "No details provided")}',
+                type='status_update'
+            )
+            db.session.add(notification)
+            db.session.commit()
+            
+            return jsonify({'success': True, 'message': 'Status updated successfully!'})
+        else:
+            return jsonify({'success': False, 'message': 'Report not found'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': 'Failed to update status'})
+
 @app.route('/api/delete_report', methods=['POST'])
 def delete_report():
     """Delete a report - users can delete their own, admins can delete any"""
@@ -557,6 +586,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
