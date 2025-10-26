@@ -463,7 +463,7 @@ def get_user_reports():
         return jsonify({'success': False, 'message': 'Not logged in'})
     
     try:
-        # Only select necessary columns to reduce memory usage
+        # Only select necessary columns - NO photo data in list view
         reports = db.session.query(
             Report.id,
             Report.problem_type,
@@ -472,27 +472,26 @@ def get_user_reports():
             Report.status,
             Report.priority,
             Report.date,
-            Report.photo_data,
             Report.resolution_notes
         ).filter_by(user_id=session['user_id']).order_by(Report.created_at.desc()).all()
         
         reports_data = []
         for report in reports:
-            # Compress photo data for response if present
-            photo_data = report.photo_data
-            if photo_data and len(photo_data) > 50000:  # If larger than 50KB
-                photo_data = None  # Don't send very large images in list view
-            
+            # Truncate long issues for list view
+            issue = report.issue
+            if issue and len(issue) > 200:
+                issue = issue[:200] + '...'
+                
             report_data = {
                 'id': report.id,
                 'problem_type': report.problem_type,
                 'location': report.location,
-                'issue': report.issue,
+                'issue': issue,
                 'status': report.status,
                 'priority': report.priority,
                 'date': report.date,
-                'photo_data': photo_data,
                 'resolution_notes': report.resolution_notes
+                # NO photo_data in list view - load separately if needed
             }
             reports_data.append(report_data)
         
@@ -544,58 +543,11 @@ def get_all_reports():
         return jsonify({'success': False, 'message': 'Unauthorized'})
     
     try:
-        # Only select necessary columns to reduce data size
-        reports = db.session.query(
-            Report.id,
-            Report.problem_type,
-            Report.location,
-            Report.issue,
-            Report.status,
-            Report.priority,
-            Report.date,
-            Report.photo_data,
-            Report.resolution_notes,
-            User.username
-        ).join(User).order_by(Report.created_at.desc()).all()
-        
-        reports_data = []
-        for report in reports:
-            # Compress photo data if present to reduce response size
-            photo_data = report.photo_data
-            if photo_data and len(photo_data) > 50000:  # If larger than 50KB
-                photo_data = None  # Don't send very large images in list view
-            
-            report_data = {
-                'id': report.id,
-                'problem_type': report.problem_type,
-                'location': report.location,
-                'issue': report.issue[:500] + '...' if len(report.issue) > 500 else report.issue,  # Truncate long issues
-                'status': report.status,
-                'priority': report.priority,
-                'date': report.date,
-                'photo_data': photo_data,  # Use compressed version
-                'username': report.username,
-                'resolution_notes': report.resolution_notes
-            }
-            reports_data.append(report_data)
-        
-        return jsonify({'success': True, 'reports': reports_data})
-    
-    except Exception as e:
-        print(f"Error loading all reports: {e}")
-        return jsonify({'success': False, 'message': 'Failed to load reports'})
-
-@app.route('/api/all_reports_paginated')
-def get_all_reports_paginated():
-    """Paginated version to reduce memory usage"""
-    if 'user_id' not in session or session.get('role') != 'admin':
-        return jsonify({'success': False, 'message': 'Unauthorized'})
-    
-    try:
+        # Use pagination by default with small page size
         page = request.args.get('page', 1, type=int)
-        per_page = request.args.get('per_page', 20, type=int)  # Reduced from all to 20 per page
+        per_page = request.args.get('per_page', 15, type=int)  # Small page size
         
-        # Paginate the query
+        # Only select essential columns - NO photo data in list view
         reports_pagination = db.session.query(
             Report.id,
             Report.problem_type,
@@ -604,7 +556,6 @@ def get_all_reports_paginated():
             Report.status,
             Report.priority,
             Report.date,
-            Report.photo_data,
             Report.resolution_notes,
             User.username
         ).join(User).order_by(Report.created_at.desc()).paginate(
@@ -613,21 +564,22 @@ def get_all_reports_paginated():
         
         reports_data = []
         for report in reports_pagination.items:
-            photo_data = report.photo_data
-            if photo_data and len(photo_data) > 50000:
-                photo_data = None
+            # Truncate long text fields
+            issue = report.issue
+            if issue and len(issue) > 200:
+                issue = issue[:200] + '...'
                 
             report_data = {
                 'id': report.id,
                 'problem_type': report.problem_type,
                 'location': report.location,
-                'issue': report.issue[:500] + '...' if len(report.issue) > 500 else report.issue,
+                'issue': issue,
                 'status': report.status,
                 'priority': report.priority,
                 'date': report.date,
-                'photo_data': photo_data,
                 'username': report.username,
                 'resolution_notes': report.resolution_notes
+                # NO photo_data in list view - load separately if needed
             }
             reports_data.append(report_data)
         
@@ -643,8 +595,45 @@ def get_all_reports_paginated():
         })
     
     except Exception as e:
-        print(f"Error loading paginated reports: {e}")
+        print(f"Error loading all reports: {e}")
         return jsonify({'success': False, 'message': 'Failed to load reports'})
+
+@app.route('/api/report_details/<int:report_id>')
+def get_report_details(report_id):
+    """Get detailed report data including photos (load on demand)"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        report = Report.query.get(report_id)
+        if not report:
+            return jsonify({'success': False, 'message': 'Report not found'})
+        
+        # Check permissions
+        user_role = session.get('role', 'user')
+        if user_role != 'admin' and report.user_id != session['user_id']:
+            return jsonify({'success': False, 'message': 'Unauthorized'})
+        
+        user = User.query.get(report.user_id)
+        
+        report_data = {
+            'id': report.id,
+            'problem_type': report.problem_type,
+            'location': report.location,
+            'issue': report.issue,
+            'status': report.status,
+            'priority': report.priority,
+            'date': report.date,
+            'photo_data': report.photo_data,  # Only load photos when specifically requested
+            'username': user.username if user else 'Unknown',
+            'resolution_notes': report.resolution_notes
+        }
+        
+        return jsonify({'success': True, 'report': report_data})
+    
+    except Exception as e:
+        print(f"Error loading report details: {e}")
+        return jsonify({'success': False, 'message': 'Failed to load report details'})
 
 @app.route('/api/update_report_status', methods=['POST'])
 def update_report_status():
