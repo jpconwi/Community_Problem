@@ -123,7 +123,7 @@ async function submitResolution() {
         const data = await response.json();
         
         if (data.success) {
-            showSnackbar('Report resolved with details!');
+            showSnackbar('Report resolved and notification email sent!');
             modal.classList.add('hidden');
             document.getElementById('resolution-notes').value = '';
             await loadAdminStats();
@@ -927,6 +927,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
