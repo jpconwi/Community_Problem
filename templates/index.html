@@ -10,19 +10,26 @@
 </head>
 <body>
     <div id="app">
-        <!-- In your loading-screen div, add this button -->
-<div id="loading-screen" class="screen active">
-    <div class="loading-container">
-        <div class="loading-spinner"></div>
-        <h2>CommunityCare</h2>
-        <p>Loading...</p>
-        <!-- Add this temporary button -->
-        <button onclick="forceShowLogin()" style="margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
-            Having issues? Click here to continue
-        </button>
-    </div>
-</div>
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="loading-container">
+                <div class="loading-spinner"></div>
+                <h2>CommunityCare</h2>
+                <p id="loading-status">Loading...</p>
+                <!-- Enhanced troubleshooting -->
+                <div style="margin-top: 20px; text-align: center;">
+                    <button onclick="forceShowLogin()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 5px;">
+                        Click here if stuck
+                    </button>
+                    <button onclick="checkJavaScript()" style="padding: 10px 20px; background: #10b981; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 5px;">
+                        Test JavaScript
+                    </button>
+                </div>
+                <div id="debug-info" style="margin-top: 15px; font-size: 12px; color: #64748b;"></div>
+            </div>
+        </div>
 
+        <!-- Rest of your screens remain the same -->
         <!-- Login Screen -->
         <div id="login-screen" class="screen">
             <div class="auth-container">
@@ -117,187 +124,68 @@
             </div>
         </div>
 
-        <!-- User Dashboard -->
-        <div id="user-dashboard" class="screen">
-            <div class="dashboard-container">
-                <!-- Header -->
-                <div class="header">
-                    <div class="user-info">
-                        <h2>Hello, <span id="user-name">User</span>! 👋</h2>
-                        <p>Report community issues</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="icon-btn notification-btn" onclick="showNotifications()">
-                            <i class="fas fa-bell"></i>
-                            <span id="notification-badge" class="badge hidden">0</span>
-                        </button>
-                    </div>
-                </div>
+        <!-- Rest of your screens... (keep your existing user-dashboard, admin-dashboard, etc.) -->
 
-                <!-- Stats Card -->
-                <div class="stats-card">
-                    <div class="stat-item">
-                        <i class="fas fa-file-alt" style="color: #3b82f6;"></i>
-                        <span class="stat-label">Your Reports</span>
-                        <span id="user-reports-count" class="stat-value">0</span>
-                    </div>
-                    <div class="stat-divider"></div>
-                    <div class="stat-item">
-                        <i class="fas fa-clock" style="color: #f59e0b;"></i>
-                        <span class="stat-label">Pending</span>
-                        <span id="user-pending-count" class="stat-value">0</span>
-                    </div>
-                </div>
-
-                <!-- Report Form -->
-                <div class="card">
-                    <h3>New Report</h3>
-                    <form id="report-form">
-                        <div class="form-group">
-                            <select id="problem-type" required>
-                                <option value="">Select Problem Type*</option>
-                                <option value="🚧 Infrastructure">🚧 Infrastructure</option>
-                                <option value="🧹 Sanitation">🧹 Sanitation</option>
-                                <option value="🛡️ Safety">🛡️ Safety</option>
-                                <option value="🌳 Environment">🌳 Environment</option>
-                                <option value="🔊 Noise">🔊 Noise</option>
-                                <option value="❓ Other">❓ Other</option>
-                            </select>
-                        </div>
-
-                        <div class="form-group">
-                            <i class="fas fa-location-dot"></i>
-                            <input type="text" id="location" placeholder="Location*" required>
-                        </div>
-
-                        <div class="form-group">
-                            <textarea id="issue" placeholder="Describe the problem in detail...*" rows="3" required></textarea>
-                        </div>
-
-                        <div class="form-group">
-                            <select id="priority">
-                                <option value="🟢 Low">🟢 Low</option>
-                                <option value="🟡 Medium" selected>🟡 Medium</option>
-                                <option value="🔴 High">🔴 High</option>
-                                <option value="🚨 Emergency">🚨 Emergency</option>
-                            </select>
-                        </div>
-
-                        <!-- Photo Upload -->
-                        <div class="photo-upload-section">
-                            <div class="photo-actions">
-                                <button type="button" class="btn btn-outline" onclick="openCamera()">
-                                    <i class="fas fa-camera"></i>
-                                    Take Photo
-                                </button>
-                                <button type="button" class="btn btn-outline" onclick="document.getElementById('file-input').click()">
-                                    <i class="fas fa-upload"></i>
-                                    Upload Photo
-                                </button>
-                                <input type="file" id="file-input" accept="image/*" hidden onchange="handleFileUpload(this.files[0])">
-                            </div>
-                            
-                            <div id="photo-preview" class="photo-preview hidden">
-                                <img id="preview-image" src="" alt="Preview">
-                                <button type="button" class="remove-photo" onclick="removePhoto()">
-                                    <i class="fas fa-times"></i>
-                                </button>
-                            </div>
-                        </div>
-
-                        <button type="submit" class="btn btn-primary">
-                            <i class="fas fa-paper-plane"></i>
-                            Submit Report
-                        </button>
-                    </form>
-                </div>
-
-                <!-- Quick Actions -->
-                <div class="card">
-                    <h3>Quick Actions</h3>
-                    <div class="action-buttons">
-                        <button class="btn btn-outline action-btn" onclick="showMyReports()">
-                            <i class="fas fa-list-alt"></i>
-                            My Reports
-                        </button>
-                        <button class="btn btn-outline action-btn" onclick="showNotifications()">
-                            <i class="fas fa-bell"></i>
-                            Notifications
-                        </button>
-                    </div>
-                    <button class="btn btn-danger logout-btn" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- My Reports Screen -->
-        <div id="my-reports-screen" class="screen">
-            <div class="screen-header">
-                <button class="back-btn" onclick="showScreen('user-dashboard')">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <h2>My Reports</h2>
-                <i class="fas fa-file-alt"></i>
-            </div>
-            <div class="screen-content">
-                <div id="reports-list" class="reports-list">
-                    <!-- Reports will be loaded here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Notifications Screen -->
-        <div id="notifications-screen" class="screen">
-            <div class="screen-header">
-                <button class="back-btn" onclick="showScreen('user-dashboard')">
-                    <i class="fas fa-arrow-left"></i>
-                </button>
-                <h2>Notifications</h2>
-                <i class="fas fa-bell"></i>
-            </div>
-            <div class="screen-content">
-                <div id="notifications-list" class="notifications-list">
-                    <!-- Notifications will be loaded here -->
-                </div>
-            </div>
-        </div>
-
-        <!-- Admin Dashboard -->
-        <div id="admin-dashboard" class="screen">
-            <div class="admin-container">
-                <!-- Admin content will be loaded dynamically -->
-            </div>
-        </div>
-
-        <!-- Camera Modal -->
-        <div id="camera-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Take Photo</h3>
-                    <button class="close-btn" onclick="closeCamera()">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <video id="camera-view" autoplay playsinline></video>
-                    <canvas id="camera-canvas" class="hidden"></canvas>
-                </div>
-                <div class="modal-actions">
-                    <button class="btn btn-outline" onclick="closeCamera()">Cancel</button>
-                    <button class="btn btn-primary" onclick="capturePhoto()">
-                        <i class="fas fa-camera"></i>
-                        Capture
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Snackbar -->
-        <div id="snackbar" class="snackbar hidden"></div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    <!-- Add this inline script for immediate debugging -->
+    <script>
+        // Immediate debug functions
+        function checkJavaScript() {
+            const debugInfo = document.getElementById('debug-info');
+            debugInfo.innerHTML = `
+                <p>✅ JavaScript is working!</p>
+                <p>✅ DOM is accessible</p>
+                <p>✅ Buttons are clickable</p>
+                <p>Now testing API connection...</p>
+            `;
+            
+            // Test API connection
+            fetch('/health')
+                .then(response => response.json())
+                .then(data => {
+                    debugInfo.innerHTML += `<p>✅ API Health: ${data.status}</p>`;
+                })
+                .catch(error => {
+                    debugInfo.innerHTML += `<p>❌ API Error: ${error}</p>`;
+                });
+        }
+        
+        function forceShowLogin() {
+            console.log('Manual override to login screen');
+            document.getElementById('loading-screen').classList.remove('active');
+            document.getElementById('login-screen').classList.add('active');
+        }
+        
+        // Basic screen switching
+        function showScreen(screenId) {
+            console.log('Switching to screen:', screenId);
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        // Simple password toggle
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            if (input.type === 'password') {
+                input.type = 'text';
+            } else {
+                input.type = 'password';
+            }
+        }
+        
+        // Update loading status
+        document.addEventListener('DOMContentLoaded', function() {
+            const status = document.getElementById('loading-status');
+            if (status) {
+                status.textContent = 'DOM loaded, initializing app...';
+            }
+            console.log('DOM fully loaded and parsed');
+        });
+    </script>
 </body>
-
 </html>
