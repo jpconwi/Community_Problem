@@ -166,6 +166,7 @@ def update_report_with_resolution():
         else:
             return jsonify({'success': False, 'message': 'Report not found'})
     except Exception as e:
+        db.session.rollback()
         return jsonify({'success': False, 'message': 'Failed to update status'})
 
 @app.route('/api/delete_report', methods=['POST'])
@@ -574,6 +575,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
