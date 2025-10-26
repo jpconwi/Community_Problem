@@ -10,14 +10,18 @@
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen active">
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <h2>CommunityCare</h2>
-                <p>Loading...</p>
-            </div>
-        </div>
+        <!-- In your loading-screen div, add this button -->
+<div id="loading-screen" class="screen active">
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <h2>CommunityCare</h2>
+        <p>Loading...</p>
+        <!-- Add this temporary button -->
+        <button onclick="forceShowLogin()" style="margin-top: 20px; padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; font-size: 14px;">
+            Having issues? Click here to continue
+        </button>
+    </div>
+</div>
 
         <!-- Login Screen -->
         <div id="login-screen" class="screen">
@@ -295,4 +299,5 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 </body>
+
 </html>
