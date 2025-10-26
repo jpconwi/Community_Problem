@@ -2,9 +2,19 @@
 let currentUser = null;
 let stream = null;
 let photoData = null;
+let authCheckTimeout;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
+    console.log('DOM loaded, starting auth check...');
+    
+    // Set a timeout to ensure loading screen doesn't stay forever
+    authCheckTimeout = setTimeout(() => {
+        console.log('Auth check timeout reached, forcing login screen');
+        hideLoading();
+        showScreen('login-screen');
+    }, 5000); // 5 second timeout
+    
     checkAuthStatus();
     setupEventListeners();
 });
@@ -24,8 +34,18 @@ function setupEventListeners() {
 // Authentication functions
 async function checkAuthStatus() {
     try {
+        console.log('Checking auth status...');
         const response = await fetch('/api/user_info');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        console.log('Auth response:', data);
+        
+        // Clear the timeout since we got a response
+        clearTimeout(authCheckTimeout);
         
         if (data.success) {
             currentUser = data.user;
@@ -37,10 +57,13 @@ async function checkAuthStatus() {
                 loadUserDashboard();
             }
         } else {
+            console.log('Not logged in, showing login screen');
             showScreen('login-screen');
         }
     } catch (error) {
         console.error('Auth check failed:', error);
+        // Clear the timeout on error too
+        clearTimeout(authCheckTimeout);
         showScreen('login-screen');
     } finally {
         hideLoading();
@@ -311,13 +334,21 @@ function removePhoto() {
 
 // Navigation functions
 function showScreen(screenId) {
+    console.log(`Switching to screen: ${screenId}`);
+    
     // Hide all screens
     document.querySelectorAll('.screen').forEach(screen => {
         screen.classList.remove('active');
     });
     
     // Show target screen
-    document.getElementById(screenId).classList.add('active');
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        console.log(`Screen ${screenId} is now active`);
+    } else {
+        console.error(`Screen ${screenId} not found!`);
+    }
 }
 
 function showMyReports() {
@@ -563,7 +594,11 @@ function showSnackbar(message, type = 'success') {
 }
 
 function hideLoading() {
-    document.getElementById('loading-screen').classList.remove('active');
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+        loadingScreen.classList.remove('active');
+        console.log('Loading screen hidden');
+    }
 }
 
 function togglePassword(inputId) {
@@ -577,4 +612,11 @@ function togglePassword(inputId) {
         input.type = 'password';
         icon.className = 'fas fa-eye';
     }
+}
+
+// Temporary fix function - add this at the end
+function forceShowLogin() {
+    console.log('Manual override: forcing login screen');
+    hideLoading();
+    showScreen('login-screen');
 }
