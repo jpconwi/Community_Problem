@@ -86,6 +86,7 @@ class AdminLog(db.Model):
 # Initialize database
 # Initialize database
 # Initialize database
+# Initialize database
 with app.app_context():
     max_retries = 3
     for attempt in range(max_retries):
@@ -99,6 +100,17 @@ with app.app_context():
             # Create all tables only if they don't exist
             db.create_all()
             print("✅ Tables created/verified")
+            
+            # Check if resolution_notes column exists, if not, add it
+            try:
+                # Try to query with the new column to see if it exists
+                db.session.execute(text('SELECT resolution_notes FROM reports LIMIT 1'))
+                print("✅ resolution_notes column already exists")
+            except Exception as e:
+                print("🔄 Adding resolution_notes column to reports table...")
+                db.session.execute(text('ALTER TABLE reports ADD COLUMN resolution_notes TEXT'))
+                db.session.commit()
+                print("✅ resolution_notes column added successfully")
             
             # Create admin user if not exists
             admin = User.query.filter_by(email='admin@community.com').first()
@@ -123,16 +135,24 @@ with app.app_context():
                     db.session.commit()
                     print("✅ Admin password reset")
             
-            # Count users for verification
-            user_count = User.query.count()
-            report_count = Report.query.count()
-            print(f"✅ Database initialized! Users: {user_count}, Reports: {report_count}")
+            # Count users for verification (with error handling)
+            try:
+                user_count = User.query.count()
+                report_count = Report.query.count()
+                print(f"✅ Database initialized! Users: {user_count}, Reports: {report_count}")
+            except Exception as e:
+                print(f"⚠️  Count query failed but continuing: {e}")
+                print("✅ Database initialized!")
+            
             break
             
         except Exception as e:
             print(f"❌ Database initialization attempt {attempt + 1} failed: {e}")
+            db.session.rollback()  # Important: rollback any failed transaction
+            
             if attempt == max_retries - 1:
                 print("💥 All database initialization attempts failed")
+                print("🔄 Continuing with application startup despite database issues...")
             import time
             time.sleep(2)  # Wait before retry
 
@@ -575,6 +595,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
