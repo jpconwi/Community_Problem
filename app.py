@@ -84,9 +84,6 @@ class AdminLog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # Initialize database
-# Initialize database
-# Initialize database
-# Initialize database
 with app.app_context():
     max_retries = 3
     for attempt in range(max_retries):
@@ -97,20 +94,23 @@ with app.app_context():
             db.session.execute(text('SELECT 1'))
             print("✅ Database connection successful")
             
-            # Create all tables only if they don't exist
+            # Create all tables
             db.create_all()
             print("✅ Tables created/verified")
             
-            # Check if resolution_notes column exists, if not, add it
+            # Check if resolution_notes column exists using inspector
             try:
-                # Try to query with the new column to see if it exists
-                db.session.execute(text('SELECT resolution_notes FROM reports LIMIT 1'))
-                print("✅ resolution_notes column already exists")
+                inspector = db.inspect(db.engine)
+                columns = [col['name'] for col in inspector.get_columns('reports')]
+                if 'resolution_notes' not in columns:
+                    print("🔄 Adding resolution_notes column to reports table...")
+                    db.session.execute(text('ALTER TABLE reports ADD COLUMN resolution_notes TEXT'))
+                    db.session.commit()
+                    print("✅ resolution_notes column added successfully")
+                else:
+                    print("✅ resolution_notes column already exists")
             except Exception as e:
-                print("🔄 Adding resolution_notes column to reports table...")
-                db.session.execute(text('ALTER TABLE reports ADD COLUMN resolution_notes TEXT'))
-                db.session.commit()
-                print("✅ resolution_notes column added successfully")
+                print(f"⚠️  Column check failed: {e}")
             
             # Create admin user if not exists
             admin = User.query.filter_by(email='admin@community.com').first()
@@ -127,37 +127,21 @@ with app.app_context():
                 print("✅ Admin user created successfully!")
             else:
                 print(f"✅ Admin user already exists: {admin.username} (role: {admin.role})")
-                
-                # Verify admin password
-                if not check_password_hash(admin.password, 'admin123'):
-                    print("🔄 Resetting admin password...")
-                    admin.password = generate_password_hash('admin123')
-                    db.session.commit()
-                    print("✅ Admin password reset")
             
-            # Count users for verification (with error handling)
-            try:
-                user_count = User.query.count()
-                report_count = Report.query.count()
-                print(f"✅ Database initialized! Users: {user_count}, Reports: {report_count}")
-            except Exception as e:
-                print(f"⚠️  Count query failed but continuing: {e}")
-                print("✅ Database initialized!")
-            
+            print("✅ Database initialized successfully!")
             break
             
         except Exception as e:
             print(f"❌ Database initialization attempt {attempt + 1} failed: {e}")
-            db.session.rollback()  # Important: rollback any failed transaction
+            db.session.rollback()
             
             if attempt == max_retries - 1:
                 print("💥 All database initialization attempts failed")
-                print("🔄 Continuing with application startup despite database issues...")
+                print("🔄 Starting application anyway...")
             import time
-            time.sleep(2)  # Wait before retry
+            time.sleep(2)
 
 # Routes
-# Add these routes to app.py after the existing routes
 
 @app.route('/api/update_report_with_resolution', methods=['POST'])
 def update_report_with_resolution():
@@ -364,7 +348,7 @@ def get_user_reports():
     reports = Report.query.filter_by(user_id=session['user_id']).order_by(Report.created_at.desc()).all()
     reports_data = []
     for report in reports:
-        reports_data.append({
+        report_data = {
             'id': report.id,
             'problem_type': report.problem_type,
             'location': report.location,
@@ -373,7 +357,18 @@ def get_user_reports():
             'priority': report.priority,
             'date': report.date,
             'photo_data': report.photo_data
-        })
+        }
+        
+        # Safely add resolution_notes if the column exists
+        try:
+            if hasattr(report, 'resolution_notes'):
+                report_data['resolution_notes'] = report.resolution_notes
+            else:
+                report_data['resolution_notes'] = None
+        except:
+            report_data['resolution_notes'] = None
+            
+        reports_data.append(report_data)
     
     return jsonify({'success': True, 'reports': reports_data})
 
@@ -417,7 +412,7 @@ def get_all_reports():
     reports_data = []
     for report in reports:
         user = User.query.get(report.user_id)
-        reports_data.append({
+        report_data = {
             'id': report.id,
             'problem_type': report.problem_type,
             'location': report.location,
@@ -427,7 +422,18 @@ def get_all_reports():
             'date': report.date,
             'photo_data': report.photo_data,
             'username': user.username if user else 'Unknown'
-        })
+        }
+        
+        # Safely add resolution_notes if the column exists
+        try:
+            if hasattr(report, 'resolution_notes'):
+                report_data['resolution_notes'] = report.resolution_notes
+            else:
+                report_data['resolution_notes'] = None
+        except:
+            report_data['resolution_notes'] = None
+            
+        reports_data.append(report_data)
     
     return jsonify({'success': True, 'reports': reports_data})
 
@@ -595,14 +601,3 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-
-
-
-
-
-
-
-
-
-
-
