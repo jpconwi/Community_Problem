@@ -99,6 +99,148 @@ with app.app_context():
         print(f"❌ Database initialization error: {e}")
 
 # Routes
+# Add these routes to app.py after the existing routes
+
+@app.route('/api/submit_report', methods=['POST'])
+def submit_report():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please login first!'})
+    
+    try:
+        data = request.get_json()
+        report = Report(
+            user_id=session['user_id'],
+            name=session['username'],
+            problem_type=data.get('problem_type'),
+            location=data.get('location'),
+            issue=data.get('issue'),
+            priority=data.get('priority', 'Medium'),
+            photo_data=data.get('photo_data'),
+            date=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        )
+        db.session.add(report)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Report submitted successfully!'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': 'Failed to submit report'})
+
+@app.route('/api/user_reports')
+def get_user_reports():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Not logged in'})
+    
+    reports = Report.query.filter_by(user_id=session['user_id']).order_by(Report.created_at.desc()).all()
+    reports_data = []
+    for report in reports:
+        reports_data.append({
+            'id': report.id,
+            'problem_type': report.problem_type,
+            'location': report.location,
+            'issue': report.issue,
+            'status': report.status,
+            'priority': report.priority,
+            'date': report.date,
+            'photo_data': report.photo_data
+        })
+    
+    return jsonify({'success': True, 'reports': reports_data})
+
+@app.route('/api/stats')
+def get_stats():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Not logged in'})
+    
+    user_id = session['user_id']
+    role = session.get('role', 'user')
+    
+    if role == 'admin':
+        total = Report.query.count()
+        pending = Report.query.filter_by(status='Pending').count()
+        in_progress = Report.query.filter_by(status='In Progress').count()
+        resolved = Report.query.filter_by(status='Resolved').count()
+        
+        stats = {
+            'total': total,
+            'pending': pending,
+            'in_progress': in_progress,
+            'resolved': resolved
+        }
+    else:
+        my_reports = Report.query.filter_by(user_id=user_id).count()
+        pending = Report.query.filter_by(user_id=user_id, status='Pending').count()
+        
+        stats = {
+            'my_reports': my_reports,
+            'pending': pending
+        }
+    
+    return jsonify({'success': True, 'stats': stats})
+
+@app.route('/api/all_reports')
+def get_all_reports():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    reports = Report.query.order_by(Report.created_at.desc()).all()
+    reports_data = []
+    for report in reports:
+        user = User.query.get(report.user_id)
+        reports_data.append({
+            'id': report.id,
+            'problem_type': report.problem_type,
+            'location': report.location,
+            'issue': report.issue,
+            'status': report.status,
+            'priority': report.priority,
+            'date': report.date,
+            'photo_data': report.photo_data,
+            'username': user.username if user else 'Unknown'
+        })
+    
+    return jsonify({'success': True, 'reports': reports_data})
+
+@app.route('/api/update_report_status', methods=['POST'])
+def update_report_status():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        data = request.get_json()
+        report = Report.query.get(data.get('report_id'))
+        if report:
+            report.status = data.get('status')
+            db.session.commit()
+            return jsonify({'success': True, 'message': 'Status updated successfully!'})
+        else:
+            return jsonify({'success': False, 'message': 'Report not found'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': 'Failed to update status'})
+
+# Basic notifications endpoints (simplified)
+@app.route('/api/notifications')
+def get_notifications():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Not logged in'})
+    
+    notifications = Notification.query.filter_by(user_id=session['user_id']).order_by(Notification.created_at.desc()).limit(10).all()
+    notifications_data = []
+    for notification in notifications:
+        notifications_data.append({
+            'message': notification.message,
+            'created_at': notification.created_at.strftime('%Y-%m-%d %H:%M')
+        })
+    
+    return jsonify({'success': True, 'notifications': notifications_data})
+
+@app.route('/api/notifications_count')
+def get_notifications_count():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Not logged in'})
+    
+    count = Notification.query.filter_by(user_id=session['user_id'], is_read=False).count()
+    return jsonify({'count': count})
+            
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -201,3 +343,4 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
