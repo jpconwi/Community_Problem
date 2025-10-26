@@ -219,7 +219,7 @@
             </div>
             <div class="screen-content">
                 <div id="reports-list" class="reports-list">
-                    <!-- Reports will be loaded here -->
+                    <!-- Reports will be loaded here with delete buttons -->
                 </div>
             </div>
         </div>
@@ -242,7 +242,7 @@
         <!-- Admin Dashboard -->
         <div id="admin-dashboard" class="screen">
             <div class="admin-container">
-                <!-- Admin content will be loaded dynamically -->
+                <!-- Admin content will be loaded dynamically with delete buttons -->
             </div>
         </div>
 
@@ -263,11 +263,33 @@
                 </div>
             </div>
         </div>
+
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-confirmation-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Delete Report</h3>
+                    <button class="close-btn" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this report?</p>
+                    <p style="color: #ef4444; font-size: 14px; margin-top: 10px;">This action cannot be undone.</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                        Delete Report
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     
-    <!-- Simplified initialization script -->
+    <!-- JavaScript functions for delete functionality -->
     <script>
         // Initialize app immediately - show login screen
         document.addEventListener('DOMContentLoaded', function() {
@@ -315,6 +337,189 @@
             } else {
                 input.type = 'password';
                 icon.className = 'fas fa-eye';
+            }
+        }
+
+        // Delete report function
+        async function deleteReport(reportId, isAdmin = false) {
+            if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+                return;
+            }
+            
+            try {
+                const endpoint = isAdmin ? '/api/delete_report' : '/api/delete_user_report';
+                
+                const response = await fetch(endpoint, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        report_id: reportId
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSnackbar('Report deleted successfully!');
+                    // Reload the appropriate list
+                    if (isAdmin) {
+                        await loadAllReports();
+                        await loadAdminStats();
+                    } else {
+                        await loadMyReports();
+                        await loadStats();
+                    }
+                } else {
+                    showSnackbar(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Delete report error:', error);
+                showSnackbar('Failed to delete report', 'error');
+            }
+        }
+
+        // Enhanced delete with modal confirmation
+        function showDeleteConfirmation(reportId, isAdmin = false) {
+            const modal = document.getElementById('delete-confirmation-modal');
+            const confirmBtn = document.getElementById('confirm-delete-btn');
+            
+            // Set up the confirmation button
+            confirmBtn.onclick = function() {
+                deleteReport(reportId, isAdmin);
+                modal.classList.add('hidden');
+            };
+            
+            modal.classList.remove('hidden');
+        }
+
+        // Snackbar function
+        function showSnackbar(message, type = 'success') {
+            // Create snackbar if it doesn't exist
+            let snackbar = document.getElementById('snackbar');
+            if (!snackbar) {
+                snackbar = document.createElement('div');
+                snackbar.id = 'snackbar';
+                snackbar.className = 'snackbar hidden';
+                document.body.appendChild(snackbar);
+            }
+            
+            snackbar.textContent = message;
+            snackbar.className = `snackbar ${type}`;
+            snackbar.classList.remove('hidden');
+            
+            setTimeout(() => {
+                snackbar.classList.add('hidden');
+            }, 3000);
+        }
+
+        // Load user reports with delete buttons
+        async function loadMyReports() {
+            try {
+                const response = await fetch('/api/user_reports');
+                const data = await response.json();
+                
+                const reportsList = document.getElementById('reports-list');
+                
+                if (data.success && data.reports.length > 0) {
+                    reportsList.innerHTML = data.reports.map(report => `
+                        <div class="report-card">
+                            <div class="report-header">
+                                <span class="report-type">${report.problem_type}</span>
+                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                    ${report.status}
+                                </span>
+                            </div>
+                            <div class="report-location">
+                                <i class="fas fa-location-dot"></i> ${report.location}
+                            </div>
+                            <div class="report-issue">${report.issue}</div>
+                            <div class="report-footer">
+                                <span>${report.date}</span>
+                                <span>${report.priority}</span>
+                            </div>
+                            ${report.photo_data ? `
+                                <div class="report-photo">
+                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                                </div>
+                            ` : ''}
+                            <div class="report-actions">
+                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    reportsList.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                            <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <p>No reports yet</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load reports:', error);
+                showSnackbar('Failed to load reports', 'error');
+            }
+        }
+
+        // Load admin reports with delete buttons
+        async function loadAllReports() {
+            try {
+                const response = await fetch('/api/all_reports');
+                const data = await response.json();
+                
+                const reportsList = document.getElementById('admin-reports-list');
+                
+                if (data.success && data.reports.length > 0) {
+                    reportsList.innerHTML = data.reports.map(report => `
+                        <div class="report-card">
+                            <div class="report-header">
+                                <span class="report-type">${report.problem_type}</span>
+                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                    ${report.status}
+                                </span>
+                            </div>
+                            <div class="report-location">
+                                <i class="fas fa-location-dot"></i> ${report.location}
+                            </div>
+                            <div class="report-issue">${report.issue}</div>
+                            <div class="report-footer">
+                                <span>By: ${report.username}</span>
+                                <span>${report.date}</span>
+                            </div>
+                            <div class="admin-actions">
+                                <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;">
+                                    <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                    <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                                </select>
+                                <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
+                                    Update
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                            ${report.photo_data ? `
+                                <div class="report-photo">
+                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                                </div>
+                            ` : ''}
+                        </div>
+                    `).join('');
+                } else {
+                    reportsList.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #64748b;">
+                            <p>No reports found</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load all reports:', error);
+                showSnackbar('Failed to load reports', 'error');
             }
         }
     </script>
