@@ -249,10 +249,20 @@ def update_report_with_resolution():
     
     try:
         data = request.get_json()
-        report = Report.query.get(data.get('report_id'))
+        print(f"🔄 Updating report with resolution: {data}")
+        
+        report_id = data.get('report_id')
+        new_status = data.get('status')
+        resolution_notes = data.get('resolution_notes', '')
+        
+        if not report_id or not new_status:
+            return jsonify({'success': False, 'message': 'Report ID and status are required'})
+        
+        report = Report.query.get(report_id)
         if report:
-            report.status = data.get('status')
-            report.resolution_notes = data.get('resolution_notes', '')
+            print(f"📋 Found report #{report_id}, updating status to '{new_status}' with resolution notes")
+            report.status = new_status
+            report.resolution_notes = resolution_notes
             db.session.commit()
             
             # Get user details for email
@@ -262,26 +272,60 @@ def update_report_with_resolution():
             notification = Notification(
                 user_id=report.user_id,
                 report_id=report.id,
-                message=f'Your report "{report.problem_type}" has been resolved: {data.get("resolution_notes", "No details provided")}',
+                message=f'Your report "{report.problem_type}" has been resolved: {resolution_notes or "No details provided"}',
                 type='status_update'
             )
             db.session.add(notification)
             db.session.commit()
             
-            # Send email notification
-            if user and user.email:
+            # Send email notification if status is Resolved
+            if new_status == 'Resolved' and user and user.email:
                 try:
-                    send_resolution_email(user, report, data.get('resolution_notes', ''))
+                    print(f"📧 Sending resolution email to {user.email}")
+                    send_resolution_email(user, report, resolution_notes)
                 except Exception as e:
-                    print(f"Failed to send email: {e}")
+                    print(f"⚠️ Failed to send email: {e}")
                     # Don't fail the whole request if email fails
             
+            print("✅ Report updated successfully with resolution!")
             return jsonify({'success': True, 'message': 'Status updated successfully and notification sent!'})
         else:
+            print(f"❌ Report #{report_id} not found")
             return jsonify({'success': False, 'message': 'Report not found'})
     except Exception as e:
+        print(f"💥 Error updating report with resolution: {str(e)}")
         db.session.rollback()
-        return jsonify({'success': False, 'message': 'Failed to update status'})
+        return jsonify({'success': False, 'message': f'Failed to update status: {str(e)}'})
+
+@app.route('/api/update_report_status', methods=['POST'])
+def update_report_status():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        data = request.get_json()
+        print(f"🔄 Updating report status: {data}")
+        
+        report_id = data.get('report_id')
+        new_status = data.get('status')
+        
+        if not report_id or not new_status:
+            return jsonify({'success': False, 'message': 'Report ID and status are required'})
+        
+        report = Report.query.get(report_id)
+        if report:
+            print(f"📋 Found report #{report_id}, changing status from '{report.status}' to '{new_status}'")
+            report.status = new_status
+            db.session.commit()
+            print("✅ Status updated successfully!")
+            return jsonify({'success': True, 'message': 'Status updated successfully!'})
+        else:
+            print(f"❌ Report #{report_id} not found")
+            return jsonify({'success': False, 'message': 'Report not found'})
+    except Exception as e:
+        print(f"💥 Error updating report status: {str(e)}")
+        db.session.rollback()
+        return jsonify({'success': False, 'message': f'Failed to update status: {str(e)}'})
 
 @app.route('/api/delete_report', methods=['POST'])
 def delete_report():
@@ -425,6 +469,258 @@ def debug_users():
         return jsonify({'success': True, 'users': users_data})
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/debug/reports')
+def debug_reports():
+    """Debug endpoint to check all reports"""
+    try:
+        reports = Report.query.all()
+        reports_data = []
+        for report in reports:
+            reports_data.append({
+                'id': report.id,
+                'problem_type': report.problem_type,
+                'status': report.status,
+                'user_id': report.user_id,
+                'resolution_notes': report.resolution_notes
+            })
+        return jsonify({'success': True, 'reports': reports_data, 'count': len(reports_data)})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/debug/email_test', methods=['POST'])
+def debug_email_test():
+    """Test email configuration"""
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        data = request.get_json()
+        test_email = data.get('email', session.get('email'))
+        
+        if not test_email:
+            return jsonify({'success': False, 'message': 'No email address provided'})
+        
+        print(f"🔧 Testing email configuration to: {test_email}")
+        print(f"📧 Mail server: {app.config['MAIL_SERVER']}:{app.config['MAIL_PORT']}")
+        print(f"🔐 Mail username: {app.config['MAIL_USERNAME']}")
+        print(f"📨 Using TLS: {app.config['MAIL_USE_TLS']}")
+        
+        # Test email
+        subject = "CommunityCare - Email Test"
+        html_body = """
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+                .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+                .header { background: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }
+                .content { background: #f8fafc; padding: 20px; border-radius: 0 0 8px 8px; }
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>CommunityCare</h1>
+                    <p>Email Test Successful! 🎉</p>
+                </div>
+                <div class="content">
+                    <p>Hello,</p>
+                    <p>This is a test email from your CommunityCare application.</p>
+                    <p>If you're receiving this, your email configuration is working correctly!</p>
+                    <p><strong>Timestamp:</strong> {}</p>
+                </div>
+            </div>
+        </body>
+        </html>
+        """.format(datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC'))
+        
+        text_body = f"""
+        CommunityCare - Email Test
+        
+        Hello,
+        
+        This is a test email from your CommunityCare application.
+        If you're receiving this, your email configuration is working correctly!
+        
+        Timestamp: {datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S UTC')}
+        """
+        
+        msg = Message(
+            subject=subject,
+            recipients=[test_email],
+            html=html_body,
+            body=text_body
+        )
+        
+        mail.send(msg)
+        print(f"✅ Test email sent successfully to {test_email}")
+        return jsonify({'success': True, 'message': f'Test email sent to {test_email}'})
+        
+    except Exception as e:
+        error_msg = f"❌ Failed to send test email: {str(e)}"
+        print(error_msg)
+        return jsonify({'success': False, 'message': error_msg})
+
+@app.route('/api/admin/send_email', methods=['POST'])
+def admin_send_email():
+    """Admin endpoint to send custom emails to users"""
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        subject = data.get('subject')
+        message = data.get('message')
+        report_id = data.get('report_id')  # Optional: link to specific report
+        
+        if not user_id or not subject or not message:
+            return jsonify({'success': False, 'message': 'User ID, subject, and message are required!'})
+        
+        # Get user and report details
+        user = User.query.get(user_id)
+        if not user:
+            return jsonify({'success': False, 'message': 'User not found'})
+        
+        report = None
+        if report_id:
+            report = Report.query.get(report_id)
+        
+        # Send email
+        send_admin_email(user, report, subject, message)
+        
+        # Create notification for the user
+        notification = Notification(
+            user_id=user_id,
+            report_id=report_id,
+            message=f'Admin sent you a message: {subject}',
+            type='admin_message'
+        )
+        db.session.add(notification)
+        db.session.commit()
+        
+        # Log admin action
+        admin_log = AdminLog(
+            admin_id=session['user_id'],
+            action='send_email',
+            target_type='user',
+            target_id=user_id,
+            details=f'Sent email to {user.email}: {subject}'
+        )
+        db.session.add(admin_log)
+        db.session.commit()
+        
+        return jsonify({'success': True, 'message': 'Email sent successfully!'})
+        
+    except Exception as e:
+        print(f"Error sending admin email: {e}")
+        return jsonify({'success': False, 'message': 'Failed to send email'})
+
+def send_admin_email(user, report, subject, message):
+    """Send custom email from admin to user"""
+    try:
+        # Verify email configuration
+        if not app.config['MAIL_USERNAME'] or not app.config['MAIL_PASSWORD']:
+            print("❌ Email credentials not configured")
+            raise Exception("Email credentials not configured")
+        
+        print(f"📧 Preparing to send email to: {user.email}")
+        print(f"📝 Subject: {subject}")
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background: #f8fafc; padding: 20px; border-radius: 0 0 8px 8px; }}
+                .message-box {{ background: white; padding: 20px; border-radius: 8px; border-left: 4px solid #2563eb; margin: 20px 0; }}
+                .report-details {{ background: #f0f9ff; padding: 15px; border-radius: 6px; margin: 15px 0; }}
+                .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>CommunityCare</h1>
+                    <p>Message from Administrator</p>
+                </div>
+                <div class="content">
+                    <p>Hello <strong>{user.username}</strong>,</p>
+                    <p>You have received a message from the CommunityCare administration team.</p>
+                    
+                    <div class="message-box">
+                        <h3>{subject}</h3>
+                        <p>{message.replace(chr(10), '<br>')}</p>
+                    </div>
+                    
+                    {f'''
+                    <div class="report-details">
+                        <h4>Related Report Details:</h4>
+                        <p><strong>Problem Type:</strong> {report.problem_type}</p>
+                        <p><strong>Location:</strong> {report.location}</p>
+                        <p><strong>Status:</strong> {report.status}</p>
+                        <p><strong>Date Submitted:</strong> {report.date}</p>
+                    </div>
+                    ''' if report else ''}
+                    
+                    <p>Please do not reply to this email. If you need to contact us, please use the contact form in the application.</p>
+                    
+                    <div class="footer">
+                        <p>This is an automated message from CommunityCare Report System.</p>
+                        <p>CommunityCare Administration Team</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        text_body = f"""
+        CommunityCare - Message from Administrator
+        
+        Hello {user.username},
+        
+        You have received a message from the CommunityCare administration team.
+        
+        Subject: {subject}
+        
+        Message:
+        {message}
+        
+        {f'''
+        Related Report Details:
+        - Problem Type: {report.problem_type}
+        - Location: {report.location}
+        - Status: {report.status}
+        - Date Submitted: {report.date}
+        ''' if report else ''}
+        
+        Please do not reply to this email. If you need to contact us, please use the contact form in the application.
+        
+        This is an automated message from CommunityCare Report System.
+        CommunityCare Administration Team
+        """
+        
+        msg = Message(
+            subject=f"CommunityCare: {subject}",
+            recipients=[user.email],
+            html=html_body,
+            body=text_body
+        )
+        
+        # Send with timeout
+        mail.send(msg)
+        print(f"✅ Admin email sent successfully to {user.email}")
+        
+    except Exception as e:
+        error_msg = f"❌ Failed to send admin email to {user.email}: {str(e)}"
+        print(error_msg)
+        raise Exception(error_msg)
 
 @app.route('/api/submit_report', methods=['POST'])
 def submit_report():
@@ -634,23 +930,6 @@ def get_report_details(report_id):
     except Exception as e:
         print(f"Error loading report details: {e}")
         return jsonify({'success': False, 'message': 'Failed to load report details'})
-
-@app.route('/api/update_report_status', methods=['POST'])
-def update_report_status():
-    if 'user_id' not in session or session.get('role') != 'admin':
-        return jsonify({'success': False, 'message': 'Unauthorized'})
-    
-    try:
-        data = request.get_json()
-        report = Report.query.get(data.get('report_id'))
-        if report:
-            report.status = data.get('status')
-            db.session.commit()
-            return jsonify({'success': True, 'message': 'Status updated successfully!'})
-        else:
-            return jsonify({'success': False, 'message': 'Report not found'})
-    except Exception as e:
-        return jsonify({'success': False, 'message': 'Failed to update status'})
 
 # Basic notifications endpoints (simplified)
 @app.route('/api/notifications')
