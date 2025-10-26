@@ -790,9 +790,9 @@ async function loadAdminStats() {
     }
 }
 
-async function loadAllReports() {
+async function loadAllReports(page = 1) {
     try {
-        const response = await fetch('/api/all_reports');
+        const response = await fetch(`/api/all_reports?page=${page}&per_page=15`);
         const data = await response.json();
         
         const reportsList = document.getElementById('admin-reports-list');
@@ -823,23 +823,42 @@ async function loadAllReports() {
                         <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
                             Update
                         </button>
+                        <button class="btn btn-outline" onclick="loadReportDetails(${report.id})" style="padding: 8px 12px; flex: 1;">
+                            <i class="fas fa-eye"></i> Details
+                        </button>
                         <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                    ${report.resolution_notes ? `
                         <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
                             <strong style="color: #1e40af; font-size: 14px;">Resolution Details:</strong>
                             <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
                         </div>
                     ` : ''}
-                    ${report.photo_data ? `
-                        <div class="report-photo">
-                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                        </div>
-                    ` : ''}
                 </div>
             `).join('');
+            
+            // Add pagination controls
+            if (data.pagination.pages > 1) {
+                reportsList.innerHTML += `
+                    <div style="display: flex; justify-content: center; gap: 10px; margin-top: 20px;">
+                        ${data.pagination.page > 1 ? 
+                            `<button class="btn btn-outline" onclick="loadAllReports(${data.pagination.page - 1})" style="padding: 8px 16px;">
+                                <i class="fas fa-chevron-left"></i> Previous
+                            </button>` : ''
+                        }
+                        <span style="padding: 8px 16px; color: #64748b;">
+                            Page ${data.pagination.page} of ${data.pagination.pages}
+                        </span>
+                        ${data.pagination.page < data.pagination.pages ? 
+                            `<button class="btn btn-outline" onclick="loadAllReports(${data.pagination.page + 1})" style="padding: 8px 16px;">
+                                Next <i class="fas fa-chevron-right"></i>
+                            </button>` : ''
+                        }
+                    </div>
+                `;
+            }
         } else {
             reportsList.innerHTML = `
                 <div style="text-align: center; padding: 20px; color: #64748b;">
@@ -851,6 +870,81 @@ async function loadAllReports() {
         console.error('Failed to load all reports:', error);
         showSnackbar('Failed to load reports', 'error');
     }
+}
+
+async function loadReportDetails(reportId) {
+    try {
+        const response = await fetch(`/api/report_details/${reportId}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            const report = data.report;
+            // Show details in a modal or expand the report card
+            showReportDetailsModal(report);
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Failed to load report details:', error);
+        showSnackbar('Failed to load report details', 'error');
+    }
+}
+
+function showReportDetailsModal(report) {
+    // Create and show a modal with full report details including photo
+    const modalHTML = `
+        <div id="report-details-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Report Details</h3>
+                    <button class="close-btn" onclick="document.getElementById('report-details-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="report-card">
+                        <div class="report-header">
+                            <span class="report-type">${report.problem_type}</span>
+                            <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                ${report.status}
+                            </span>
+                        </div>
+                        <div class="report-location">
+                            <i class="fas fa-location-dot"></i> ${report.location}
+                        </div>
+                        <div class="report-issue">${report.issue}</div>
+                        <div class="report-footer">
+                            <span>By: ${report.username}</span>
+                            <span>${report.date}</span>
+                        </div>
+                        ${report.photo_data ? `
+                            <div class="report-photo" style="margin-top: 15px;">
+                                <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px;">
+                            </div>
+                        ` : ''}
+                        ${report.resolution_notes ? `
+                            <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                                <strong style="color: #1e40af; font-size: 14px;">Resolution Details:</strong>
+                                <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                            </div>
+                        ` : ''}
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('report-details-modal').classList.add('hidden')">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    // Remove existing modal if any
+    const existingModal = document.getElementById('report-details-modal');
+    if (existingModal) {
+        existingModal.remove();
+    }
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+    document.getElementById('report-details-modal').classList.remove('hidden');
 }
 
 async function updateStatus(reportId, newStatus) {
@@ -927,6 +1021,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
