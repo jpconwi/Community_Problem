@@ -21,8 +21,9 @@ services:
       - key: MAIL_USE_TLS
         value: true
       - key: MAIL_USERNAME
-        value: your-email@gmail.com
+        value: kamikazoozin@gmail.com
       - key: MAIL_PASSWORD
-        value: your-app-password
+        value: Jpconwi2005
       - key: MAIL_DEFAULT_SENDER
         value: noreply@communitycare.com
+
