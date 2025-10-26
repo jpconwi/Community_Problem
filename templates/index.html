@@ -466,64 +466,72 @@
         }
 
         // Load admin reports with delete buttons
-        async function loadAllReports() {
-            try {
-                const response = await fetch('/api/all_reports');
-                const data = await response.json();
-                
-                const reportsList = document.getElementById('admin-reports-list');
-                
-                if (data.success && data.reports.length > 0) {
-                    reportsList.innerHTML = data.reports.map(report => `
-                        <div class="report-card">
-                            <div class="report-header">
-                                <span class="report-type">${report.problem_type}</span>
-                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                                    ${report.status}
-                                </span>
-                            </div>
-                            <div class="report-location">
-                                <i class="fas fa-location-dot"></i> ${report.location}
-                            </div>
-                            <div class="report-issue">${report.issue}</div>
-                            <div class="report-footer">
-                                <span>By: ${report.username}</span>
-                                <span>${report.date}</span>
-                            </div>
-                            <div class="admin-actions">
-    <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
-        <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-        <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-        <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-    </select>
-    <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
-        Update
-    </button>
-    <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
-        <i class="fas fa-trash"></i> Delete
-    </button>
-</div>
-${report.status === 'Resolved' && report.resolution_notes ? `
-    <div class="resolution-notes" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #2563eb;">
-        <strong>Resolution Details:</strong>
-        <p style="margin: 5px 0 0 0; color: #475569;">${report.resolution_notes}</p>
-    </div>
-` : ''}
+        // Load admin reports with delete buttons
+async function loadAllReports() {
+    try {
+        const response = await fetch('/api/all_reports');
+        const data = await response.json();
+        
+        const reportsList = document.getElementById('admin-reports-list');
+        
+        if (data.success && data.reports.length > 0) {
+            reportsList.innerHTML = data.reports.map(report => `
+                <div class="report-card">
+                    <div class="report-header">
+                        <span class="report-type">${report.problem_type}</span>
+                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                            ${report.status}
+                        </span>
+                    </div>
+                    <div class="report-location">
+                        <i class="fas fa-location-dot"></i> ${report.location}
+                    </div>
+                    <div class="report-issue">${report.issue}</div>
+                    <div class="report-footer">
+                        <span>By: ${report.username}</span>
+                        <span>${report.date}</span>
+                    </div>
+                    ${report.photo_data ? `
+                        <div class="report-photo">
+                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
                         </div>
-                    `).join('');
-                } else {
-                    reportsList.innerHTML = `
-                        <div style="text-align: center; padding: 20px; color: #64748b;">
-                            <p>No reports found</p>
+                    ` : ''}
+                    <div class="admin-actions">
+                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
+                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
+                            Update
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                        <div class="resolution-notes" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #2563eb;">
+                            <strong>Resolution Details:</strong>
+                            <p style="margin: 5px 0 0 0; color: #475569;">${report.resolution_notes}</p>
                         </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Failed to load all reports:', error);
-                showSnackbar('Failed to load reports', 'error');
-            }
+                    ` : ''}
+                </div>
+            `).join('');
+        } else {
+            reportsList.innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #64748b;">
+                    <p>No reports found</p>
+                </div>
+            `;
         }
+    } catch (error) {
+        console.error('Failed to load all reports:', error);
+        showSnackbar('Failed to load reports', 'error');
+    }
+}
+        
     </script>
 </body>
 </html>
+
 
