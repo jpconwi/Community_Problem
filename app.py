@@ -359,30 +359,51 @@ def login():
         email = data.get('email')
         password = data.get('password')
         
-        user = User.query.filter_by(email=email).first()
+        print(f"🔐 Login attempt for: {email}")
         
-        if user and check_password_hash(user.password, password):
-            session['user_id'] = user.id
-            session['username'] = user.username
-            session['role'] = user.role
-            session['email'] = user.email
-            
+        if not email or not password:
             return jsonify({
-                'success': True,
-                'message': f'Welcome back, {user.username}!',
-                'user': {
-                    'id': user.id,
-                    'username': user.username,
-                    'role': user.role,
-                    'email': user.email
-                }
+                'success': False,
+                'message': 'Email and password are required!'
             })
         
-        return jsonify({
-            'success': False,
-            'message': 'Invalid email or password!'
-        })
+        user = User.query.filter_by(email=email).first()
+        
+        if user:
+            print(f"📋 User found: {user.username}, Role: {user.role}")
+            if check_password_hash(user.password, password):
+                session['user_id'] = user.id
+                session['username'] = user.username
+                session['role'] = user.role
+                session['email'] = user.email
+                
+                print(f"✅ Login successful: {user.username} (role: {user.role})")
+                
+                return jsonify({
+                    'success': True,
+                    'message': f'Welcome back, {user.username}!',
+                    'user': {
+                        'id': user.id,
+                        'username': user.username,
+                        'role': user.role,
+                        'email': user.email
+                    }
+                })
+            else:
+                print("❌ Invalid password")
+                return jsonify({
+                    'success': False,
+                    'message': 'Invalid email or password!'
+                })
+        else:
+            print("❌ User not found")
+            return jsonify({
+                'success': False,
+                'message': 'Invalid email or password!'
+            })
+            
     except Exception as e:
+        print(f"💥 Login error: {e}")
         return jsonify({
             'success': False,
             'message': 'Login failed. Please try again.'
@@ -445,6 +466,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
