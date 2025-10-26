@@ -9,4 +9,4 @@ Pillow==10.0.1
 email-validator==2.1.1
 sqlalchemy==2.0.23
 flask-mail==0.9.1
-psutil==5.9.6  # Add this line
+psutil==5.9.6
