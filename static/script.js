@@ -648,6 +648,12 @@ async function loadMyReports() {
                             <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
                         </div>
                     ` : ''}
+                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
+                            <strong style="color: #047857; font-size: 14px;">Resolution Details:</strong>
+                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                        </div>
+                    ` : ''}
                     <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
                         <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
                             <i class="fas fa-trash"></i> Delete
@@ -793,7 +799,7 @@ async function loadAllReports() {
                         <span>${report.date}</span>
                     </div>
                     <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;">
+                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
                             <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
                             <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
@@ -805,6 +811,12 @@ async function loadAllReports() {
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
+                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                            <strong style="color: #1e40af; font-size: 14px;">Resolution Details:</strong>
+                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                        </div>
+                    ` : ''}
                     ${report.photo_data ? `
                         <div class="report-photo">
                             <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
@@ -899,6 +911,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
