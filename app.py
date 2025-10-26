@@ -79,24 +79,56 @@ class AdminLog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # Initialize database
+# Initialize database
 with app.app_context():
-    try:
-        db.create_all()
-        
-        # Create admin user if not exists
-        admin = User.query.filter_by(email='admin@community.com').first()
-        if not admin:
-            admin = User(
-                username='admin',
-                password=generate_password_hash('admin123'),
-                email='admin@community.com',
-                role='admin'
-            )
-            db.session.add(admin)
-            db.session.commit()
-            print("✅ Database initialized successfully!")
-    except Exception as e:
-        print(f"❌ Database initialization error: {e}")
+    max_retries = 3
+    for attempt in range(max_retries):
+        try:
+            print(f"🔄 Database initialization attempt {attempt + 1}/{max_retries}")
+            
+            # Test database connection
+            db.session.execute(text('SELECT 1'))
+            print("✅ Database connection successful")
+            
+            # Create all tables
+            db.create_all()
+            print("✅ Tables created/verified")
+            
+            # Create admin user if not exists
+            admin = User.query.filter_by(email='admin@community.com').first()
+            if not admin:
+                print("🔄 Creating admin user...")
+                admin = User(
+                    username='admin',
+                    password=generate_password_hash('admin123'),
+                    email='admin@community.com',
+                    role='admin'
+                )
+                db.session.add(admin)
+                db.session.commit()
+                print("✅ Admin user created successfully!")
+            else:
+                print(f"✅ Admin user already exists: {admin.username} (role: {admin.role})")
+                
+                # Verify admin password
+                if not check_password_hash(admin.password, 'admin123'):
+                    print("🔄 Resetting admin password...")
+                    admin.password = generate_password_hash('admin123')
+                    db.session.commit()
+                    print("✅ Admin password reset")
+            
+            # Count users for verification
+            user_count = User.query.count()
+            report_count = Report.query.count()
+            print(f"✅ Database initialized! Users: {user_count}, Reports: {report_count}")
+            break
+            
+        except Exception as e:
+            print(f"❌ Database initialization attempt {attempt + 1} failed: {e}")
+            if attempt == max_retries - 1:
+                print("💥 All database initialization attempts failed")
+            import time
+            time.sleep(2)  # Wait before retry
 
 # Routes
 # Add these routes to app.py after the existing routes
@@ -413,6 +445,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
