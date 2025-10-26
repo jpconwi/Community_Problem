@@ -38,8 +38,15 @@ function setupEventListeners() {
     if (reportForm) {
         reportForm.addEventListener('submit', handleReportSubmit);
     }
+    
+    // Resolution modal button
+    const confirmResolutionBtn = document.getElementById('confirm-resolution-btn');
+    if (confirmResolutionBtn) {
+        confirmResolutionBtn.addEventListener('click', submitResolution);
+    }
 }
 
+// Resolution Modal Functions
 function handleStatusChange(selectElement, reportId) {
     if (selectElement.value === 'Resolved') {
         showResolutionModal(reportId, selectElement);
@@ -47,37 +54,8 @@ function handleStatusChange(selectElement, reportId) {
 }
 
 function showResolutionModal(reportId, selectElement) {
-    // Create modal if it doesn't exist
-    let modal = document.getElementById('resolution-modal');
-    if (!modal) {
-        modal = document.createElement('div');
-        modal.id = 'resolution-modal';
-        modal.className = 'modal hidden';
-        modal.innerHTML = `
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Resolution Details</h3>
-                    <button class="close-btn" onclick="document.getElementById('resolution-modal').classList.add('hidden')">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Please provide details on how this issue was resolved:</p>
-                    <div class="form-group">
-                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="cancelResolution()">
-                        Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
-                        Submit Resolution
-                    </button>
-                </div>
-            </div>
-        `;
-        document.body.appendChild(modal);
-    }
-
+    const modal = document.getElementById('resolution-modal');
+    
     // Store the current select element and report ID
     modal.dataset.reportId = reportId;
     modal.dataset.selectElement = selectElement.id;
@@ -92,9 +70,12 @@ function cancelResolution() {
     const selectElement = document.getElementById(modal.dataset.selectElement);
     
     // Reset to previous value
-    selectElement.value = 'In Progress';
+    if (selectElement) {
+        selectElement.value = 'In Progress';
+    }
     
     modal.classList.add('hidden');
+    document.getElementById('resolution-notes').value = '';
 }
 
 async function submitResolution() {
@@ -103,11 +84,18 @@ async function submitResolution() {
     const resolutionNotes = document.getElementById('resolution-notes').value;
     
     if (!resolutionNotes.trim()) {
-        showSnackbar('Please provide resolution details', 'error');
+        showSnackbar('Please provide resolution details before submitting', 'error');
+        document.getElementById('resolution-notes').focus();
         return;
     }
     
     try {
+        // Show loading state
+        const submitBtn = document.getElementById('confirm-resolution-btn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+        submitBtn.disabled = true;
+        
         const response = await fetch('/api/update_report_with_resolution', {
             method: 'POST',
             headers: {
@@ -122,24 +110,45 @@ async function submitResolution() {
         
         const data = await response.json();
         
+        // Reset button state
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+        
         if (data.success) {
-            showSnackbar('Report resolved with details!');
+            let message = '✅ Report resolved successfully!';
+            if (data.email_sent) {
+                message += ' 📧 Email notification sent to user.';
+            } else {
+                message += ' (No email sent - user may not have email address)';
+            }
+            
+            showSnackbar(message);
             modal.classList.add('hidden');
             document.getElementById('resolution-notes').value = '';
+            
+            // Reload data
             await loadAdminStats();
             await loadAllReports();
         } else {
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
-        showSnackbar('Failed to update report', 'error');
+        console.error('Resolution error:', error);
+        
+        // Reset button state
+        const submitBtn = document.getElementById('confirm-resolution-btn');
+        submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit & Send Email';
+        submitBtn.disabled = false;
+        
+        showSnackbar('Failed to update report. Please try again.', 'error');
     }
 }
 
 // Update the existing updateStatus function to handle Resolved status differently
 async function updateStatus(reportId, newStatus) {
     if (newStatus === 'Resolved') {
-        showResolutionModal(reportId, document.querySelector(`[data-report-id="${reportId}"]`));
+        const selectElement = document.querySelector(`[data-report-id="${reportId}"]`);
+        showResolutionModal(reportId, selectElement);
         return;
     }
     
@@ -168,14 +177,6 @@ async function updateStatus(reportId, newStatus) {
         showSnackbar('Failed to update status', 'error');
     }
 }
-
-// Add event listener for the resolution modal button
-document.addEventListener('click', function(e) {
-    if (e.target && e.target.id === 'confirm-resolution-btn') {
-        submitResolution();
-    }
-});
-
 
 // Authentication functions
 async function checkAuthStatus() {
@@ -853,33 +854,6 @@ async function loadAllReports() {
     }
 }
 
-async function updateStatus(reportId, newStatus) {
-    try {
-        const response = await fetch('/api/update_report_status', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                report_id: reportId,
-                status: newStatus
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showSnackbar('Status updated successfully!');
-            await loadAdminStats();
-            await loadAllReports();
-        } else {
-            showSnackbar(data.message, 'error');
-        }
-    } catch (error) {
-        showSnackbar('Failed to update status', 'error');
-    }
-}
-
 // Utility functions
 function showSnackbar(message, type = 'success') {
     // Create snackbar if it doesn't exist
@@ -927,9 +901,3 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
-
-
-
-
-
-
