@@ -285,6 +285,53 @@
                 </div>
             </div>
         </div>
+
+        <!-- Resolution Modal for Email Notifications -->
+        <div id="resolution-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3><i class="fas fa-envelope"></i> Resolution Details</h3>
+                    <button class="close-btn" onclick="cancelResolution()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div style="background: #ecfdf5; padding: 12px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 15px;">
+                        <div style="display: flex; align-items: center;">
+                            <i class="fas fa-paper-plane" style="color: #10b981; margin-right: 8px;"></i>
+                            <strong style="color: #047857;">Email Notification</strong>
+                        </div>
+                        <p style="margin: 8px 0 0 0; color: #065f46; font-size: 14px;">
+                            An email will be automatically sent to the user with these resolution details.
+                        </p>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
+                            Resolution Details *
+                        </label>
+                        <textarea 
+                            id="resolution-notes" 
+                            placeholder="Describe how the issue was resolved, what actions were taken, materials used, timeline, etc. This will be sent to the user via email..." 
+                            rows="5" 
+                            style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"
+                            required
+                        ></textarea>
+                        <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 5px;">
+                            Provide clear details so the user understands how their issue was resolved.
+                        </small>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="cancelResolution()">
+                        <i class="fas fa-times"></i>
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
+                        <i class="fas fa-paper-plane"></i>
+                        Submit & Send Email
+                    </button>
+                </div>
+            </div>
+        </div>
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
@@ -311,6 +358,12 @@
                     e.preventDefault();
                     handleRegister(e);
                 });
+            }
+            
+            // Setup resolution modal button
+            const confirmResolutionBtn = document.getElementById('confirm-resolution-btn');
+            if (confirmResolutionBtn) {
+                confirmResolutionBtn.addEventListener('click', submitResolution);
             }
             
             // Check if user is already logged in
@@ -394,6 +447,138 @@
             modal.classList.remove('hidden');
         }
 
+        // Resolution Modal Functions
+        function handleStatusChange(selectElement, reportId) {
+            if (selectElement.value === 'Resolved') {
+                showResolutionModal(reportId, selectElement);
+            }
+        }
+
+        function showResolutionModal(reportId, selectElement) {
+            const modal = document.getElementById('resolution-modal');
+            
+            // Store the current select element and report ID
+            modal.dataset.reportId = reportId;
+            modal.dataset.selectElement = selectElement.id;
+            
+            // Show modal
+            modal.classList.remove('hidden');
+            document.getElementById('resolution-notes').focus();
+        }
+
+        function cancelResolution() {
+            const modal = document.getElementById('resolution-modal');
+            const selectElement = document.getElementById(modal.dataset.selectElement);
+            
+            // Reset to previous value
+            if (selectElement) {
+                selectElement.value = 'In Progress';
+            }
+            
+            modal.classList.add('hidden');
+            document.getElementById('resolution-notes').value = '';
+        }
+
+        async function submitResolution() {
+            const modal = document.getElementById('resolution-modal');
+            const reportId = modal.dataset.reportId;
+            const resolutionNotes = document.getElementById('resolution-notes').value;
+            
+            if (!resolutionNotes.trim()) {
+                showSnackbar('Please provide resolution details before submitting', 'error');
+                document.getElementById('resolution-notes').focus();
+                return;
+            }
+            
+            try {
+                // Show loading state
+                const submitBtn = document.getElementById('confirm-resolution-btn');
+                const originalText = submitBtn.innerHTML;
+                submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Sending...';
+                submitBtn.disabled = true;
+                
+                const response = await fetch('/api/update_report_with_resolution', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        report_id: reportId,
+                        status: 'Resolved',
+                        resolution_notes: resolutionNotes
+                    })
+                });
+                
+                const data = await response.json();
+                
+                // Reset button state
+                submitBtn.innerHTML = originalText;
+                submitBtn.disabled = false;
+                
+                if (data.success) {
+                    let message = '✅ Report resolved successfully!';
+                    if (data.email_sent) {
+                        message += ' 📧 Email notification sent to user.';
+                    } else {
+                        message += ' (No email sent - user may not have email address)';
+                    }
+                    
+                    showSnackbar(message);
+                    modal.classList.add('hidden');
+                    document.getElementById('resolution-notes').value = '';
+                    
+                    // Reload data
+                    await loadAdminStats();
+                    await loadAllReports();
+                } else {
+                    showSnackbar(data.message, 'error');
+                }
+            } catch (error) {
+                console.error('Resolution error:', error);
+                
+                // Reset button state
+                const submitBtn = document.getElementById('confirm-resolution-btn');
+                submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit & Send Email';
+                submitBtn.disabled = false;
+                
+                showSnackbar('Failed to update report. Please try again.', 'error');
+            }
+        }
+
+        // Update the existing updateStatus function to handle Resolved status differently
+        async function updateStatus(reportId, newStatus) {
+            if (newStatus === 'Resolved') {
+                const selectElement = document.querySelector(`[data-report-id="${reportId}"]`);
+                showResolutionModal(reportId, selectElement);
+                return;
+            }
+            
+            try {
+                const response = await fetch('/api/update_report_status', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        report_id: reportId,
+                        status: newStatus
+                    })
+                });
+                
+                const data = await response.json();
+                
+                if (data.success) {
+                    showSnackbar('Status updated successfully!');
+                    await loadAdminStats();
+                    await loadAllReports();
+                } else {
+                    showSnackbar(data.message, 'error');
+                }
+            } catch (error) {
+                showSnackbar('Failed to update status', 'error');
+            }
+        }
+
         // Snackbar function
         function showSnackbar(message, type = 'success') {
             // Create snackbar if it doesn't exist
@@ -415,147 +600,141 @@
         }
 
         // Load user reports with delete buttons
-        // Load user reports with delete buttons
-async function loadMyReports() {
-    try {
-        const response = await fetch('/api/user_reports');
-        const data = await response.json();
-        
-        const reportsList = document.getElementById('reports-list');
-        
-        if (data.success && data.reports.length > 0) {
-            reportsList.innerHTML = data.reports.map(report => `
-                <div class="report-card">
-                    <div class="report-header">
-                        <span class="report-type">${report.problem_type}</span>
-                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                            ${report.status}
-                        </span>
-                    </div>
-                    <div class="report-location">
-                        <i class="fas fa-location-dot"></i> ${report.location}
-                    </div>
-                    <div class="report-issue">${report.issue}</div>
-                    <div class="report-footer">
-                        <span>${report.date}</span>
-                        <span>${report.priority}</span>
-                    </div>
-                    ${report.photo_data ? `
-                        <div class="report-photo">
-                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                        </div>
-                    ` : ''}
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
-                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
-                                <strong style="color: #047857; font-size: 14px;">Admin Resolution:</strong>
+        async function loadMyReports() {
+            try {
+                const response = await fetch('/api/user_reports');
+                const data = await response.json();
+                
+                const reportsList = document.getElementById('reports-list');
+                
+                if (data.success && data.reports.length > 0) {
+                    reportsList.innerHTML = data.reports.map(report => `
+                        <div class="report-card">
+                            <div class="report-header">
+                                <span class="report-type">${report.problem_type}</span>
+                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                    ${report.status}
+                                </span>
                             </div>
-                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
-                                ${report.resolution_notes}
-                            </p>
-                        </div>
-                    ` : ''}
-                    ${report.status === 'Resolved' && !report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                            <div style="display: flex; align-items: center;">
-                                <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
-                                <strong style="color: #d97706; font-size: 14px;">Status: Resolved</strong>
+                            <div class="report-location">
+                                <i class="fas fa-location-dot"></i> ${report.location}
                             </div>
-                            <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
-                                Your report has been marked as resolved. No additional details were provided by the admin.
-                            </p>
+                            <div class="report-issue">${report.issue}</div>
+                            <div class="report-footer">
+                                <span>${report.date}</span>
+                                <span>${report.priority}</span>
+                            </div>
+                            ${report.photo_data ? `
+                                <div class="report-photo">
+                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                                </div>
+                            ` : ''}
+                            ${report.status === 'Resolved' && report.resolution_notes ? `
+                                <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                        <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
+                                        <strong style="color: #047857; font-size: 14px;">Admin Resolution:</strong>
+                                    </div>
+                                    <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
+                                        ${report.resolution_notes}
+                                    </p>
+                                </div>
+                            ` : ''}
+                            ${report.status === 'Resolved' && !report.resolution_notes ? `
+                                <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
+                                        <strong style="color: #d97706; font-size: 14px;">Status: Resolved</strong>
+                                    </div>
+                                    <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
+                                        Your report has been marked as resolved. No additional details were provided by the admin.
+                                    </p>
+                                </div>
+                            ` : ''}
+                            <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
                         </div>
-                    ` : ''}
-                    <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
-                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            reportsList.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-                    <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                    <p>No reports yet</p>
-                </div>
-            `;
+                    `).join('');
+                } else {
+                    reportsList.innerHTML = `
+                        <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                            <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                            <p>No reports yet</p>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load reports:', error);
+                showSnackbar('Failed to load reports', 'error');
+            }
         }
-    } catch (error) {
-        console.error('Failed to load reports:', error);
-        showSnackbar('Failed to load reports', 'error');
-    }
-}
 
         // Load admin reports with delete buttons
-        // Load admin reports with delete buttons
-async function loadAllReports() {
-    try {
-        const response = await fetch('/api/all_reports');
-        const data = await response.json();
-        
-        const reportsList = document.getElementById('admin-reports-list');
-        
-        if (data.success && data.reports.length > 0) {
-            reportsList.innerHTML = data.reports.map(report => `
-                <div class="report-card">
-                    <div class="report-header">
-                        <span class="report-type">${report.problem_type}</span>
-                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                            ${report.status}
-                        </span>
-                    </div>
-                    <div class="report-location">
-                        <i class="fas fa-location-dot"></i> ${report.location}
-                    </div>
-                    <div class="report-issue">${report.issue}</div>
-                    <div class="report-footer">
-                        <span>By: ${report.username}</span>
-                        <span>${report.date}</span>
-                    </div>
-                    ${report.photo_data ? `
-                        <div class="report-photo">
-                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+        async function loadAllReports() {
+            try {
+                const response = await fetch('/api/all_reports');
+                const data = await response.json();
+                
+                const reportsList = document.getElementById('admin-reports-list');
+                
+                if (data.success && data.reports.length > 0) {
+                    reportsList.innerHTML = data.reports.map(report => `
+                        <div class="report-card">
+                            <div class="report-header">
+                                <span class="report-type">${report.problem_type}</span>
+                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                    ${report.status}
+                                </span>
+                            </div>
+                            <div class="report-location">
+                                <i class="fas fa-location-dot"></i> ${report.location}
+                            </div>
+                            <div class="report-issue">${report.issue}</div>
+                            <div class="report-footer">
+                                <span>By: ${report.username}</span>
+                                <span>${report.date}</span>
+                            </div>
+                            ${report.photo_data ? `
+                                <div class="report-photo">
+                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                                </div>
+                            ` : ''}
+                            <div class="admin-actions">
+                                <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
+                                    <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                                    <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                                    <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                                </select>
+                                <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
+                                    Update
+                                </button>
+                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                            ${report.status === 'Resolved' && report.resolution_notes ? `
+                                <div class="resolution-notes" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #2563eb;">
+                                    <strong>Resolution Details:</strong>
+                                    <p style="margin: 5px 0 0 0; color: #475569;">${report.resolution_notes}</p>
+                                </div>
+                            ` : ''}
                         </div>
-                    ` : ''}
-                    <div class="admin-actions">
-                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
-                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-                        </select>
-                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
-                            Update
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #2563eb;">
-                            <strong>Resolution Details:</strong>
-                            <p style="margin: 5px 0 0 0; color: #475569;">${report.resolution_notes}</p>
+                    `).join('');
+                } else {
+                    reportsList.innerHTML = `
+                        <div style="text-align: center; padding: 20px; color: #64748b;">
+                            <p>No reports found</p>
                         </div>
-                    ` : ''}
-                </div>
-            `).join('');
-        } else {
-            reportsList.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #64748b;">
-                    <p>No reports found</p>
-                </div>
-            `;
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load all reports:', error);
+                showSnackbar('Failed to load reports', 'error');
+            }
         }
-    } catch (error) {
-        console.error('Failed to load all reports:', error);
-        showSnackbar('Failed to load reports', 'error');
-    }
-}
-        
     </script>
 </body>
 </html>
-
-
-
