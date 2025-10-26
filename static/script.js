@@ -79,6 +79,93 @@ async function checkAuthStatus() {
     }
 }
 
+// Delete report functions
+async function deleteReport(reportId, isAdmin = false) {
+    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const endpoint = isAdmin ? '/api/delete_report' : '/api/delete_user_report';
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: reportId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSnackbar('Report deleted successfully!');
+            // Reload the appropriate list
+            if (isAdmin) {
+                await loadAllReports();
+                await loadAdminStats();
+            } else {
+                await loadMyReports();
+                await loadStats();
+            }
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Delete report error:', error);
+        showSnackbar('Failed to delete report', 'error');
+    }
+}
+
+// Add confirmation modal for delete (optional enhancement)
+function showDeleteConfirmation(reportId, isAdmin = false) {
+    const modal = document.getElementById('delete-confirmation-modal');
+    if (!modal) {
+        // Create modal if it doesn't exist
+        createDeleteConfirmationModal();
+    }
+    
+    const modalInstance = document.getElementById('delete-confirmation-modal');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    
+    // Set up the confirmation button
+    confirmBtn.onclick = function() {
+        deleteReport(reportId, isAdmin);
+        modalInstance.classList.add('hidden');
+    };
+    
+    modalInstance.classList.remove('hidden');
+}
+
+function createDeleteConfirmationModal() {
+    const modalHTML = `
+        <div id="delete-confirmation-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Delete Report</h3>
+                    <button class="close-btn" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Are you sure you want to delete this report?</p>
+                    <p style="color: #ef4444; font-size: 14px; margin-top: 10px;">This action cannot be undone.</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                        Delete Report
+                    </button>
+                </div>
+            </div>
+        </div>
+    `;
+    
+    document.body.insertAdjacentHTML('beforeend', modalHTML);
+}
+
 async function handleLogin(e) {
     e.preventDefault();
     console.log('Login form submitted');
@@ -667,4 +754,5 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
