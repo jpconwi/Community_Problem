@@ -22,13 +22,22 @@ document.addEventListener('DOMContentLoaded', function() {
 // Event listeners
 function setupEventListeners() {
     // Login form
-    document.getElementById('login-form').addEventListener('submit', handleLogin);
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
     
     // Register form
-    document.getElementById('register-form').addEventListener('submit', handleRegister);
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
     
     // Report form
-    document.getElementById('report-form').addEventListener('submit', handleReportSubmit);
+    const reportForm = document.getElementById('report-form');
+    if (reportForm) {
+        reportForm.addEventListener('submit', handleReportSubmit);
+    }
 }
 
 // Authentication functions
@@ -72,11 +81,18 @@ async function checkAuthStatus() {
 
 async function handleLogin(e) {
     e.preventDefault();
+    console.log('Login form submitted');
     
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
     
+    if (!email || !password) {
+        showSnackbar('Please fill in all fields', 'error');
+        return;
+    }
+    
     try {
+        showSnackbar('Logging in...');
         const response = await fetch('/api/login', {
             method: 'POST',
             headers: {
@@ -86,6 +102,7 @@ async function handleLogin(e) {
         });
         
         const data = await response.json();
+        console.log('Login response:', data);
         
         if (data.success) {
             currentUser = data.user;
@@ -101,12 +118,14 @@ async function handleLogin(e) {
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
+        console.error('Login error:', error);
         showSnackbar('Login failed. Please try again.', 'error');
     }
 }
 
 async function handleRegister(e) {
     e.preventDefault();
+    console.log('Register form submitted');
     
     const username = document.getElementById('register-username').value;
     const email = document.getElementById('register-email').value;
@@ -114,7 +133,18 @@ async function handleRegister(e) {
     const password = document.getElementById('register-password').value;
     const confirmPassword = document.getElementById('register-confirm-password').value;
     
+    if (!username || !email || !password || !confirmPassword) {
+        showSnackbar('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showSnackbar('Passwords do not match', 'error');
+        return;
+    }
+    
     try {
+        showSnackbar('Creating account...');
         const response = await fetch('/api/register', {
             method: 'POST',
             headers: {
@@ -130,6 +160,7 @@ async function handleRegister(e) {
         });
         
         const data = await response.json();
+        console.log('Register response:', data);
         
         if (data.success) {
             showSnackbar('Account created successfully!');
@@ -140,6 +171,7 @@ async function handleRegister(e) {
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
+        console.error('Registration error:', error);
         showSnackbar('Registration failed. Please try again.', 'error');
     }
 }
@@ -583,7 +615,15 @@ async function updateStatus(reportId, newStatus) {
 
 // Utility functions
 function showSnackbar(message, type = 'success') {
-    const snackbar = document.getElementById('snackbar');
+    // Create snackbar if it doesn't exist
+    let snackbar = document.getElementById('snackbar');
+    if (!snackbar) {
+        snackbar = document.createElement('div');
+        snackbar.id = 'snackbar';
+        snackbar.className = 'snackbar hidden';
+        document.body.appendChild(snackbar);
+    }
+    
     snackbar.textContent = message;
     snackbar.className = `snackbar ${type}`;
     snackbar.classList.remove('hidden');
@@ -614,7 +654,7 @@ function togglePassword(inputId) {
     }
 }
 
-// Temporary fix function - add this at the end
+// Temporary fix function
 function forceShowLogin() {
     console.log('Manual override: forcing login screen');
     hideLoading();
