@@ -491,23 +491,24 @@
                                 <span>${report.date}</span>
                             </div>
                             <div class="admin-actions">
-                                <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;">
-                                    <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                                    <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                                    <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-                                </select>
-                                <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
-                                    Update
-                                </button>
-                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
-                            ${report.photo_data ? `
-                                <div class="report-photo">
-                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                                </div>
-                            ` : ''}
+    <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
+        <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+        <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+        <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+    </select>
+    <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
+        Update
+    </button>
+    <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+        <i class="fas fa-trash"></i> Delete
+    </button>
+</div>
+${report.status === 'Resolved' && report.resolution_notes ? `
+    <div class="resolution-notes" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #2563eb;">
+        <strong>Resolution Details:</strong>
+        <p style="margin: 5px 0 0 0; color: #475569;">${report.resolution_notes}</p>
+    </div>
+` : ''}
                         </div>
                     `).join('');
                 } else {
@@ -525,3 +526,4 @@
     </script>
 </body>
 </html>
+
