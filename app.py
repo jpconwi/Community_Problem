@@ -433,6 +433,13 @@ def submit_report():
     
     try:
         data = request.get_json()
+        
+        # Compress photo data if it's too large
+        photo_data = data.get('photo_data')
+        if photo_data and len(photo_data) > 50000:  # If larger than 50KB
+            # Truncate very large images to prevent memory issues
+            photo_data = None
+        
         report = Report(
             user_id=session['user_id'],
             name=session['username'],
@@ -440,7 +447,7 @@ def submit_report():
             location=data.get('location'),
             issue=data.get('issue'),
             priority=data.get('priority', 'Medium'),
-            photo_data=data.get('photo_data'),
+            photo_data=photo_data,  # Use compressed version
             date=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
         )
         db.session.add(report)
@@ -455,32 +462,45 @@ def get_user_reports():
     if 'user_id' not in session:
         return jsonify({'success': False, 'message': 'Not logged in'})
     
-    reports = Report.query.filter_by(user_id=session['user_id']).order_by(Report.created_at.desc()).all()
-    reports_data = []
-    for report in reports:
-        report_data = {
-            'id': report.id,
-            'problem_type': report.problem_type,
-            'location': report.location,
-            'issue': report.issue,
-            'status': report.status,
-            'priority': report.priority,
-            'date': report.date,
-            'photo_data': report.photo_data
-        }
+    try:
+        # Only select necessary columns to reduce memory usage
+        reports = db.session.query(
+            Report.id,
+            Report.problem_type,
+            Report.location,
+            Report.issue,
+            Report.status,
+            Report.priority,
+            Report.date,
+            Report.photo_data,
+            Report.resolution_notes
+        ).filter_by(user_id=session['user_id']).order_by(Report.created_at.desc()).all()
         
-        # Safely add resolution_notes if the column exists
-        try:
-            if hasattr(report, 'resolution_notes'):
-                report_data['resolution_notes'] = report.resolution_notes
-            else:
-                report_data['resolution_notes'] = None
-        except:
-            report_data['resolution_notes'] = None
+        reports_data = []
+        for report in reports:
+            # Compress photo data for response if present
+            photo_data = report.photo_data
+            if photo_data and len(photo_data) > 50000:  # If larger than 50KB
+                photo_data = None  # Don't send very large images in list view
             
-        reports_data.append(report_data)
+            report_data = {
+                'id': report.id,
+                'problem_type': report.problem_type,
+                'location': report.location,
+                'issue': report.issue,
+                'status': report.status,
+                'priority': report.priority,
+                'date': report.date,
+                'photo_data': photo_data,
+                'resolution_notes': report.resolution_notes
+            }
+            reports_data.append(report_data)
+        
+        return jsonify({'success': True, 'reports': reports_data})
     
-    return jsonify({'success': True, 'reports': reports_data})
+    except Exception as e:
+        print(f"Error loading user reports: {e}")
+        return jsonify({'success': False, 'message': 'Failed to load reports'})
 
 @app.route('/api/stats')
 def get_stats():
@@ -490,62 +510,141 @@ def get_stats():
     user_id = session['user_id']
     role = session.get('role', 'user')
     
-    if role == 'admin':
-        total = Report.query.count()
-        pending = Report.query.filter_by(status='Pending').count()
-        in_progress = Report.query.filter_by(status='In Progress').count()
-        resolved = Report.query.filter_by(status='Resolved').count()
+    try:
+        if role == 'admin':
+            total = db.session.query(Report.id).count()
+            pending = db.session.query(Report.id).filter_by(status='Pending').count()
+            in_progress = db.session.query(Report.id).filter_by(status='In Progress').count()
+            resolved = db.session.query(Report.id).filter_by(status='Resolved').count()
+            
+            stats = {
+                'total': total,
+                'pending': pending,
+                'in_progress': in_progress,
+                'resolved': resolved
+            }
+        else:
+            my_reports = db.session.query(Report.id).filter_by(user_id=user_id).count()
+            pending = db.session.query(Report.id).filter_by(user_id=user_id, status='Pending').count()
+            
+            stats = {
+                'my_reports': my_reports,
+                'pending': pending
+            }
         
-        stats = {
-            'total': total,
-            'pending': pending,
-            'in_progress': in_progress,
-            'resolved': resolved
-        }
-    else:
-        my_reports = Report.query.filter_by(user_id=user_id).count()
-        pending = Report.query.filter_by(user_id=user_id, status='Pending').count()
-        
-        stats = {
-            'my_reports': my_reports,
-            'pending': pending
-        }
+        return jsonify({'success': True, 'stats': stats})
     
-    return jsonify({'success': True, 'stats': stats})
+    except Exception as e:
+        print(f"Error loading stats: {e}")
+        return jsonify({'success': False, 'message': 'Failed to load statistics'})
 
 @app.route('/api/all_reports')
 def get_all_reports():
     if 'user_id' not in session or session.get('role') != 'admin':
         return jsonify({'success': False, 'message': 'Unauthorized'})
     
-    reports = Report.query.order_by(Report.created_at.desc()).all()
-    reports_data = []
-    for report in reports:
-        user = User.query.get(report.user_id)
-        report_data = {
-            'id': report.id,
-            'problem_type': report.problem_type,
-            'location': report.location,
-            'issue': report.issue,
-            'status': report.status,
-            'priority': report.priority,
-            'date': report.date,
-            'photo_data': report.photo_data,  # Make sure this is included
-            'username': user.username if user else 'Unknown'
-        }
+    try:
+        # Only select necessary columns to reduce data size
+        reports = db.session.query(
+            Report.id,
+            Report.problem_type,
+            Report.location,
+            Report.issue,
+            Report.status,
+            Report.priority,
+            Report.date,
+            Report.photo_data,
+            Report.resolution_notes,
+            User.username
+        ).join(User).order_by(Report.created_at.desc()).all()
         
-        # Safely add resolution_notes if the column exists
-        try:
-            if hasattr(report, 'resolution_notes'):
-                report_data['resolution_notes'] = report.resolution_notes
-            else:
-                report_data['resolution_notes'] = None
-        except:
-            report_data['resolution_notes'] = None
+        reports_data = []
+        for report in reports:
+            # Compress photo data if present to reduce response size
+            photo_data = report.photo_data
+            if photo_data and len(photo_data) > 50000:  # If larger than 50KB
+                photo_data = None  # Don't send very large images in list view
             
-        reports_data.append(report_data)
+            report_data = {
+                'id': report.id,
+                'problem_type': report.problem_type,
+                'location': report.location,
+                'issue': report.issue[:500] + '...' if len(report.issue) > 500 else report.issue,  # Truncate long issues
+                'status': report.status,
+                'priority': report.priority,
+                'date': report.date,
+                'photo_data': photo_data,  # Use compressed version
+                'username': report.username,
+                'resolution_notes': report.resolution_notes
+            }
+            reports_data.append(report_data)
+        
+        return jsonify({'success': True, 'reports': reports_data})
     
-    return jsonify({'success': True, 'reports': reports_data})
+    except Exception as e:
+        print(f"Error loading all reports: {e}")
+        return jsonify({'success': False, 'message': 'Failed to load reports'})
+
+@app.route('/api/all_reports_paginated')
+def get_all_reports_paginated():
+    """Paginated version to reduce memory usage"""
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        page = request.args.get('page', 1, type=int)
+        per_page = request.args.get('per_page', 20, type=int)  # Reduced from all to 20 per page
+        
+        # Paginate the query
+        reports_pagination = db.session.query(
+            Report.id,
+            Report.problem_type,
+            Report.location,
+            Report.issue,
+            Report.status,
+            Report.priority,
+            Report.date,
+            Report.photo_data,
+            Report.resolution_notes,
+            User.username
+        ).join(User).order_by(Report.created_at.desc()).paginate(
+            page=page, per_page=per_page, error_out=False
+        )
+        
+        reports_data = []
+        for report in reports_pagination.items:
+            photo_data = report.photo_data
+            if photo_data and len(photo_data) > 50000:
+                photo_data = None
+                
+            report_data = {
+                'id': report.id,
+                'problem_type': report.problem_type,
+                'location': report.location,
+                'issue': report.issue[:500] + '...' if len(report.issue) > 500 else report.issue,
+                'status': report.status,
+                'priority': report.priority,
+                'date': report.date,
+                'photo_data': photo_data,
+                'username': report.username,
+                'resolution_notes': report.resolution_notes
+            }
+            reports_data.append(report_data)
+        
+        return jsonify({
+            'success': True, 
+            'reports': reports_data,
+            'pagination': {
+                'page': page,
+                'per_page': per_page,
+                'total': reports_pagination.total,
+                'pages': reports_pagination.pages
+            }
+        })
+    
+    except Exception as e:
+        print(f"Error loading paginated reports: {e}")
+        return jsonify({'success': False, 'message': 'Failed to load reports'})
 
 @app.route('/api/update_report_status', methods=['POST'])
 def update_report_status():
