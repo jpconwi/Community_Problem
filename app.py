@@ -31,9 +31,10 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
 
 db = SQLAlchemy(app)
 
-# Database Models (keep your existing models)
+# Database Models with extend_existing=True
 class User(db.Model):
     __tablename__ = 'users'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     username = db.Column(db.String(100), unique=True, nullable=False)
     password = db.Column(db.String(200), nullable=False)
@@ -42,9 +43,9 @@ class User(db.Model):
     role = db.Column(db.String(20), default='user')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-
 class Report(db.Model):
     __tablename__ = 'reports'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     name = db.Column(db.String(100), nullable=False)
@@ -57,27 +58,12 @@ class Report(db.Model):
     photo_data = db.Column(db.Text)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    resolution_notes = db.Column(db.Text)  # Add this line
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
-
-class Report(db.Model):
-    __tablename__ = 'reports'
-    id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
-    name = db.Column(db.String(100), nullable=False)
-    problem_type = db.Column(db.String(100), nullable=False)
-    location = db.Column(db.String(200), nullable=False)
-    issue = db.Column(db.Text, nullable=False)
-    date = db.Column(db.String(50), nullable=False)
-    status = db.Column(db.String(20), default='Pending')
-    priority = db.Column(db.String(20), default='Medium')
-    photo_data = db.Column(db.Text)
-    latitude = db.Column(db.Float)
-    longitude = db.Column(db.Float)
+    resolution_notes = db.Column(db.Text)  # Add this line for resolution notes
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     report_id = db.Column(db.Integer, db.ForeignKey('reports.id'))
@@ -88,6 +74,7 @@ class Notification(db.Model):
 
 class AdminLog(db.Model):
     __tablename__ = 'admin_logs'
+    __table_args__ = {'extend_existing': True}
     id = db.Column(db.Integer, primary_key=True)
     admin_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
     action = db.Column(db.String(100), nullable=False)
@@ -96,6 +83,7 @@ class AdminLog(db.Model):
     details = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+# Initialize database
 # Initialize database
 # Initialize database
 with app.app_context():
@@ -108,7 +96,7 @@ with app.app_context():
             db.session.execute(text('SELECT 1'))
             print("✅ Database connection successful")
             
-            # Create all tables
+            # Create all tables only if they don't exist
             db.create_all()
             print("✅ Tables created/verified")
             
@@ -586,6 +574,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
