@@ -420,7 +420,7 @@ def get_all_reports():
             'status': report.status,
             'priority': report.priority,
             'date': report.date,
-            'photo_data': report.photo_data,
+            'photo_data': report.photo_data,  # Make sure this is included
             'username': user.username if user else 'Unknown'
         }
         
