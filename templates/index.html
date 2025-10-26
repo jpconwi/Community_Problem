@@ -415,55 +415,78 @@
         }
 
         // Load user reports with delete buttons
-        async function loadMyReports() {
-            try {
-                const response = await fetch('/api/user_reports');
-                const data = await response.json();
-                
-                const reportsList = document.getElementById('reports-list');
-                
-                if (data.success && data.reports.length > 0) {
-                    reportsList.innerHTML = data.reports.map(report => `
-                        <div class="report-card">
-                            <div class="report-header">
-                                <span class="report-type">${report.problem_type}</span>
-                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                                    ${report.status}
-                                </span>
-                            </div>
-                            <div class="report-location">
-                                <i class="fas fa-location-dot"></i> ${report.location}
-                            </div>
-                            <div class="report-issue">${report.issue}</div>
-                            <div class="report-footer">
-                                <span>${report.date}</span>
-                                <span>${report.priority}</span>
-                            </div>
-                            ${report.photo_data ? `
-                                <div class="report-photo">
-                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                                </div>
-                            ` : ''}
-                            <div class="report-actions">
-                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
+        // Load user reports with delete buttons
+async function loadMyReports() {
+    try {
+        const response = await fetch('/api/user_reports');
+        const data = await response.json();
+        
+        const reportsList = document.getElementById('reports-list');
+        
+        if (data.success && data.reports.length > 0) {
+            reportsList.innerHTML = data.reports.map(report => `
+                <div class="report-card">
+                    <div class="report-header">
+                        <span class="report-type">${report.problem_type}</span>
+                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                            ${report.status}
+                        </span>
+                    </div>
+                    <div class="report-location">
+                        <i class="fas fa-location-dot"></i> ${report.location}
+                    </div>
+                    <div class="report-issue">${report.issue}</div>
+                    <div class="report-footer">
+                        <span>${report.date}</span>
+                        <span>${report.priority}</span>
+                    </div>
+                    ${report.photo_data ? `
+                        <div class="report-photo">
+                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
                         </div>
-                    `).join('');
-                } else {
-                    reportsList.innerHTML = `
-                        <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-                            <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                            <p>No reports yet</p>
+                    ` : ''}
+                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
+                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
+                                <strong style="color: #047857; font-size: 14px;">Admin Resolution:</strong>
+                            </div>
+                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
+                                ${report.resolution_notes}
+                            </p>
                         </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Failed to load reports:', error);
-                showSnackbar('Failed to load reports', 'error');
-            }
+                    ` : ''}
+                    ${report.status === 'Resolved' && !report.resolution_notes ? `
+                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                            <div style="display: flex; align-items: center;">
+                                <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
+                                <strong style="color: #d97706; font-size: 14px;">Status: Resolved</strong>
+                            </div>
+                            <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
+                                Your report has been marked as resolved. No additional details were provided by the admin.
+                            </p>
+                        </div>
+                    ` : ''}
+                    <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+        } else {
+            reportsList.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                    <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>No reports yet</p>
+                </div>
+            `;
         }
+    } catch (error) {
+        console.error('Failed to load reports:', error);
+        showSnackbar('Failed to load reports', 'error');
+    }
+}
 
         // Load admin reports with delete buttons
         // Load admin reports with delete buttons
@@ -533,5 +556,6 @@ async function loadAllReports() {
     </script>
 </body>
 </html>
+
 
 
