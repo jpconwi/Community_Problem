@@ -93,6 +93,8 @@ async function handleLogin(e) {
     
     try {
         showSnackbar('Logging in...');
+        console.log(`Attempting login for: ${email}`);
+        
         const response = await fetch('/api/login', {
             method: 'POST',
             headers: {
@@ -106,15 +108,20 @@ async function handleLogin(e) {
         
         if (data.success) {
             currentUser = data.user;
+            console.log(`Login successful! User role: ${currentUser.role}`);
+            
             if (currentUser.role === 'admin') {
+                console.log('Redirecting to admin dashboard...');
                 showScreen('admin-dashboard');
-                loadAdminDashboard();
+                await loadAdminDashboard();
             } else {
+                console.log('Redirecting to user dashboard...');
                 showScreen('user-dashboard');
-                loadUserDashboard();
+                await loadUserDashboard();
             }
             showSnackbar('Login successful!');
         } else {
+            console.error('Login failed:', data.message);
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
@@ -660,3 +667,4 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
