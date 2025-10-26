@@ -100,6 +100,23 @@ with app.app_context():
 
 # Routes
 # Add these routes to app.py after the existing routes
+@app.route('/api/debug/users')
+def debug_users():
+    """Debug endpoint to check all users"""
+    try:
+        users = User.query.all()
+        users_data = []
+        for user in users:
+            users_data.append({
+                'id': user.id,
+                'username': user.username,
+                'email': user.email,
+                'role': user.role,
+                'created_at': user.created_at.isoformat() if user.created_at else None
+            })
+        return jsonify({'success': True, 'users': users_data})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
 
 @app.route('/api/submit_report', methods=['POST'])
 def submit_report():
@@ -343,4 +360,5 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
