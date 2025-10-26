@@ -100,6 +100,59 @@ with app.app_context():
 
 # Routes
 # Add these routes to app.py after the existing routes
+@app.route('/api/debug/check_admin')
+def check_admin():
+    """Check if admin user exists and can login"""
+    try:
+        admin = User.query.filter_by(email='admin@community.com').first()
+        if admin:
+            # Test password
+            password_ok = check_password_hash(admin.password, 'admin123')
+            return jsonify({
+                'success': True,
+                'admin_exists': True,
+                'username': admin.username,
+                'role': admin.role,
+                'password_correct': password_ok,
+                'user_id': admin.id
+            })
+        else:
+            return jsonify({'success': True, 'admin_exists': False})
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+
+@app.route('/api/debug/create_admin_force')
+def create_admin_force():
+    """Force create admin user"""
+    try:
+        # Delete existing admin if any
+        admin = User.query.filter_by(email='admin@community.com').first()
+        if admin:
+            db.session.delete(admin)
+            db.session.commit()
+        
+        # Create new admin
+        new_admin = User(
+            username='admin',
+            password=generate_password_hash('admin123'),
+            email='admin@community.com',
+            role='admin'
+        )
+        db.session.add(new_admin)
+        db.session.commit()
+        
+        return jsonify({
+            'success': True, 
+            'message': 'Admin user created forcefully',
+            'user': {
+                'username': new_admin.username,
+                'email': new_admin.email,
+                'role': new_admin.role
+            }
+        })
+    except Exception as e:
+        return jsonify({'success': False, 'error': str(e)})
+                
 @app.route('/api/debug/users')
 def debug_users():
     """Debug endpoint to check all users"""
@@ -360,5 +413,6 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
