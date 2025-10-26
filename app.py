@@ -9,6 +9,7 @@ import re
 from flask_cors import CORS
 from PIL import Image
 import io
+import requests  # Add this import for Formspree
 
 # Initialize Flask with explicit static folder paths
 app = Flask(__name__, 
@@ -141,6 +142,75 @@ with app.app_context():
             import time
             time.sleep(2)
 
+# Email Notification Function
+def send_resolution_email(user_email, report_details, resolution_notes, admin_name):
+    """Send resolution email notification using Formspree"""
+    try:
+        # Your Formspree form ID
+        formspree_form_id = "mvgvgpvn"
+        
+        formspree_url = f"https://formspree.io/f/{formspree_form_id}"
+        
+        # Email content
+        email_subject = f"✅ Report Resolved: {report_details['problem_type']}"
+        
+        email_body = f"""
+Dear Community Member,
+
+Great news! Your community report has been resolved by our admin team.
+
+📋 **Report Details:**
+• Problem Type: {report_details['problem_type']}
+• Location: {report_details['location']}
+• Issue: {report_details['issue']}
+• Status: ✅ Resolved
+
+📝 **Resolution Details from Admin:**
+{resolution_notes}
+
+👨‍💼 **Resolved by:** {admin_name}
+
+Thank you for helping us improve our community! Your reports make a difference.
+
+Best regards,
+CommunityCare Team
+
+---
+This is an automated notification. Please do not reply to this email.
+        """.strip()
+        
+        # Prepare form data for Formspree
+        form_data = {
+            "name": "CommunityCare Admin",
+            "email": user_email,  # Recipient email
+            "subject": email_subject,
+            "message": email_body,
+            "_replyto": "noreply@communitycare.com",
+        }
+        
+        # Send to Formspree
+        response = requests.post(
+            formspree_url,
+            data=form_data,
+            headers={
+                'Content-Type': 'application/x-www-form-urlencoded',
+                'Accept': 'application/json'
+            }
+        )
+        
+        print(f"📧 Email attempt to {user_email}. Status: {response.status_code}")
+        
+        if response.status_code == 200:
+            print(f"✅ Email sent successfully to {user_email}")
+            return True
+        else:
+            print(f"❌ Email failed to {user_email}. Response: {response.text}")
+            return False
+            
+    except Exception as e:
+        print(f"💥 Email sending error: {e}")
+        return False
+
 # Routes
 
 @app.route('/api/update_report_with_resolution', methods=['POST'])
@@ -152,9 +222,14 @@ def update_report_with_resolution():
         data = request.get_json()
         report = Report.query.get(data.get('report_id'))
         if report:
+            old_status = report.status
             report.status = data.get('status')
             report.resolution_notes = data.get('resolution_notes', '')
             db.session.commit()
+            
+            # Get user details for email notification
+            user = User.query.get(report.user_id)
+            admin_user = User.query.get(session['user_id'])
             
             # Create notification for the user
             notification = Notification(
@@ -166,11 +241,54 @@ def update_report_with_resolution():
             db.session.add(notification)
             db.session.commit()
             
-            return jsonify({'success': True, 'message': 'Status updated successfully!'})
+            # Send email notification if:
+            # 1. User has email
+            # 2. Status changed to Resolved
+            # 3. Resolution notes are provided
+            email_sent = False
+            if (user and user.email and 
+                report.status == 'Resolved' and 
+                old_status != 'Resolved' and 
+                data.get('resolution_notes')):
+                
+                report_details = {
+                    'problem_type': report.problem_type,
+                    'location': report.location,
+                    'issue': report.issue
+                }
+                
+                email_sent = send_resolution_email(
+                    user.email,
+                    report_details,
+                    data.get('resolution_notes', ''),
+                    admin_user.username if admin_user else 'Admin'
+                )
+                
+                if email_sent:
+                    print(f"✅ Resolution email sent to {user.email}")
+                    # Log the email action
+                    admin_log = AdminLog(
+                        admin_id=session['user_id'],
+                        action='send_resolution_email',
+                        target_type='user',
+                        target_id=user.id,
+                        details=f'Sent resolution email for report #{report.id} to {user.email}'
+                    )
+                    db.session.add(admin_log)
+                    db.session.commit()
+                else:
+                    print(f"❌ Failed to send email to {user.email}")
+            
+            return jsonify({
+                'success': True, 
+                'message': 'Status updated successfully!' + (' Email sent to user.' if email_sent else ''),
+                'email_sent': email_sent
+            })
         else:
             return jsonify({'success': False, 'message': 'Report not found'})
     except Exception as e:
         db.session.rollback()
+        print(f"Error updating report: {e}")
         return jsonify({'success': False, 'message': 'Failed to update status'})
 
 @app.route('/api/delete_report', methods=['POST'])
