@@ -40,6 +40,143 @@ function setupEventListeners() {
     }
 }
 
+function handleStatusChange(selectElement, reportId) {
+    if (selectElement.value === 'Resolved') {
+        showResolutionModal(reportId, selectElement);
+    }
+}
+
+function showResolutionModal(reportId, selectElement) {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('resolution-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'resolution-modal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Resolution Details</h3>
+                    <button class="close-btn" onclick="document.getElementById('resolution-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Please provide details on how this issue was resolved:</p>
+                    <div class="form-group">
+                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="cancelResolution()">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
+                        Submit Resolution
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+
+    // Store the current select element and report ID
+    modal.dataset.reportId = reportId;
+    modal.dataset.selectElement = selectElement.id;
+    
+    // Show modal
+    modal.classList.remove('hidden');
+    document.getElementById('resolution-notes').focus();
+}
+
+function cancelResolution() {
+    const modal = document.getElementById('resolution-modal');
+    const selectElement = document.getElementById(modal.dataset.selectElement);
+    
+    // Reset to previous value
+    selectElement.value = 'In Progress';
+    
+    modal.classList.add('hidden');
+}
+
+async function submitResolution() {
+    const modal = document.getElementById('resolution-modal');
+    const reportId = modal.dataset.reportId;
+    const resolutionNotes = document.getElementById('resolution-notes').value;
+    
+    if (!resolutionNotes.trim()) {
+        showSnackbar('Please provide resolution details', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/update_report_with_resolution', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: reportId,
+                status: 'Resolved',
+                resolution_notes: resolutionNotes
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSnackbar('Report resolved with details!');
+            modal.classList.add('hidden');
+            document.getElementById('resolution-notes').value = '';
+            await loadAdminStats();
+            await loadAllReports();
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        showSnackbar('Failed to update report', 'error');
+    }
+}
+
+// Update the existing updateStatus function to handle Resolved status differently
+async function updateStatus(reportId, newStatus) {
+    if (newStatus === 'Resolved') {
+        showResolutionModal(reportId, document.querySelector(`[data-report-id="${reportId}"]`));
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/update_report_status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: reportId,
+                status: newStatus
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSnackbar('Status updated successfully!');
+            await loadAdminStats();
+            await loadAllReports();
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        showSnackbar('Failed to update status', 'error');
+    }
+}
+
+// Add event listener for the resolution modal button
+document.addEventListener('click', function(e) {
+    if (e.target && e.target.id === 'confirm-resolution-btn') {
+        submitResolution();
+    }
+});
+
+
 // Authentication functions
 async function checkAuthStatus() {
     try {
@@ -762,6 +899,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
