@@ -42,6 +42,24 @@ class User(db.Model):
     role = db.Column(db.String(20), default='user')
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
+
+class Report(db.Model):
+    __tablename__ = 'reports'
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey('users.id'), nullable=False)
+    name = db.Column(db.String(100), nullable=False)
+    problem_type = db.Column(db.String(100), nullable=False)
+    location = db.Column(db.String(200), nullable=False)
+    issue = db.Column(db.Text, nullable=False)
+    date = db.Column(db.String(50), nullable=False)
+    status = db.Column(db.String(20), default='Pending')
+    priority = db.Column(db.String(20), default='Medium')
+    photo_data = db.Column(db.Text)
+    latitude = db.Column(db.Float)
+    longitude = db.Column(db.Float)
+    resolution_notes = db.Column(db.Text)  # Add this line
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+
 class Report(db.Model):
     __tablename__ = 'reports'
     id = db.Column(db.Integer, primary_key=True)
@@ -539,6 +557,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
