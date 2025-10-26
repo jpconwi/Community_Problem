@@ -138,10 +138,7 @@ async function submitResolution() {
 
 // Update the existing updateStatus function to handle Resolved status differently
 async function updateStatus(reportId, newStatus) {
-    if (newStatus === 'Resolved') {
-        showResolutionModal(reportId, document.querySelector(`[data-report-id="${reportId}"]`));
-        return;
-    }
+    console.log(`Updating report ${reportId} to status: ${newStatus}`);
     
     try {
         const response = await fetch('/api/update_report_status', {
@@ -156,6 +153,7 @@ async function updateStatus(reportId, newStatus) {
         });
         
         const data = await response.json();
+        console.log('Update response:', data);
         
         if (data.success) {
             showSnackbar('Status updated successfully!');
@@ -165,7 +163,51 @@ async function updateStatus(reportId, newStatus) {
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
+        console.error('Update status error:', error);
         showSnackbar('Failed to update status', 'error');
+    }
+}
+
+async function submitResolution() {
+    const modal = document.getElementById('resolution-modal');
+    const reportId = modal.dataset.reportId;
+    const resolutionNotes = document.getElementById('resolution-notes').value;
+    
+    console.log(`Submitting resolution for report ${reportId}:`, resolutionNotes);
+    
+    if (!resolutionNotes.trim()) {
+        showSnackbar('Please provide resolution details', 'error');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/update_report_with_resolution', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: parseInt(reportId),
+                status: 'Resolved',
+                resolution_notes: resolutionNotes
+            })
+        });
+        
+        const data = await response.json();
+        console.log('Resolution response:', data);
+        
+        if (data.success) {
+            showSnackbar('Report resolved and notification sent!');
+            modal.classList.add('hidden');
+            document.getElementById('resolution-notes').value = '';
+            await loadAdminStats();
+            await loadAllReports();
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Submit resolution error:', error);
+        showSnackbar('Failed to update report', 'error');
     }
 }
 
@@ -1021,6 +1063,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
