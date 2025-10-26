@@ -9,6 +9,7 @@ import re
 from flask_cors import CORS
 from PIL import Image
 import io
+from flask_mail import Mail, Message
 
 # Initialize Flask with explicit static folder paths
 app = Flask(__name__, 
@@ -29,7 +30,16 @@ app.config['SQLALCHEMY_ENGINE_OPTIONS'] = {
     'pool_pre_ping': True
 }
 
+# Email configuration
+app.config['MAIL_SERVER'] = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
+app.config['MAIL_PORT'] = int(os.environ.get('MAIL_PORT', 587))
+app.config['MAIL_USE_TLS'] = True
+app.config['MAIL_USERNAME'] = os.environ.get('MAIL_USERNAME', '')
+app.config['MAIL_PASSWORD'] = os.environ.get('MAIL_PASSWORD', '')
+app.config['MAIL_DEFAULT_SENDER'] = os.environ.get('MAIL_DEFAULT_SENDER', 'noreply@communitycare.com')
+
 db = SQLAlchemy(app)
+mail = Mail(app)
 
 # Database Models with extend_existing=True
 class User(db.Model):
@@ -141,8 +151,97 @@ with app.app_context():
             import time
             time.sleep(2)
 
-# Routes
+# Email Functions
+def send_resolution_email(user, report, resolution_notes):
+    """Send email notification to user when their report is resolved"""
+    try:
+        subject = f"Your Report Has Been Resolved - {report.problem_type}"
+        
+        html_body = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <style>
+                body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; }}
+                .container {{ max-width: 600px; margin: 0 auto; padding: 20px; }}
+                .header {{ background: #2563eb; color: white; padding: 20px; text-align: center; border-radius: 8px 8px 0 0; }}
+                .content {{ background: #f8fafc; padding: 20px; border-radius: 0 0 8px 8px; }}
+                .report-details {{ background: white; padding: 15px; border-radius: 6px; margin: 15px 0; }}
+                .status-resolved {{ color: #16a34a; font-weight: bold; }}
+                .footer {{ text-align: center; margin-top: 20px; font-size: 12px; color: #64748b; }}
+            </style>
+        </head>
+        <body>
+            <div class="container">
+                <div class="header">
+                    <h1>CommunityCare</h1>
+                    <p>Your Report Has Been Resolved!</p>
+                </div>
+                <div class="content">
+                    <p>Hello <strong>{user.username}</strong>,</p>
+                    <p>We're pleased to inform you that your community report has been resolved.</p>
+                    
+                    <div class="report-details">
+                        <h3>Report Details:</h3>
+                        <p><strong>Problem Type:</strong> {report.problem_type}</p>
+                        <p><strong>Location:</strong> {report.location}</p>
+                        <p><strong>Issue:</strong> {report.issue}</p>
+                        <p><strong>Status:</strong> <span class="status-resolved">Resolved</span></p>
+                        <p><strong>Resolution Date:</strong> {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}</p>
+                    </div>
+                    
+                    <div class="report-details">
+                        <h3>Resolution Details:</h3>
+                        <p>{resolution_notes or 'No additional details provided.'}</p>
+                    </div>
+                    
+                    <p>Thank you for helping us improve our community!</p>
+                    
+                    <div class="footer">
+                        <p>This is an automated message from CommunityCare Report System.</p>
+                        <p>Please do not reply to this email.</p>
+                    </div>
+                </div>
+            </div>
+        </body>
+        </html>
+        """
+        
+        text_body = f"""
+        Hello {user.username},
+        
+        Your community report has been resolved!
+        
+        Report Details:
+        - Problem Type: {report.problem_type}
+        - Location: {report.location}
+        - Issue: {report.issue}
+        - Status: Resolved
+        - Resolution Date: {datetime.utcnow().strftime('%Y-%m-%d %H:%M')}
+        
+        Resolution Details:
+        {resolution_notes or 'No additional details provided.'}
+        
+        Thank you for helping us improve our community!
+        
+        This is an automated message from CommunityCare Report System.
+        """
+        
+        msg = Message(
+            subject=subject,
+            recipients=[user.email],
+            html=html_body,
+            body=text_body
+        )
+        
+        mail.send(msg)
+        print(f"✅ Resolution email sent to {user.email}")
+        
+    except Exception as e:
+        print(f"❌ Failed to send email to {user.email}: {e}")
+        raise
 
+# Routes
 @app.route('/api/update_report_with_resolution', methods=['POST'])
 def update_report_with_resolution():
     if 'user_id' not in session or session.get('role') != 'admin':
@@ -156,6 +255,9 @@ def update_report_with_resolution():
             report.resolution_notes = data.get('resolution_notes', '')
             db.session.commit()
             
+            # Get user details for email
+            user = User.query.get(report.user_id)
+            
             # Create notification for the user
             notification = Notification(
                 user_id=report.user_id,
@@ -166,7 +268,15 @@ def update_report_with_resolution():
             db.session.add(notification)
             db.session.commit()
             
-            return jsonify({'success': True, 'message': 'Status updated successfully!'})
+            # Send email notification
+            if user and user.email:
+                try:
+                    send_resolution_email(user, report, data.get('resolution_notes', ''))
+                except Exception as e:
+                    print(f"Failed to send email: {e}")
+                    # Don't fail the whole request if email fails
+            
+            return jsonify({'success': True, 'message': 'Status updated successfully and notification sent!'})
         else:
             return jsonify({'success': False, 'message': 'Report not found'})
     except Exception as e:
