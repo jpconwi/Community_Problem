@@ -10,22 +10,8 @@
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen active">
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <h2>CommunityCare</h2>
-                <p id="loading-status">Loading...</p>
-                <div style="margin-top: 20px; text-align: center;">
-                    <button onclick="forceShowLogin()" style="padding: 10px 20px; background: #2563eb; color: white; border: none; border-radius: 8px; cursor: pointer; margin: 5px;">
-                        Click here if stuck
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Login Screen -->
-        <div id="login-screen" class="screen">
+        <!-- Login Screen (Now the default active screen) -->
+        <div id="login-screen" class="screen active">
             <div class="auth-container">
                 <div class="auth-card">
                     <div class="auth-header">
@@ -280,5 +266,57 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
+    
+    <!-- Simplified initialization script -->
+    <script>
+        // Initialize app immediately - show login screen
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('App initialized - showing login screen');
+            
+            // Setup event listeners
+            const loginForm = document.getElementById('login-form');
+            const registerForm = document.getElementById('register-form');
+            
+            if (loginForm) {
+                loginForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleLogin(e);
+                });
+            }
+            
+            if (registerForm) {
+                registerForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleRegister(e);
+                });
+            }
+            
+            // Check if user is already logged in
+            checkAuthStatus();
+        });
+
+        // Basic screen switching
+        function showScreen(screenId) {
+            console.log('Switching to screen:', screenId);
+            document.querySelectorAll('.screen').forEach(screen => {
+                screen.classList.remove('active');
+            });
+            document.getElementById(screenId).classList.add('active');
+        }
+        
+        // Simple password toggle
+        function togglePassword(inputId) {
+            const input = document.getElementById(inputId);
+            const icon = input.nextElementSibling.querySelector('i');
+            
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.className = 'fas fa-eye-slash';
+            } else {
+                input.type = 'password';
+                icon.className = 'fas fa-eye';
+            }
+        }
+    </script>
 </body>
 </html>
