@@ -30,56 +30,6 @@ body {
     display: block;
 }
 
-/* Loading Screen */
-#loading-screen {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    background: var(--primary-gradient);
-}
-
-.loading-container {
-    text-align: center;
-    color: white;
-}
-
-.loading-logo {
-    margin-bottom: 30px;
-}
-
-.logo-spinner {
-    width: 80px;
-    height: 80px;
-    background: rgba(255, 255, 255, 0.2);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto 20px;
-    font-size: 32px;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-}
-
-.loading-spinner {
-    width: 50px;
-    height: 50px;
-    border: 4px solid rgba(255, 255, 255, 0.3);
-    border-top: 4px solid white;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-    margin: 0 auto;
-}
-
-@keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
-}
-
 /* Auth Screens */
 .auth-container {
     min-height: 100vh;
