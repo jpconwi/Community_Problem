@@ -17,4 +17,5 @@ services:
       - key: PYTHON_VERSION
         value: 3.11.4
       - key: GMAIL_APP_PASSWORD
-        value: bmamyyvmkxqaxqwm
+        value: bmam yyvm kxqa xqwm
+
