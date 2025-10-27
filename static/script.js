@@ -46,6 +46,138 @@ function handleStatusChange(selectElement, reportId) {
     }
 }
 
+// Add these responsive enhancements to your existing script.js
+
+// Responsive navigation
+function setupResponsiveNavigation() {
+    // Handle back button for mobile
+    if (window.history && window.history.pushState) {
+        window.addEventListener('popstate', function() {
+            const currentScreen = document.querySelector('.screen.active');
+            if (currentScreen && currentScreen.id !== 'login-screen') {
+                showScreen('user-dashboard');
+            }
+        });
+    }
+}
+
+// Enhanced screen switching with history
+function showScreen(screenId) {
+    console.log(`Switching to screen: ${screenId}`);
+    
+    // Hide all screens
+    document.querySelectorAll('.screen').forEach(screen => {
+        screen.classList.remove('active');
+    });
+    
+    // Show target screen
+    const targetScreen = document.getElementById(screenId);
+    if (targetScreen) {
+        targetScreen.classList.add('active');
+        
+        // Add to history for mobile back button
+        if (window.history && window.history.pushState && screenId !== 'login-screen') {
+            window.history.pushState({ screen: screenId }, '', `#${screenId}`);
+        }
+        
+        // Scroll to top when switching screens
+        window.scrollTo(0, 0);
+    }
+}
+
+// Handle orientation changes
+function setupOrientationHandler() {
+    window.addEventListener('orientationchange', function() {
+        // Add a small delay to ensure CSS has applied
+        setTimeout(() => {
+            // Force reflow for certain elements
+            const statsCard = document.querySelector('.stats-card');
+            if (statsCard) {
+                statsCard.style.display = 'none';
+                statsCard.offsetHeight; // Trigger reflow
+                statsCard.style.display = 'flex';
+            }
+        }, 100);
+    });
+}
+
+// Enhanced photo handling for mobile
+function openCamera() {
+    const modal = document.getElementById('camera-modal');
+    const video = document.getElementById('camera-view');
+    
+    modal.classList.remove('hidden');
+    
+    // Mobile-specific camera constraints
+    const constraints = {
+        video: {
+            facingMode: 'environment', // Prefer rear camera on mobile
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        }
+    };
+    
+    navigator.mediaDevices.getUserMedia(constraints)
+        .then(function(mediaStream) {
+            stream = mediaStream;
+            video.srcObject = stream;
+            
+            // Auto-play for mobile
+            video.play().catch(e => console.log('Video play failed:', e));
+        })
+        .catch(function(error) {
+            console.error('Camera error:', error);
+            // Fallback to any camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(mediaStream) {
+                    stream = mediaStream;
+                    video.srcObject = stream;
+                    video.play().catch(e => console.log('Video play failed:', e));
+                })
+                .catch(function(fallbackError) {
+                    console.error('Fallback camera error:', fallbackError);
+                    showSnackbar('Failed to access camera', 'error');
+                    closeCamera();
+                });
+        });
+}
+
+// Initialize responsive features
+document.addEventListener('DOMContentLoaded', function() {
+    setupResponsiveNavigation();
+    setupOrientationHandler();
+    
+    // Prevent zoom on double-tap (iOS)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+});
+
+// Enhanced error handling for mobile
+function showSnackbar(message, type = 'success') {
+    let snackbar = document.getElementById('snackbar');
+    if (!snackbar) {
+        snackbar = document.createElement('div');
+        snackbar.id = 'snackbar';
+        snackbar.className = 'snackbar hidden';
+        document.body.appendChild(snackbar);
+    }
+    
+    snackbar.textContent = message;
+    snackbar.className = `snackbar ${type}`;
+    snackbar.classList.remove('hidden');
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+        snackbar.classList.add('hidden');
+    }, 3000);
+}
+
 function showResolutionModal(reportId, selectElement) {
     // Create modal if it doesn't exist
     let modal = document.getElementById('resolution-modal');
@@ -927,6 +1059,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
