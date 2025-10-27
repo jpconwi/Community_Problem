@@ -17,6 +17,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     checkAuthStatus();
     setupEventListeners();
+    createResolutionModal(); // Create the resolution modal on load
 });
 
 // Event listeners
@@ -38,11 +39,53 @@ function setupEventListeners() {
     if (reportForm) {
         reportForm.addEventListener('submit', handleReportSubmit);
     }
-    
-    // Resolution modal button
-    const confirmResolutionBtn = document.getElementById('confirm-resolution-btn');
-    if (confirmResolutionBtn) {
-        confirmResolutionBtn.addEventListener('click', submitResolution);
+}
+
+// Create Resolution Modal
+function createResolutionModal() {
+    if (!document.getElementById('resolution-modal')) {
+        const modalHTML = `
+            <div id="resolution-modal" class="modal hidden">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h3>Resolution Details</h3>
+                        <button class="close-btn" onclick="cancelResolution()">&times;</button>
+                    </div>
+                    <div class="modal-body">
+                        <p>Please provide details on how this issue was resolved:</p>
+                        <div class="form-group">
+                            <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                        </div>
+                    </div>
+                    <div class="modal-actions">
+                        <button type="button" class="btn btn-outline" onclick="cancelResolution()">
+                            Cancel
+                        </button>
+                        <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
+                            <i class="fas fa-paper-plane"></i> Submit & Send Email
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+        
+        document.body.insertAdjacentHTML('beforeend', modalHTML);
+        
+        // Add event listener for the resolution modal button
+        const confirmResolutionBtn = document.getElementById('confirm-resolution-btn');
+        if (confirmResolutionBtn) {
+            confirmResolutionBtn.addEventListener('click', submitResolution);
+        }
+        
+        // Add Enter key support for resolution notes
+        const resolutionNotes = document.getElementById('resolution-notes');
+        if (resolutionNotes) {
+            resolutionNotes.addEventListener('keydown', function(e) {
+                if (e.key === 'Enter' && e.ctrlKey) {
+                    submitResolution();
+                }
+            });
+        }
     }
 }
 
@@ -62,6 +105,7 @@ function showResolutionModal(reportId, selectElement) {
     
     // Show modal
     modal.classList.remove('hidden');
+    document.getElementById('resolution-notes').value = '';
     document.getElementById('resolution-notes').focus();
 }
 
@@ -147,8 +191,10 @@ async function submitResolution() {
 // Update the existing updateStatus function to handle Resolved status differently
 async function updateStatus(reportId, newStatus) {
     if (newStatus === 'Resolved') {
-        const selectElement = document.querySelector(`[data-report-id="${reportId}"]`);
-        showResolutionModal(reportId, selectElement);
+        const selectElement = document.querySelector(`select[data-report-id="${reportId}"]`);
+        if (selectElement) {
+            showResolutionModal(reportId, selectElement);
+        }
         return;
     }
     
@@ -261,7 +307,6 @@ async function deleteReport(reportId, isAdmin = false) {
 function showDeleteConfirmation(reportId, isAdmin = false) {
     const modal = document.getElementById('delete-confirmation-modal');
     if (!modal) {
-        // Create modal if it doesn't exist
         createDeleteConfirmationModal();
     }
     
