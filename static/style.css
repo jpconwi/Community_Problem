@@ -776,4 +776,18 @@ body {
     100% { transform: rotate(360deg); }
 }
 
+.screen-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 15px 20px;
+    min-height: 60px;
+}
+.resolution-notes {
+    margin: 15px 0;
+    padding: 15px;
+    background: #f8fafc;
+    border-radius: 8px;
+    border-left: 4px solid #10b981;
+}
 
