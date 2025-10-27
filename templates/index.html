@@ -10,22 +10,8 @@
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen active">
-            <div class="loading-container">
-                <div class="loading-logo">
-                    <div class="logo-spinner">
-                        <i class="fas fa-city"></i>
-                    </div>
-                    <h2>CommunityCare</h2>
-                    <p>Loading your dashboard...</p>
-                </div>
-                <div class="loading-spinner"></div>
-            </div>
-        </div>
-
         <!-- Login Screen -->
-        <div id="login-screen" class="screen">
+        <div id="login-screen" class="screen active">
             <div class="auth-container">
                 <div class="auth-card">
                     <div class="auth-header">
@@ -359,7 +345,7 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     
-    <!-- JavaScript functions for delete functionality -->
+    <!-- JavaScript functions -->
     <script>
         // Initialize app immediately - show login screen
         document.addEventListener('DOMContentLoaded', function() {
@@ -368,6 +354,7 @@
             // Setup event listeners
             const loginForm = document.getElementById('login-form');
             const registerForm = document.getElementById('register-form');
+            const reportForm = document.getElementById('report-form');
             
             if (loginForm) {
                 loginForm.addEventListener('submit', function(e) {
@@ -380,6 +367,13 @@
                 registerForm.addEventListener('submit', function(e) {
                     e.preventDefault();
                     handleRegister(e);
+                });
+            }
+
+            if (reportForm) {
+                reportForm.addEventListener('submit', function(e) {
+                    e.preventDefault();
+                    handleReportSubmit(e);
                 });
             }
             
@@ -410,63 +404,19 @@
             }
         }
 
-        // Delete report function
-        async function deleteReport(reportId, isAdmin = false) {
-            if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
-                return;
-            }
-            
-            try {
-                const endpoint = isAdmin ? '/api/delete_report' : '/api/delete_user_report';
-                
-                const response = await fetch(endpoint, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        report_id: reportId
-                    })
-                });
-                
-                const data = await response.json();
-                
-                if (data.success) {
-                    showSnackbar('Report deleted successfully!');
-                    // Reload the appropriate list
-                    if (isAdmin) {
-                        await loadAllReports();
-                        await loadAdminStats();
-                    } else {
-                        await loadMyReports();
-                        await loadStats();
-                    }
-                } else {
-                    showSnackbar(data.message, 'error');
-                }
-            } catch (error) {
-                console.error('Delete report error:', error);
-                showSnackbar('Failed to delete report', 'error');
-            }
+        // Utility functions
+        function refreshMyReports() {
+            loadMyReports();
+            showSnackbar('Reports refreshed');
         }
 
-        // Enhanced delete with modal confirmation
-        function showDeleteConfirmation(reportId, isAdmin = false) {
-            const modal = document.getElementById('delete-confirmation-modal');
-            const confirmBtn = document.getElementById('confirm-delete-btn');
-            
-            // Set up the confirmation button
-            confirmBtn.onclick = function() {
-                deleteReport(reportId, isAdmin);
-                modal.classList.add('hidden');
-            };
-            
-            modal.classList.remove('hidden');
+        function markAllAsRead() {
+            showSnackbar('All notifications marked as read');
+            loadNotifications();
         }
 
         // Snackbar function
         function showSnackbar(message, type = 'success') {
-            // Create snackbar if it doesn't exist
             let snackbar = document.getElementById('snackbar');
             if (!snackbar) {
                 snackbar = document.createElement('div');
@@ -483,96 +433,6 @@
                 snackbar.classList.add('hidden');
             }, 3000);
         }
-
-        // Utility functions
-        function refreshMyReports() {
-            loadMyReports();
-            showSnackbar('Reports refreshed');
-        }
-
-        function markAllAsRead() {
-            showSnackbar('All notifications marked as read');
-            loadNotifications();
-        }
-
-        // Load user reports with delete buttons
-        async function loadMyReports() {
-            try {
-                const response = await fetch('/api/user_reports');
-                const data = await response.json();
-                
-                const reportsList = document.getElementById('reports-list');
-                
-                if (data.success && data.reports.length > 0) {
-                    reportsList.innerHTML = data.reports.map(report => `
-                        <div class="report-card">
-                            <div class="report-header">
-                                <span class="report-type">${report.problem_type}</span>
-                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                                    ${report.status}
-                                </span>
-                            </div>
-                            <div class="report-location">
-                                <i class="fas fa-location-dot"></i> ${report.location}
-                            </div>
-                            <div class="report-issue">${report.issue}</div>
-                            <div class="report-footer">
-                                <span>${report.date}</span>
-                                <span class="priority-${report.priority.toLowerCase()}">${report.priority}</span>
-                            </div>
-                            ${report.photo_data ? `
-                                <div class="report-photo">
-                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                                </div>
-                            ` : ''}
-                            ${report.status === 'Resolved' && report.resolution_notes ? `
-                                <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
-                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                        <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
-                                        <strong style="color: #047857; font-size: 14px;">Admin Resolution:</strong>
-                                    </div>
-                                    <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
-                                        ${report.resolution_notes}
-                                    </p>
-                                </div>
-                            ` : ''}
-                            ${report.status === 'Resolved' && !report.resolution_notes ? `
-                                <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                                    <div style="display: flex; align-items: center;">
-                                        <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
-                                        <strong style="color: #d97706; font-size: 14px;">Status: Resolved</strong>
-                                    </div>
-                                    <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
-                                        Your report has been marked as resolved. No additional details were provided by the admin.
-                                    </p>
-                                </div>
-                            ` : ''}
-                            <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
-                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
-                                    <i class="fas fa-trash"></i> Delete
-                                </button>
-                            </div>
-                        </div>
-                    `).join('');
-                } else {
-                    reportsList.innerHTML = `
-                        <div class="empty-state">
-                            <i class="fas fa-file-alt"></i>
-                            <h3>No Reports Yet</h3>
-                            <p>Submit your first community report to get started</p>
-                            <button class="btn btn-primary" onclick="showScreen('user-dashboard')">
-                                <i class="fas fa-plus"></i>
-                                Create Report
-                            </button>
-                        </div>
-                    `;
-                }
-            } catch (error) {
-                console.error('Failed to load reports:', error);
-                showSnackbar('Failed to load reports', 'error');
-            }
-        }
-        
     </script>
 </body>
 </html>
