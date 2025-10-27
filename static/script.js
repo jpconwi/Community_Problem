@@ -388,7 +388,6 @@ function createDeleteConfirmationModal() {
 
 async function handleLogin(e) {
     e.preventDefault();
-    console.log('Login form submitted');
     
     const email = document.getElementById('login-email').value;
     const password = document.getElementById('login-password').value;
@@ -400,46 +399,33 @@ async function handleLogin(e) {
     
     try {
         showSnackbar('Logging in...');
-        console.log(`Attempting login for: ${email}`);
         
-        const response = await fetch('/api/login', {
+        const data = await apiCall('/api/login', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({ email, password })
         });
         
-        const data = await response.json();
-        console.log('Login response:', data);
-        
         if (data.success) {
             currentUser = data.user;
-            console.log(`Login successful! User role: ${currentUser.role}`);
-            
-            if (currentUser.role === 'admin') {
-                console.log('Redirecting to admin dashboard...');
-                showScreen('admin-dashboard');
-                await loadAdminDashboard();
-            } else {
-                console.log('Redirecting to user dashboard...');
-                showScreen('user-dashboard');
-                await loadUserDashboard();
-            }
             showSnackbar('Login successful!');
+            if (data.user.role === 'admin') {
+                showScreen('admin-dashboard');
+                loadAdminDashboard();
+            } else {
+                showScreen('user-dashboard');
+                loadUserDashboard();
+            }
         } else {
-            console.error('Login failed:', data.message);
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
-        console.error('Login error:', error);
-        showSnackbar('Login failed. Please try again.', 'error');
+        // Error already handled by apiCall, but you can add additional handling here if needed
+        console.log('Login process completed with error');
     }
 }
 
 async function handleRegister(e) {
     e.preventDefault();
-    console.log('Register form submitted');
     
     const username = document.getElementById('register-username').value;
     const email = document.getElementById('register-email').value;
@@ -459,11 +445,9 @@ async function handleRegister(e) {
     
     try {
         showSnackbar('Creating account...');
-        const response = await fetch('/api/register', {
+        
+        const data = await apiCall('/api/register', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
             body: JSON.stringify({
                 username,
                 email,
@@ -473,20 +457,15 @@ async function handleRegister(e) {
             })
         });
         
-        const data = await response.json();
-        console.log('Register response:', data);
-        
         if (data.success) {
             showSnackbar('Account created successfully!');
             showScreen('login-screen');
-            // Clear form
             document.getElementById('register-form').reset();
         } else {
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
-        console.error('Registration error:', error);
-        showSnackbar('Registration failed. Please try again.', 'error');
+        // Error already handled by apiCall
     }
 }
 
@@ -983,5 +962,6 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
