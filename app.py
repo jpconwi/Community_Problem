@@ -10,8 +10,8 @@ from flask_cors import CORS
 from PIL import Image
 import io
 import smtplib
-from email.mime.text import MimeText
-from email.mime.multipart import MimeMultipart
+from email.mime.text import MIMEText  # Fixed import name
+from email.mime.multipart import MIMEMultipart  # Fixed import name
 import ssl
 
 # Initialize Flask with explicit static folder paths
@@ -155,7 +155,7 @@ def send_resolution_email(user_email, username, report_details, resolution_notes
     """Send resolution email notification using Gmail SMTP"""
     try:
         # Create message
-        message = MimeMultipart("alternative")
+        message = MIMEMultipart("alternative")
         message["Subject"] = f"✅ Report Resolved: {report_details['problem_type']}"
         message["From"] = f"CommunityCare <{EMAIL_SENDER}>"
         message["To"] = user_email
@@ -240,8 +240,8 @@ This is an automated notification. Please do not reply to this email.
         """
         
         # Add both versions to the message
-        part1 = MimeText(text, "plain")
-        part2 = MimeText(html, "html")
+        part1 = MIMEText(text, "plain")
+        part2 = MIMEText(html, "html")
         message.attach(part1)
         message.attach(part2)
         
