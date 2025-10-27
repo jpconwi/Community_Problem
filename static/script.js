@@ -41,7 +41,7 @@ function setupResponsiveNavigation() {
         window.addEventListener('popstate', function() {
             const currentScreen = document.querySelector('.screen.active');
             if (currentScreen && currentScreen.id !== 'login-screen') {
-                showScreen('user-dashboard');
+                showScreen('login-screen');
             }
         });
     }
@@ -96,6 +96,175 @@ function showScreen(screenId) {
         window.scrollTo(0, 0);
     }
 }
+
+// Authentication functions
+async function checkAuthStatus() {
+    try {
+        console.log('Checking auth status...');
+        const response = await fetch('/api/user_info');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Auth response:', data);
+        
+        if (data.success) {
+            currentUser = data.user;
+            console.log('Current user role:', currentUser.role);
+            
+            // Only allow existing users to access dashboards
+            if (currentUser.role === 'admin' || currentUser.email === 'admin@community.com') {
+                console.log('Redirecting to ADMIN dashboard');
+                showScreen('admin-dashboard');
+                loadAdminDashboard();
+            } else {
+                console.log('Redirecting to USER dashboard');
+                showScreen('user-dashboard');
+                loadUserDashboard();
+            }
+        } else {
+            console.log('Not logged in, showing login screen');
+            showScreen('login-screen');
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        showScreen('login-screen');
+    }
+}
+
+async function handleLogin(e) {
+    e.preventDefault();
+    console.log('Login form submitted');
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (!email || !password) {
+        showSnackbar('Please fill in all fields', 'error');
+        return;
+    }
+    
+    try {
+        showSnackbar('Logging in...');
+        console.log(`Attempting login for: ${email}`);
+        
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        console.log('Login response:', data);
+        
+        if (data.success) {
+            currentUser = data.user;
+            console.log(`Login successful! User role: ${currentUser.role}`);
+            
+            // FIXED: Only allow existing users to access dashboards
+            const isAdmin = currentUser.role === 'admin' || currentUser.email === 'admin@community.com';
+            
+            if (isAdmin) {
+                console.log('✅ User is ADMIN - redirecting to admin dashboard');
+                showScreen('admin-dashboard');
+                await loadAdminDashboard();
+            } else {
+                console.log('✅ User is REGULAR USER - redirecting to user dashboard');
+                showScreen('user-dashboard');
+                await loadUserDashboard();
+            }
+            showSnackbar('Login successful!');
+        } else {
+            console.error('Login failed:', data.message);
+            
+            // FIXED: If login fails, suggest registration
+            if (data.message.includes('Invalid email') || data.message.includes('not found')) {
+                showSnackbar('Account not found. Please create an account first.', 'error');
+                // Optionally auto-switch to register screen
+                setTimeout(() => {
+                    showScreen('register-screen');
+                }, 2000);
+            } else {
+                showSnackbar(data.message, 'error');
+            }
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showSnackbar('Login failed. Please try again.', 'error');
+    }
+}
+
+async function handleRegister(e) {
+    e.preventDefault();
+    console.log('Register form submitted');
+    
+    const username = document.getElementById('register-username').value;
+    const email = document.getElementById('register-email').value;
+    const phone = document.getElementById('register-phone').value;
+    const password = document.getElementById('register-password').value;
+    const confirmPassword = document.getElementById('register-confirm-password').value;
+    
+    if (!username || !email || !password || !confirmPassword) {
+        showSnackbar('Please fill in all required fields', 'error');
+        return;
+    }
+    
+    if (password !== confirmPassword) {
+        showSnackbar('Passwords do not match', 'error');
+        return;
+    }
+    
+    try {
+        showSnackbar('Creating account...');
+        const response = await fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                username,
+                email,
+                phone,
+                password,
+                confirm_password: confirmPassword
+            })
+        });
+        
+        const data = await response.json();
+        console.log('Register response:', data);
+        
+        if (data.success) {
+            showSnackbar('Account created successfully! Please login.');
+            showScreen('login-screen');
+            // Clear form
+            document.getElementById('register-form').reset();
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Registration error:', error);
+        showSnackbar('Registration failed. Please try again.', 'error');
+    }
+}
+
+// Update the login screen HTML to make it clear users need to register first
+// Add this to your index.html in the login-screen section:
+/*
+<div class="auth-footer">
+    <p>Don't have an account? <a href="#" onclick="showScreen('register-screen')" style="font-weight: bold; text-decoration: underline;">Create Account First</a></p>
+    <div class="demo-account">
+        <p><strong>Demo Admin Account</strong></p>
+        <p>Email: admin@community.com</p>
+        <p>Password: admin123</p>
+    </div>
+</div>
+*/
+
+// ... rest of your existing functions remain the same (handleStatusChange, showResolutionModal, etc.)
 
 function handleStatusChange(selectElement, reportId) {
     if (selectElement.value === 'Resolved') {
@@ -233,43 +402,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-// Authentication functions
-async function checkAuthStatus() {
-    try {
-        console.log('Checking auth status...');
-        const response = await fetch('/api/user_info');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Auth response:', data);
-        
-        if (data.success) {
-            currentUser = data.user;
-            console.log('Current user role:', currentUser.role);
-            
-            // FIXED: Proper role checking with fallback for admin email
-            if (currentUser.role === 'admin' || currentUser.email === 'admin@community.com') {
-                console.log('Redirecting to ADMIN dashboard');
-                showScreen('admin-dashboard');
-                loadAdminDashboard();
-            } else {
-                console.log('Redirecting to USER dashboard');
-                showScreen('user-dashboard');
-                loadUserDashboard();
-            }
-        } else {
-            console.log('Not logged in, showing login screen');
-            showScreen('login-screen');
-        }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        showScreen('login-screen');
-    }
-}
-
 // Delete report functions
 async function deleteReport(reportId, isAdmin = false) {
     if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
@@ -355,114 +487,6 @@ function createDeleteConfirmationModal() {
     `;
     
     document.body.insertAdjacentHTML('beforeend', modalHTML);
-}
-
-async function handleLogin(e) {
-    e.preventDefault();
-    console.log('Login form submitted');
-    
-    const email = document.getElementById('login-email').value;
-    const password = document.getElementById('login-password').value;
-    
-    if (!email || !password) {
-        showSnackbar('Please fill in all fields', 'error');
-        return;
-    }
-    
-    try {
-        showSnackbar('Logging in...');
-        console.log(`Attempting login for: ${email}`);
-        
-        const response = await fetch('/api/login', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({ email, password })
-        });
-        
-        const data = await response.json();
-        console.log('Login response:', data);
-        
-        if (data.success) {
-            currentUser = data.user;
-            console.log(`Login successful! User role: ${currentUser.role}`);
-            console.log('Full user object:', currentUser);
-            
-            // FIXED: Enhanced role checking with fallback
-            const isAdmin = currentUser.role === 'admin' || currentUser.email === 'admin@community.com';
-            
-            if (isAdmin) {
-                console.log('✅ User is ADMIN - redirecting to admin dashboard');
-                showScreen('admin-dashboard');
-                await loadAdminDashboard();
-            } else {
-                console.log('✅ User is REGULAR USER - redirecting to user dashboard');
-                showScreen('user-dashboard');
-                await loadUserDashboard();
-            }
-            showSnackbar('Login successful!');
-        } else {
-            console.error('Login failed:', data.message);
-            showSnackbar(data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Login error:', error);
-        showSnackbar('Login failed. Please try again.', 'error');
-    }
-}
-
-async function handleRegister(e) {
-    e.preventDefault();
-    console.log('Register form submitted');
-    
-    const username = document.getElementById('register-username').value;
-    const email = document.getElementById('register-email').value;
-    const phone = document.getElementById('register-phone').value;
-    const password = document.getElementById('register-password').value;
-    const confirmPassword = document.getElementById('register-confirm-password').value;
-    
-    if (!username || !email || !password || !confirmPassword) {
-        showSnackbar('Please fill in all required fields', 'error');
-        return;
-    }
-    
-    if (password !== confirmPassword) {
-        showSnackbar('Passwords do not match', 'error');
-        return;
-    }
-    
-    try {
-        showSnackbar('Creating account...');
-        const response = await fetch('/api/register', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                username,
-                email,
-                phone,
-                password,
-                confirm_password: confirmPassword
-            })
-        });
-        
-        const data = await response.json();
-        console.log('Register response:', data);
-        
-        if (data.success) {
-            showSnackbar('Account created successfully!');
-            showScreen('login-screen');
-            // Clear form
-            document.getElementById('register-form').reset();
-        } else {
-            showSnackbar(data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Registration error:', error);
-        showSnackbar('Registration failed. Please try again.', 'error');
-    }
 }
 
 async function logout() {
