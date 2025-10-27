@@ -10,16 +10,8 @@
 </head>
 <body>
     <div id="app">
-        <!-- Loading Screen -->
-        <div id="loading-screen" class="screen active">
-            <div class="loading-container">
-                <div class="loading-spinner"></div>
-                <h2>Loading CommunityCare...</h2>
-            </div>
-        </div>
-
-        <!-- Login Screen (Now the default active screen) -->
-        <div id="login-screen" class="screen">
+        <!-- Login Screen (Default active screen) -->
+        <div id="login-screen" class="screen active">
             <div class="auth-container">
                 <div class="auth-card">
                     <div class="auth-header">
@@ -342,9 +334,6 @@
         </div>
     </div>
 
-    <script src="{{ url_for('static', filename='script.js') }}"></script>
-    
-    <!-- JavaScript functions -->
     <script>
         // Global variables
         let currentUser = null;
@@ -354,9 +343,6 @@
         // Initialize app immediately - show login screen
         document.addEventListener('DOMContentLoaded', function() {
             console.log('App initialized - showing login screen');
-            
-            // Hide loading screen
-            hideLoading();
             
             // Setup event listeners
             const loginForm = document.getElementById('login-form');
@@ -390,8 +376,10 @@
                 confirmResolutionBtn.addEventListener('click', submitResolution);
             }
             
-            // Check if user is already logged in
-            checkAuthStatus();
+            // Check if user is already logged in (with timeout)
+            setTimeout(() => {
+                checkAuthStatus();
+            }, 100);
         });
 
         // Basic screen switching
@@ -400,7 +388,10 @@
             document.querySelectorAll('.screen').forEach(screen => {
                 screen.classList.remove('active');
             });
-            document.getElementById(screenId).classList.add('active');
+            const targetScreen = document.getElementById(screenId);
+            if (targetScreen) {
+                targetScreen.classList.add('active');
+            }
         }
         
         // Simple password toggle
@@ -420,21 +411,25 @@
         // Authentication functions
         async function checkAuthStatus() {
             try {
+                console.log('Checking auth status...');
                 const response = await fetch('/api/user_info');
-                const data = await response.json();
                 
-                if (data.success && data.user) {
-                    currentUser = data.user;
-                    if (data.user.role === 'admin') {
-                        showScreen('admin-dashboard');
-                        loadAdminDashboard();
-                    } else {
-                        showScreen('user-dashboard');
-                        loadUserDashboard();
+                if (response.ok) {
+                    const data = await response.json();
+                    if (data.success && data.user) {
+                        currentUser = data.user;
+                        if (data.user.role === 'admin') {
+                            showScreen('admin-dashboard');
+                            loadAdminDashboard();
+                        } else {
+                            showScreen('user-dashboard');
+                            loadUserDashboard();
+                        }
+                        return;
                     }
-                } else {
-                    showScreen('login-screen');
                 }
+                // If not logged in or error, show login screen
+                showScreen('login-screen');
             } catch (error) {
                 console.error('Auth check failed:', error);
                 showScreen('login-screen');
@@ -453,6 +448,7 @@
             }
             
             try {
+                showSnackbar('Logging in...');
                 const response = await fetch('/api/login', {
                     method: 'POST',
                     headers: {
@@ -502,6 +498,7 @@
             }
             
             try {
+                showSnackbar('Creating account...');
                 const response = await fetch('/api/register', {
                     method: 'POST',
                     headers: {
@@ -799,20 +796,6 @@
                 console.error('Delete report error:', error);
                 showSnackbar('Failed to delete report', 'error');
             }
-        }
-
-        // Enhanced delete with modal confirmation
-        function showDeleteConfirmation(reportId, isAdmin = false) {
-            const modal = document.getElementById('delete-confirmation-modal');
-            const confirmBtn = document.getElementById('confirm-delete-btn');
-            
-            // Set up the confirmation button
-            confirmBtn.onclick = function() {
-                deleteReport(reportId, isAdmin);
-                modal.classList.add('hidden');
-            };
-            
-            modal.classList.remove('hidden');
         }
 
         // Resolution Modal Functions
@@ -1165,14 +1148,6 @@
             setTimeout(() => {
                 snackbar.classList.add('hidden');
             }, 3000);
-        }
-
-        function hideLoading() {
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.classList.remove('active');
-                console.log('Loading screen hidden');
-            }
         }
     </script>
 </body>
