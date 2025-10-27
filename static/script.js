@@ -2,21 +2,15 @@
 let currentUser = null;
 let stream = null;
 let photoData = null;
-let authCheckTimeout;
 
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, starting auth check...');
     
-    // Set a timeout to ensure loading screen doesn't stay forever
-    authCheckTimeout = setTimeout(() => {
-        console.log('Auth check timeout reached, forcing login screen');
-        hideLoading();
-        showScreen('login-screen');
-    }, 5000); // 5 second timeout
-    
     checkAuthStatus();
     setupEventListeners();
+    setupResponsiveNavigation();
+    setupOrientationHandler();
 });
 
 // Event listeners
@@ -40,14 +34,6 @@ function setupEventListeners() {
     }
 }
 
-function handleStatusChange(selectElement, reportId) {
-    if (selectElement.value === 'Resolved') {
-        showResolutionModal(reportId, selectElement);
-    }
-}
-
-// Add these responsive enhancements to your existing script.js
-
 // Responsive navigation
 function setupResponsiveNavigation() {
     // Handle back button for mobile
@@ -59,6 +45,32 @@ function setupResponsiveNavigation() {
             }
         });
     }
+    
+    // Prevent zoom on double-tap (iOS)
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', function(event) {
+        const now = (new Date()).getTime();
+        if (now - lastTouchEnd <= 300) {
+            event.preventDefault();
+        }
+        lastTouchEnd = now;
+    }, false);
+}
+
+// Handle orientation changes
+function setupOrientationHandler() {
+    window.addEventListener('orientationchange', function() {
+        // Add a small delay to ensure CSS has applied
+        setTimeout(() => {
+            // Force reflow for certain elements
+            const statsCard = document.querySelector('.stats-card');
+            if (statsCard) {
+                statsCard.style.display = 'none';
+                statsCard.offsetHeight; // Trigger reflow
+                statsCard.style.display = 'flex';
+            }
+        }, 100);
+    });
 }
 
 // Enhanced screen switching with history
@@ -85,97 +97,10 @@ function showScreen(screenId) {
     }
 }
 
-// Handle orientation changes
-function setupOrientationHandler() {
-    window.addEventListener('orientationchange', function() {
-        // Add a small delay to ensure CSS has applied
-        setTimeout(() => {
-            // Force reflow for certain elements
-            const statsCard = document.querySelector('.stats-card');
-            if (statsCard) {
-                statsCard.style.display = 'none';
-                statsCard.offsetHeight; // Trigger reflow
-                statsCard.style.display = 'flex';
-            }
-        }, 100);
-    });
-}
-
-// Enhanced photo handling for mobile
-function openCamera() {
-    const modal = document.getElementById('camera-modal');
-    const video = document.getElementById('camera-view');
-    
-    modal.classList.remove('hidden');
-    
-    // Mobile-specific camera constraints
-    const constraints = {
-        video: {
-            facingMode: 'environment', // Prefer rear camera on mobile
-            width: { ideal: 1280 },
-            height: { ideal: 720 }
-        }
-    };
-    
-    navigator.mediaDevices.getUserMedia(constraints)
-        .then(function(mediaStream) {
-            stream = mediaStream;
-            video.srcObject = stream;
-            
-            // Auto-play for mobile
-            video.play().catch(e => console.log('Video play failed:', e));
-        })
-        .catch(function(error) {
-            console.error('Camera error:', error);
-            // Fallback to any camera
-            navigator.mediaDevices.getUserMedia({ video: true })
-                .then(function(mediaStream) {
-                    stream = mediaStream;
-                    video.srcObject = stream;
-                    video.play().catch(e => console.log('Video play failed:', e));
-                })
-                .catch(function(fallbackError) {
-                    console.error('Fallback camera error:', fallbackError);
-                    showSnackbar('Failed to access camera', 'error');
-                    closeCamera();
-                });
-        });
-}
-
-// Initialize responsive features
-document.addEventListener('DOMContentLoaded', function() {
-    setupResponsiveNavigation();
-    setupOrientationHandler();
-    
-    // Prevent zoom on double-tap (iOS)
-    let lastTouchEnd = 0;
-    document.addEventListener('touchend', function(event) {
-        const now = (new Date()).getTime();
-        if (now - lastTouchEnd <= 300) {
-            event.preventDefault();
-        }
-        lastTouchEnd = now;
-    }, false);
-});
-
-// Enhanced error handling for mobile
-function showSnackbar(message, type = 'success') {
-    let snackbar = document.getElementById('snackbar');
-    if (!snackbar) {
-        snackbar = document.createElement('div');
-        snackbar.id = 'snackbar';
-        snackbar.className = 'snackbar hidden';
-        document.body.appendChild(snackbar);
+function handleStatusChange(selectElement, reportId) {
+    if (selectElement.value === 'Resolved') {
+        showResolutionModal(reportId, selectElement);
     }
-    
-    snackbar.textContent = message;
-    snackbar.className = `snackbar ${type}`;
-    snackbar.classList.remove('hidden');
-    
-    // Auto-hide after 3 seconds
-    setTimeout(() => {
-        snackbar.classList.add('hidden');
-    }, 3000);
 }
 
 function showResolutionModal(reportId, selectElement) {
@@ -308,7 +233,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-
 // Authentication functions
 async function checkAuthStatus() {
     try {
@@ -321,9 +245,6 @@ async function checkAuthStatus() {
         
         const data = await response.json();
         console.log('Auth response:', data);
-        
-        // Clear the timeout since we got a response
-        clearTimeout(authCheckTimeout);
         
         if (data.success) {
             currentUser = data.user;
@@ -340,11 +261,7 @@ async function checkAuthStatus() {
         }
     } catch (error) {
         console.error('Auth check failed:', error);
-        // Clear the timeout on error too
-        clearTimeout(authCheckTimeout);
         showScreen('login-screen');
-    } finally {
-        hideLoading();
     }
 }
 
@@ -652,15 +569,37 @@ function openCamera() {
     
     modal.classList.remove('hidden');
     
-    navigator.mediaDevices.getUserMedia({ video: true })
+    // Mobile-specific camera constraints
+    const constraints = {
+        video: {
+            facingMode: 'environment', // Prefer rear camera on mobile
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+        }
+    };
+    
+    navigator.mediaDevices.getUserMedia(constraints)
         .then(function(mediaStream) {
             stream = mediaStream;
             video.srcObject = stream;
+            
+            // Auto-play for mobile
+            video.play().catch(e => console.log('Video play failed:', e));
         })
         .catch(function(error) {
             console.error('Camera error:', error);
-            showSnackbar('Failed to access camera', 'error');
-            closeCamera();
+            // Fallback to any camera
+            navigator.mediaDevices.getUserMedia({ video: true })
+                .then(function(mediaStream) {
+                    stream = mediaStream;
+                    video.srcObject = stream;
+                    video.play().catch(e => console.log('Video play failed:', e));
+                })
+                .catch(function(fallbackError) {
+                    console.error('Fallback camera error:', fallbackError);
+                    showSnackbar('Failed to access camera', 'error');
+                    closeCamera();
+                });
         });
 }
 
@@ -728,24 +667,6 @@ function removePhoto() {
 }
 
 // Navigation functions
-function showScreen(screenId) {
-    console.log(`Switching to screen: ${screenId}`);
-    
-    // Hide all screens
-    document.querySelectorAll('.screen').forEach(screen => {
-        screen.classList.remove('active');
-    });
-    
-    // Show target screen
-    const targetScreen = document.getElementById(screenId);
-    if (targetScreen) {
-        targetScreen.classList.add('active');
-        console.log(`Screen ${screenId} is now active`);
-    } else {
-        console.error(`Screen ${screenId} not found!`);
-    }
-}
-
 function showMyReports() {
     showScreen('my-reports-screen');
     loadMyReports();
@@ -811,9 +732,14 @@ async function loadMyReports() {
             `).join('');
         } else {
             reportsList.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-                    <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                    <p>No reports yet</p>
+                <div class="empty-state">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>No Reports Yet</h3>
+                    <p>Submit your first community report to get started</p>
+                    <button class="btn btn-primary" onclick="showScreen('user-dashboard')">
+                        <i class="fas fa-plus"></i>
+                        Create Report
+                    </button>
                 </div>
             `;
         }
@@ -844,9 +770,10 @@ async function loadNotifications() {
             `).join('');
         } else {
             notificationsList.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-                    <i class="fas fa-bell-slash" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                    <p>No notifications</p>
+                <div class="empty-state">
+                    <i class="fas fa-bell-slash"></i>
+                    <h3>No Notifications</h3>
+                    <p>You're all caught up!</p>
                 </div>
             `;
         }
@@ -974,41 +901,16 @@ async function loadAllReports() {
             `).join('');
         } else {
             reportsList.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #64748b;">
-                    <p>No reports found</p>
+                <div class="empty-state">
+                    <i class="fas fa-file-alt"></i>
+                    <h3>No Reports Found</h3>
+                    <p>No community reports have been submitted yet</p>
                 </div>
             `;
         }
     } catch (error) {
         console.error('Failed to load all reports:', error);
         showSnackbar('Failed to load reports', 'error');
-    }
-}
-
-async function updateStatus(reportId, newStatus) {
-    try {
-        const response = await fetch('/api/update_report_status', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                report_id: reportId,
-                status: newStatus
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showSnackbar('Status updated successfully!');
-            await loadAdminStats();
-            await loadAllReports();
-        } else {
-            showSnackbar(data.message, 'error');
-        }
-    } catch (error) {
-        showSnackbar('Failed to update status', 'error');
     }
 }
 
@@ -1032,14 +934,6 @@ function showSnackbar(message, type = 'success') {
     }, 3000);
 }
 
-function hideLoading() {
-    const loadingScreen = document.getElementById('loading-screen');
-    if (loadingScreen) {
-        loadingScreen.classList.remove('active');
-        console.log('Loading screen hidden');
-    }
-}
-
 function togglePassword(inputId) {
     const input = document.getElementById(inputId);
     const icon = input.nextElementSibling.querySelector('i');
@@ -1053,16 +947,19 @@ function togglePassword(inputId) {
     }
 }
 
+// Utility functions for enhanced UI
+function refreshMyReports() {
+    loadMyReports();
+    showSnackbar('Reports refreshed');
+}
+
+function markAllAsRead() {
+    showSnackbar('All notifications marked as read');
+    loadNotifications();
+}
+
 // Temporary fix function
 function forceShowLogin() {
     console.log('Manual override: forcing login screen');
-    hideLoading();
     showScreen('login-screen');
 }
-
-
-
-
-
-
-
