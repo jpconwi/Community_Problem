@@ -9,7 +9,9 @@ services:
     startCommand: gunicorn --bind 0.0.0.0:$PORT app:app
     envVars:
       - key: DATABASE_URL
-        value: postgresql://communitycare_user:3YInYGOvAJr8QvR0UxpMFP2aTapzHaHs@dpg-d3u5itn5r7bs73f91rrg-a/communitycare
+        fromDatabase:
+          name: communitycare
+          property: connectionString
       - key: SECRET_KEY
         generateValue: true
       - key: PYTHON_VERSION
