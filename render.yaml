@@ -14,3 +14,5 @@ services:
         generateValue: true
       - key: PYTHON_VERSION
         value: 3.11.4
+      - key: GMAIL_APP_PASSWORD
+        value: rzbmwuyjxureticw
