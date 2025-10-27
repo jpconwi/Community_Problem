@@ -4,6 +4,43 @@ let stream = null;
 let photoData = null;
 let authCheckTimeout;
 
+// Enhanced API Utility Function
+async function apiCall(endpoint, options = {}, timeout = 8000) {
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), timeout);
+    
+    try {
+        const response = await fetch(endpoint, {
+            signal: controller.signal,
+            headers: {
+                'Content-Type': 'application/json',
+                ...options.headers,
+            },
+            ...options
+        });
+        
+        clearTimeout(timeoutId);
+        
+        if (!response.ok) {
+            const errorText = await response.text();
+            throw new Error(`HTTP ${response.status}: ${errorText || response.statusText}`);
+        }
+        
+        return await response.json();
+    } catch (error) {
+        clearTimeout(timeoutId);
+        console.error('API call failed:', error);
+        
+        if (error.name === 'AbortError') {
+            showSnackbar('Request timeout. Please try again.', 'error');
+        } else {
+            showSnackbar('Network error. Please try again.', 'error');
+        }
+        
+        throw error;
+    }
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, starting auth check...');
@@ -946,4 +983,5 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
