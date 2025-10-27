@@ -10,14 +10,35 @@
 </head>
 <body>
     <div id="app">
-        <!-- Login Screen (Now the default active screen) -->
-        <div id="login-screen" class="screen active">
+        <!-- Loading Screen -->
+        <div id="loading-screen" class="screen active">
+            <div class="loading-container">
+                <div class="loading-logo">
+                    <div class="logo-spinner">
+                        <i class="fas fa-city"></i>
+                    </div>
+                    <h2>CommunityCare</h2>
+                    <p>Loading your dashboard...</p>
+                </div>
+                <div class="loading-spinner"></div>
+            </div>
+        </div>
+
+        <!-- Login Screen -->
+        <div id="login-screen" class="screen">
             <div class="auth-container">
                 <div class="auth-card">
                     <div class="auth-header">
-                        <i class="fas fa-city"></i>
-                        <h1>CommunityCare</h1>
-                        <p>Report community issues with ease</p>
+                        <div class="logo-container">
+                            <div class="logo-icon">
+                                <i class="fas fa-city"></i>
+                            </div>
+                            <div class="logo-text">
+                                <h1>CommunityCare</h1>
+                                <p>Suprego Del Sur 2007</p>
+                            </div>
+                        </div>
+                        <p class="tagline">Report community issues with ease</p>
                     </div>
                     
                     <form id="login-form">
@@ -60,7 +81,15 @@
                         <button class="back-btn" onclick="showScreen('login-screen')">
                             <i class="fas fa-arrow-left"></i>
                         </button>
-                        <h1>Create Account</h1>
+                        <div class="logo-container">
+                            <div class="logo-icon">
+                                <i class="fas fa-user-plus"></i>
+                            </div>
+                            <div class="logo-text">
+                                <h1>Create Account</h1>
+                                <p>Join CommunityCare</p>
+                            </div>
+                        </div>
                     </div>
                     
                     <form id="register-form">
@@ -120,20 +149,27 @@
 
                 <div class="stats-card">
                     <div class="stat-item">
-                        <i class="fas fa-file-alt" style="color: #2563eb;"></i>
+                        <div class="stat-icon">
+                            <i class="fas fa-file-alt"></i>
+                        </div>
                         <span class="stat-label">My Reports</span>
                         <span class="stat-value" id="user-reports-count">0</span>
                     </div>
                     <div class="stat-divider"></div>
                     <div class="stat-item">
-                        <i class="fas fa-clock" style="color: #f59e0b;"></i>
+                        <div class="stat-icon">
+                            <i class="fas fa-clock"></i>
+                        </div>
                         <span class="stat-label">Pending</span>
                         <span class="stat-value" id="user-pending-count">0</span>
                     </div>
                 </div>
 
                 <div class="card">
-                    <h3>Submit New Report</h3>
+                    <div class="card-header">
+                        <h3>Submit New Report</h3>
+                        <i class="fas fa-plus-circle"></i>
+                    </div>
                     <form id="report-form">
                         <div class="form-group">
                             <i class="fas fa-tag"></i>
@@ -216,6 +252,11 @@
                     <i class="fas fa-arrow-left"></i>
                 </button>
                 <h2>My Reports</h2>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="refreshMyReports()">
+                        <i class="fas fa-sync-alt"></i>
+                    </button>
+                </div>
             </div>
             <div class="screen-content">
                 <div id="reports-list" class="reports-list">
@@ -231,6 +272,11 @@
                     <i class="fas fa-arrow-left"></i>
                 </button>
                 <h2>Notifications</h2>
+                <div class="header-actions">
+                    <button class="icon-btn" onclick="markAllAsRead()">
+                        <i class="fas fa-check-double"></i>
+                    </button>
+                </div>
             </div>
             <div class="screen-content">
                 <div id="notifications-list" class="notifications-list">
@@ -281,6 +327,30 @@
                     </button>
                     <button type="button" class="btn btn-danger" id="confirm-delete-btn">
                         Delete Report
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Resolution Modal -->
+        <div id="resolution-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Resolution Details</h3>
+                    <button class="close-btn" onclick="cancelResolution()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Please provide details on how this issue was resolved:</p>
+                    <div class="form-group">
+                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="cancelResolution()">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
+                        Submit Resolution
                     </button>
                 </div>
             </div>
@@ -414,148 +484,95 @@
             }, 3000);
         }
 
-        // Load user reports with delete buttons
-        // Load user reports with delete buttons
-async function loadMyReports() {
-    try {
-        const response = await fetch('/api/user_reports');
-        const data = await response.json();
-        
-        const reportsList = document.getElementById('reports-list');
-        
-        if (data.success && data.reports.length > 0) {
-            reportsList.innerHTML = data.reports.map(report => `
-                <div class="report-card">
-                    <div class="report-header">
-                        <span class="report-type">${report.problem_type}</span>
-                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                            ${report.status}
-                        </span>
-                    </div>
-                    <div class="report-location">
-                        <i class="fas fa-location-dot"></i> ${report.location}
-                    </div>
-                    <div class="report-issue">${report.issue}</div>
-                    <div class="report-footer">
-                        <span>${report.date}</span>
-                        <span>${report.priority}</span>
-                    </div>
-                    ${report.photo_data ? `
-                        <div class="report-photo">
-                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                        </div>
-                    ` : ''}
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
-                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
-                                <strong style="color: #047857; font-size: 14px;">Admin Resolution:</strong>
-                            </div>
-                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
-                                ${report.resolution_notes}
-                            </p>
-                        </div>
-                    ` : ''}
-                    ${report.status === 'Resolved' && !report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                            <div style="display: flex; align-items: center;">
-                                <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
-                                <strong style="color: #d97706; font-size: 14px;">Status: Resolved</strong>
-                            </div>
-                            <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
-                                Your report has been marked as resolved. No additional details were provided by the admin.
-                            </p>
-                        </div>
-                    ` : ''}
-                    <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
-                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        } else {
-            reportsList.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-                    <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                    <p>No reports yet</p>
-                </div>
-            `;
+        // Utility functions
+        function refreshMyReports() {
+            loadMyReports();
+            showSnackbar('Reports refreshed');
         }
-    } catch (error) {
-        console.error('Failed to load reports:', error);
-        showSnackbar('Failed to load reports', 'error');
-    }
-}
 
-        // Load admin reports with delete buttons
-        // Load admin reports with delete buttons
-async function loadAllReports() {
-    try {
-        const response = await fetch('/api/all_reports');
-        const data = await response.json();
-        
-        const reportsList = document.getElementById('admin-reports-list');
-        
-        if (data.success && data.reports.length > 0) {
-            reportsList.innerHTML = data.reports.map(report => `
-                <div class="report-card">
-                    <div class="report-header">
-                        <span class="report-type">${report.problem_type}</span>
-                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                            ${report.status}
-                        </span>
-                    </div>
-                    <div class="report-location">
-                        <i class="fas fa-location-dot"></i> ${report.location}
-                    </div>
-                    <div class="report-issue">${report.issue}</div>
-                    <div class="report-footer">
-                        <span>By: ${report.username}</span>
-                        <span>${report.date}</span>
-                    </div>
-                    ${report.photo_data ? `
-                        <div class="report-photo">
-                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                        </div>
-                    ` : ''}
-                    <div class="admin-actions">
-                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
-                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-                        </select>
-                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
-                            Update
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 10px; background: #f0f9ff; border-radius: 6px; border-left: 4px solid #2563eb;">
-                            <strong>Resolution Details:</strong>
-                            <p style="margin: 5px 0 0 0; color: #475569;">${report.resolution_notes}</p>
-                        </div>
-                    ` : ''}
-                </div>
-            `).join('');
-        } else {
-            reportsList.innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #64748b;">
-                    <p>No reports found</p>
-                </div>
-            `;
+        function markAllAsRead() {
+            showSnackbar('All notifications marked as read');
+            loadNotifications();
         }
-    } catch (error) {
-        console.error('Failed to load all reports:', error);
-        showSnackbar('Failed to load reports', 'error');
-    }
-}
+
+        // Load user reports with delete buttons
+        async function loadMyReports() {
+            try {
+                const response = await fetch('/api/user_reports');
+                const data = await response.json();
+                
+                const reportsList = document.getElementById('reports-list');
+                
+                if (data.success && data.reports.length > 0) {
+                    reportsList.innerHTML = data.reports.map(report => `
+                        <div class="report-card">
+                            <div class="report-header">
+                                <span class="report-type">${report.problem_type}</span>
+                                <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                    ${report.status}
+                                </span>
+                            </div>
+                            <div class="report-location">
+                                <i class="fas fa-location-dot"></i> ${report.location}
+                            </div>
+                            <div class="report-issue">${report.issue}</div>
+                            <div class="report-footer">
+                                <span>${report.date}</span>
+                                <span class="priority-${report.priority.toLowerCase()}">${report.priority}</span>
+                            </div>
+                            ${report.photo_data ? `
+                                <div class="report-photo">
+                                    <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                                </div>
+                            ` : ''}
+                            ${report.status === 'Resolved' && report.resolution_notes ? `
+                                <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
+                                    <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                        <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
+                                        <strong style="color: #047857; font-size: 14px;">Admin Resolution:</strong>
+                                    </div>
+                                    <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
+                                        ${report.resolution_notes}
+                                    </p>
+                                </div>
+                            ` : ''}
+                            ${report.status === 'Resolved' && !report.resolution_notes ? `
+                                <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
+                                    <div style="display: flex; align-items: center;">
+                                        <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
+                                        <strong style="color: #d97706; font-size: 14px;">Status: Resolved</strong>
+                                    </div>
+                                    <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
+                                        Your report has been marked as resolved. No additional details were provided by the admin.
+                                    </p>
+                                </div>
+                            ` : ''}
+                            <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
+                                <button class="btn btn-danger" onclick="deleteReport(${report.id}, false)" style="padding: 8px 12px; font-size: 12px;">
+                                    <i class="fas fa-trash"></i> Delete
+                                </button>
+                            </div>
+                        </div>
+                    `).join('');
+                } else {
+                    reportsList.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-file-alt"></i>
+                            <h3>No Reports Yet</h3>
+                            <p>Submit your first community report to get started</p>
+                            <button class="btn btn-primary" onclick="showScreen('user-dashboard')">
+                                <i class="fas fa-plus"></i>
+                                Create Report
+                            </button>
+                        </div>
+                    `;
+                }
+            } catch (error) {
+                console.error('Failed to load reports:', error);
+                showSnackbar('Failed to load reports', 'error');
+            }
+        }
         
     </script>
 </body>
 </html>
-
-
-
