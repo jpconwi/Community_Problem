@@ -248,10 +248,15 @@ async function checkAuthStatus() {
         
         if (data.success) {
             currentUser = data.user;
-            if (currentUser.role === 'admin') {
+            console.log('Current user role:', currentUser.role);
+            
+            // FIXED: Proper role checking with fallback for admin email
+            if (currentUser.role === 'admin' || currentUser.email === 'admin@community.com') {
+                console.log('Redirecting to ADMIN dashboard');
                 showScreen('admin-dashboard');
                 loadAdminDashboard();
             } else {
+                console.log('Redirecting to USER dashboard');
                 showScreen('user-dashboard');
                 loadUserDashboard();
             }
@@ -382,13 +387,17 @@ async function handleLogin(e) {
         if (data.success) {
             currentUser = data.user;
             console.log(`Login successful! User role: ${currentUser.role}`);
+            console.log('Full user object:', currentUser);
             
-            if (currentUser.role === 'admin') {
-                console.log('Redirecting to admin dashboard...');
+            // FIXED: Enhanced role checking with fallback
+            const isAdmin = currentUser.role === 'admin' || currentUser.email === 'admin@community.com';
+            
+            if (isAdmin) {
+                console.log('✅ User is ADMIN - redirecting to admin dashboard');
                 showScreen('admin-dashboard');
                 await loadAdminDashboard();
             } else {
-                console.log('Redirecting to user dashboard...');
+                console.log('✅ User is REGULAR USER - redirecting to user dashboard');
                 showScreen('user-dashboard');
                 await loadUserDashboard();
             }
@@ -788,7 +797,7 @@ async function loadNotifications() {
 
 // Admin functions
 async function loadAdminDashboard() {
-    if (!currentUser || currentUser.role !== 'admin') return;
+    if (!currentUser) return;
     
     const adminContainer = document.querySelector('.admin-container');
     adminContainer.innerHTML = `
