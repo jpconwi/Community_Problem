@@ -9,7 +9,10 @@ import re
 from flask_cors import CORS
 from PIL import Image
 import io
-import requests  # Add this import for Formspree
+import smtplib
+from email.mime.text import MimeText
+from email.mime.multipart import MimeMultipart
+import ssl
 
 # Initialize Flask with explicit static folder paths
 app = Flask(__name__, 
@@ -59,7 +62,7 @@ class Report(db.Model):
     photo_data = db.Column(db.Text)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    resolution_notes = db.Column(db.Text)  # Add this line for resolution notes
+    resolution_notes = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Notification(db.Model):
@@ -142,33 +145,37 @@ with app.app_context():
             import time
             time.sleep(2)
 
-# Email Notification Function
-def send_resolution_email(user_email, report_details, resolution_notes, admin_name):
-    """Send resolution email notification using Formspree"""
+# Email Configuration
+SMTP_SERVER = "smtp.gmail.com"
+SMTP_PORT = 587
+EMAIL_SENDER = "kamikazoozin@gmail.com"
+EMAIL_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD', 'rzbmwuyjxureticw')
+
+def send_resolution_email(user_email, username, report_details, resolution_notes, admin_name):
+    """Send resolution email notification using Gmail SMTP"""
     try:
-        # Your Formspree form ID
-        formspree_form_id = "mvgvgpvn"
+        # Create message
+        message = MimeMultipart("alternative")
+        message["Subject"] = f"✅ Report Resolved: {report_details['problem_type']}"
+        message["From"] = f"CommunityCare <{EMAIL_SENDER}>"
+        message["To"] = user_email
         
-        formspree_url = f"https://formspree.io/f/{formspree_form_id}"
-        
-        # Email content
-        email_subject = f"✅ Report Resolved: {report_details['problem_type']}"
-        
-        email_body = f"""
-Dear Community Member,
+        # Plain text version
+        text = f"""
+Dear {username},
 
 Great news! Your community report has been resolved by our admin team.
 
-📋 **Report Details:**
+📋 REPORT DETAILS:
 • Problem Type: {report_details['problem_type']}
 • Location: {report_details['location']}
 • Issue: {report_details['issue']}
 • Status: ✅ Resolved
 
-📝 **Resolution Details from Admin:**
+📝 RESOLUTION DETAILS:
 {resolution_notes}
 
-👨‍💼 **Resolved by:** {admin_name}
+👨‍💼 Resolved by: {admin_name}
 
 Thank you for helping us improve our community! Your reports make a difference.
 
@@ -178,37 +185,79 @@ CommunityCare Team
 ---
 This is an automated notification. Please do not reply to this email.
         """.strip()
-        
-        # Prepare form data for Formspree
-        form_data = {
-            "name": "CommunityCare Admin",
-            "email": user_email,  # Recipient email
-            "subject": email_subject,
-            "message": email_body,
-            "_replyto": "noreply@communitycare.com",
-        }
-        
-        # Send to Formspree
-        response = requests.post(
-            formspree_url,
-            data=form_data,
-            headers={
-                'Content-Type': 'application/x-www-form-urlencoded',
-                'Accept': 'application/json'
-            }
-        )
-        
-        print(f"📧 Email attempt to {user_email}. Status: {response.status_code}")
-        
-        if response.status_code == 200:
-            print(f"✅ Email sent successfully to {user_email}")
-            return True
-        else:
-            print(f"❌ Email failed to {user_email}. Response: {response.text}")
-            return False
+
+        # HTML version
+        html = f"""
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body {{ font-family: Arial, sans-serif; line-height: 1.6; color: #333; margin: 0; padding: 20px; }}
+        .container {{ max-width: 600px; margin: 0 auto; background: #f8fafc; border-radius: 10px; overflow: hidden; }}
+        .header {{ background: #2563eb; color: white; padding: 25px; text-align: center; }}
+        .content {{ padding: 25px; }}
+        .report-details {{ background: white; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #2563eb; }}
+        .resolution {{ background: #dcfce7; padding: 20px; border-radius: 8px; margin: 20px 0; border-left: 4px solid #16a34a; }}
+        .footer {{ text-align: center; margin-top: 25px; padding-top: 20px; border-top: 1px solid #e2e8f0; color: #64748b; font-size: 12px; }}
+        .status-badge {{ background: #16a34a; color: white; padding: 5px 10px; border-radius: 15px; font-size: 12px; font-weight: bold; }}
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🏘️ CommunityCare</h1>
+            <h2>Report Successfully Resolved</h2>
+        </div>
+        <div class="content">
+            <p>Hello <strong>{username}</strong>,</p>
+            <p>Great news! Your community report has been resolved by our admin team.</p>
             
+            <div class="report-details">
+                <h3>📋 Report Details</h3>
+                <p><strong>Problem Type:</strong> {report_details['problem_type']}</p>
+                <p><strong>Location:</strong> {report_details['location']}</p>
+                <p><strong>Issue:</strong> {report_details['issue']}</p>
+                <p><strong>Status:</strong> <span class="status-badge">RESOLVED</span></p>
+            </div>
+            
+            <div class="resolution">
+                <h3>📝 Resolution Details</h3>
+                <p>{resolution_notes}</p>
+            </div>
+            
+            <p><strong>👨‍💼 Resolved by:</strong> {admin_name}</p>
+            
+            <p>Thank you for helping us keep our community clean and safe! Your active participation makes a real difference.</p>
+            
+            <div class="footer">
+                <p>This is an automated message from CommunityCare System</p>
+                <p>Please do not reply to this email</p>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
+        """
+        
+        # Add both versions to the message
+        part1 = MimeText(text, "plain")
+        part2 = MimeText(html, "html")
+        message.attach(part1)
+        message.attach(part2)
+        
+        # Create secure connection with Gmail SMTP server
+        context = ssl.create_default_context()
+        
+        with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
+            server.starttls(context=context)  # Secure the connection
+            server.login(EMAIL_SENDER, EMAIL_PASSWORD)
+            server.sendmail(EMAIL_SENDER, user_email, message.as_string())
+        
+        print(f"✅ Email sent successfully to {user_email}")
+        return True
+        
     except Exception as e:
-        print(f"💥 Email sending error: {e}")
+        print(f"❌ Failed to send email to {user_email}: {str(e)}")
         return False
 
 # Routes
@@ -259,6 +308,7 @@ def update_report_with_resolution():
                 
                 email_sent = send_resolution_email(
                     user.email,
+                    user.username,
                     report_details,
                     data.get('resolution_notes', ''),
                     admin_user.username if admin_user else 'Admin'
@@ -279,9 +329,13 @@ def update_report_with_resolution():
                 else:
                     print(f"❌ Failed to send email to {user.email}")
             
+            message = 'Status updated successfully!'
+            if email_sent:
+                message += ' Email notification sent to user.'
+            
             return jsonify({
                 'success': True, 
-                'message': 'Status updated successfully!' + (' Email sent to user.' if email_sent else ''),
+                'message': message,
                 'email_sent': email_sent
             })
         else:
@@ -538,7 +592,7 @@ def get_all_reports():
             'status': report.status,
             'priority': report.priority,
             'date': report.date,
-            'photo_data': report.photo_data,  # Make sure this is included
+            'photo_data': report.photo_data,
             'username': user.username if user else 'Unknown'
         }
         
