@@ -172,6 +172,11 @@ def send_resolution_email(user_email, username, report_details, resolution_notes
             print("❌ Missing email parameters")
             return False
             
+        # Validate Gmail credentials
+        if not EMAIL_SENDER or not EMAIL_PASSWORD:
+            print("❌ Gmail credentials not configured")
+            return False
+            
         # Create message
         message = MIMEMultipart("alternative")
         message["Subject"] = f"✅ Report Resolved: {report_details.get('problem_type', 'Unknown')}"
@@ -267,13 +272,21 @@ This is an automated notification. Please do not reply to this email.
         context = ssl.create_default_context()
         
         with smtplib.SMTP(SMTP_SERVER, SMTP_PORT) as server:
-            server.starttls(context=context)  # Secure the connection
+            server.ehlo()
+            server.starttls(context=context)
+            server.ehlo()
             server.login(EMAIL_SENDER, EMAIL_PASSWORD)
             server.sendmail(EMAIL_SENDER, user_email, message.as_string())
         
         print(f"✅ Email sent successfully to {user_email}")
         return True
         
+    except smtplib.SMTPAuthenticationError:
+        print(f"❌ Gmail authentication failed. Check your app password.")
+        return False
+    except smtplib.SMTPException as e:
+        print(f"❌ SMTP error sending email to {user_email}: {str(e)}")
+        return False
     except Exception as e:
         print(f"❌ Failed to send email to {user_email}: {str(e)}")
         return False
@@ -311,12 +324,13 @@ def update_report_with_resolution():
             # Send email notification if:
             # 1. User has email
             # 2. Status changed to Resolved
-            # 3. Resolution notes are provided
+            # 3. Resolution notes are provided (but don't require them)
             email_sent = False
+            email_error = None
+            
             if (user and user.email and 
                 report.status == 'Resolved' and 
-                old_status != 'Resolved' and 
-                data.get('resolution_notes')):
+                old_status != 'Resolved'):
                 
                 report_details = {
                     'problem_type': report.problem_type,
@@ -324,11 +338,14 @@ def update_report_with_resolution():
                     'issue': report.issue
                 }
                 
+                # Use resolution notes if provided, otherwise use default message
+                resolution_notes = data.get('resolution_notes', 'The issue has been resolved by our team.')
+                
                 email_sent = send_resolution_email(
                     user.email,
                     user.username,
                     report_details,
-                    data.get('resolution_notes', ''),
+                    resolution_notes,
                     admin_user.username if admin_user else 'Admin'
                 )
                 
@@ -346,10 +363,13 @@ def update_report_with_resolution():
                     db.session.commit()
                 else:
                     print(f"❌ Failed to send email to {user.email}")
+                    email_error = "Failed to send email notification"
             
             message = 'Status updated successfully!'
             if email_sent:
                 message += ' Email notification sent to user.'
+            elif email_error:
+                message += f' {email_error}.'
             
             return jsonify({
                 'success': True, 
@@ -362,6 +382,40 @@ def update_report_with_resolution():
         db.session.rollback()
         print(f"Error updating report: {e}")
         return jsonify({'success': False, 'message': 'Failed to update status'})
+
+@app.route('/api/debug/test_email')
+def debug_test_email():
+    """Debug endpoint to test email functionality"""
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        test_email = session.get('email')
+        if not test_email:
+            return jsonify({'success': False, 'message': 'No email found in session'})
+        
+        test_details = {
+            'problem_type': 'Test Issue',
+            'location': 'Test Location',
+            'issue': 'This is a test issue to verify email functionality'
+        }
+        
+        success = send_resolution_email(
+            test_email,
+            session.get('username', 'Test User'),
+            test_details,
+            'This is a test resolution message to verify email functionality is working correctly.',
+            'Test Admin'
+        )
+        
+        return jsonify({
+            'success': True,
+            'email_sent': success,
+            'message': f'Test email {"sent successfully" if success else "failed to send"} to {test_email}'
+        })
+        
+    except Exception as e:
+        return jsonify({'success': False, 'message': f'Test failed: {str(e)}'})
 
 @app.route('/api/delete_report', methods=['POST'])
 def delete_report():
@@ -791,4 +845,3 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-
