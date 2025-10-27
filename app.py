@@ -10,8 +10,8 @@ from flask_cors import CORS
 from PIL import Image
 import io
 import smtplib
-from email.mime.text import MIMEText  # Fixed import name
-from email.mime.multipart import MIMEMultipart  # Fixed import name
+from email.mime.text import MIMEText  # Fixed import
+from email.mime.multipart import MIMEMultipart  # Fixed import
 import ssl
 
 # Initialize Flask with explicit static folder paths
@@ -89,7 +89,7 @@ class AdminLog(db.Model):
 
 # Initialize database
 with app.app_context():
-    max_retries = 3
+    max_retries = 5
     for attempt in range(max_retries):
         try:
             print(f"🔄 Database initialization attempt {attempt + 1}/{max_retries}")
@@ -102,7 +102,7 @@ with app.app_context():
             db.create_all()
             print("✅ Tables created/verified")
             
-            # Check if resolution_notes column exists using inspector
+            # Add resolution_notes column if it doesn't exist
             try:
                 inspector = db.inspect(db.engine)
                 columns = [col['name'] for col in inspector.get_columns('reports')]
@@ -114,7 +114,15 @@ with app.app_context():
                 else:
                     print("✅ resolution_notes column already exists")
             except Exception as e:
-                print(f"⚠️  Column check failed: {e}")
+                print(f"⚠️ Column check failed: {e}")
+                # Try alternative method
+                try:
+                    db.session.execute(text('SELECT resolution_notes FROM reports LIMIT 1'))
+                    print("✅ resolution_notes column exists (alternative check)")
+                except:
+                    print("🔄 Adding resolution_notes column (alternative method)...")
+                    db.session.execute(text('ALTER TABLE reports ADD COLUMN resolution_notes TEXT'))
+                    db.session.commit()
             
             # Create admin user if not exists
             admin = User.query.filter_by(email='admin@community.com').first()
@@ -130,6 +138,11 @@ with app.app_context():
                 db.session.commit()
                 print("✅ Admin user created successfully!")
             else:
+                # Ensure admin has correct role
+                if admin.role != 'admin':
+                    admin.role = 'admin'
+                    db.session.commit()
+                    print("✅ Admin role updated")
                 print(f"✅ Admin user already exists: {admin.username} (role: {admin.role})")
             
             print("✅ Database initialized successfully!")
@@ -143,7 +156,7 @@ with app.app_context():
                 print("💥 All database initialization attempts failed")
                 print("🔄 Starting application anyway...")
             import time
-            time.sleep(2)
+            time.sleep(2 * (attempt + 1))  # Exponential backoff
 
 # Email Configuration
 SMTP_SERVER = "smtp.gmail.com"
@@ -154,9 +167,14 @@ EMAIL_PASSWORD = os.environ.get('GMAIL_APP_PASSWORD', 'rzbmwuyjxureticw')
 def send_resolution_email(user_email, username, report_details, resolution_notes, admin_name):
     """Send resolution email notification using Gmail SMTP"""
     try:
+        # Validate email parameters
+        if not user_email or not username:
+            print("❌ Missing email parameters")
+            return False
+            
         # Create message
         message = MIMEMultipart("alternative")
-        message["Subject"] = f"✅ Report Resolved: {report_details['problem_type']}"
+        message["Subject"] = f"✅ Report Resolved: {report_details.get('problem_type', 'Unknown')}"
         message["From"] = f"CommunityCare <{EMAIL_SENDER}>"
         message["To"] = user_email
         
@@ -773,3 +791,4 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
