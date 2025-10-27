@@ -287,53 +287,52 @@
         </div>
 
         <!-- Resolution Modal for Email Notifications -->
-        <div id="resolution-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3><i class="fas fa-envelope"></i> Resolution Details</h3>
-                    <button class="close-btn" onclick="cancelResolution()">&times;</button>
+       <!-- Resolution Modal for Email Notifications -->
+<div id="resolution-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3><i class="fas fa-envelope"></i> Resolution Details</h3>
+            <button class="close-btn" onclick="cancelResolution()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div style="background: #ecfdf5; padding: 12px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 15px;">
+                <div style="display: flex; align-items: center;">
+                    <i class="fas fa-paper-plane" style="color: #10b981; margin-right: 8px;"></i>
+                    <strong style="color: #047857;">Email Notification</strong>
                 </div>
-                <div class="modal-body">
-                    <div style="background: #ecfdf5; padding: 12px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 15px;">
-                        <div style="display: flex; align-items: center;">
-                            <i class="fas fa-paper-plane" style="color: #10b981; margin-right: 8px;"></i>
-                            <strong style="color: #047857;">Email Notification</strong>
-                        </div>
-                        <p style="margin: 8px 0 0 0; color: #065f46; font-size: 14px;">
-                            An email will be automatically sent to the user with these resolution details.
-                        </p>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
-                            Resolution Details *
-                        </label>
-                        <textarea 
-                            id="resolution-notes" 
-                            placeholder="Describe how the issue was resolved, what actions were taken, materials used, timeline, etc. This will be sent to the user via email..." 
-                            rows="5" 
-                            style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"
-                            required
-                        ></textarea>
-                        <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 5px;">
-                            Provide clear details so the user understands how their issue was resolved.
-                        </small>
-                    </div>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="cancelResolution()">
-                        <i class="fas fa-times"></i>
-                        Cancel
-                    </button>
-                    <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
-                        <i class="fas fa-paper-plane"></i>
-                        Submit & Send Email
-                    </button>
-                </div>
+                <p style="margin: 8px 0 0 0; color: #065f46; font-size: 14px;">
+                    An email will be automatically sent to the user with these resolution details.
+                </p>
+            </div>
+            
+            <div class="form-group">
+                <label style="display: block; margin-bottom: 8px; font-weight: 500; color: #374151;">
+                    Resolution Details *
+                </label>
+                <textarea 
+                    id="resolution-notes" 
+                    placeholder="Describe how the issue was resolved, what actions were taken, materials used, timeline, etc. This will be sent to the user via email..." 
+                    rows="5" 
+                    style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"
+                    required
+                ></textarea>
+                <small style="color: #6b7280; font-size: 12px; display: block; margin-top: 5px;">
+                    Provide clear details so the user understands how their issue was resolved.
+                </small>
             </div>
         </div>
+        <div class="modal-actions">
+            <button type="button" class="btn btn-outline" onclick="cancelResolution()">
+                <i class="fas fa-times"></i>
+                Cancel
+            </button>
+            <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
+                <i class="fas fa-paper-plane"></i>
+                Submit & Send Email
+            </button>
+        </div>
     </div>
-
+</div>
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     
     <!-- JavaScript functions for delete functionality -->
@@ -738,3 +737,4 @@
     </script>
 </body>
 </html>
+
