@@ -946,3 +946,4 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
