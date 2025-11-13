@@ -264,7 +264,6 @@
             </div>
         </div>
 
-        <!-- Resolution Modal -->
                 <!-- Resolution Modal -->
         <div id="resolution-modal" class="modal hidden">
             <div class="modal-content">
@@ -274,8 +273,15 @@
                 </div>
                 <div class="modal-body">
                     <p>Please provide details on how this issue was resolved:</p>
+                    
                     <div class="form-group">
-                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                        <i class="fas fa-user-check"></i>
+                        <input type="text" id="auditor-name" placeholder="Enter your name (auditor)" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <i class="fas fa-file-lines"></i>
+                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;" required></textarea>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -422,4 +428,5 @@
     </style>
 </body>
 </html>
+
 
