@@ -41,8 +41,40 @@ function setupEventListeners() {
 }
 
 function handleStatusChange(selectElement, reportId) {
-    if (selectElement.value === 'Resolved') {
+    const newStatus = selectElement.value;
+    
+    if (newStatus === 'Resolved') {
         showResolutionModal(reportId, selectElement);
+    } else {
+        // For other status changes, update immediately
+        updateStatus(reportId, newStatus);
+    }
+}
+
+async function updateStatus(reportId, newStatus) {
+    try {
+        const response = await fetch('/api/update_report_status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: reportId,
+                status: newStatus
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSnackbar('Status updated successfully!');
+            await loadAdminStats();
+            await loadAllReports();
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        showSnackbar('Failed to update status', 'error');
     }
 }
 
@@ -1139,3 +1171,4 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
