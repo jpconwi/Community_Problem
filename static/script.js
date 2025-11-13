@@ -465,67 +465,82 @@ async function filterReports(period) {
 }
 
 // Display filtered reports with audit information
+// Enhanced displayFilteredReports function to highlight new reports
 function displayFilteredReports(reports, period) {
     const reportsList = document.getElementById('admin-reports-list');
     
     if (reports.length > 0) {
-        reportsList.innerHTML = reports.map(report => `
-            <div class="report-card">
-                <div class="report-header">
-                    <span class="report-type">${report.problem_type}</span>
-                    <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                        ${report.status}
-                    </span>
-                </div>
-                <div class="report-location">
-                    <i class="fas fa-location-dot"></i> ${report.location}
-                </div>
-                <div class="report-issue">${report.issue}</div>
-                <div class="report-footer">
-                    <span>By: ${report.username}</span>
-                    <span>${report.date}</span>
-                </div>
-                ${report.photo_data ? `
-                    <div class="report-photo">
-                        <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                    </div>
-                ` : ''}
-                <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                    <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
-                        <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                        <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                        <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-                    </select>
-                    <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
-                        <i class="fas fa-trash"></i> Delete
-                    </button>
-                </div>
-                ${report.status === 'Resolved' ? `
-                    <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
-                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
-                            <strong style="color: #1e40af; font-size: 14px;">Resolution Details</strong>
-                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                                ${report.auditor_name ? `
-                                    <span style="color: #64748b; font-size: 12px; font-style: italic;">
-                                        <i class="fas fa-user-check"></i> Audited by: ${report.auditor_name}
-                                    </span>
-                                ` : ''}
-                                ${report.resolved_at ? `
-                                    <span style="color: #64748b; font-size: 12px; font-style: italic;">
-                                        <i class="fas fa-clock"></i> Resolved: ${report.resolved_at}
-                                    </span>
-                                ` : ''}
-                            </div>
+        reportsList.innerHTML = reports.map(report => {
+            // Check if report is from last 24 hours
+            const reportDate = new Date(report.date);
+            const now = new Date();
+            const isNewReport = (now - reportDate) <= (24 * 60 * 60 * 1000);
+            
+            return `
+                <div class="report-card ${isNewReport ? 'new-report-highlight' : ''}">
+                    ${isNewReport ? `
+                        <div style="position: absolute; top: 10px; right: 10px;">
+                            <span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">
+                                <i class="fas fa-star" style="margin-right: 4px;"></i>NEW
+                            </span>
                         </div>
-                        ${report.resolution_notes ? `
-                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
-                        ` : `
-                            <p style="margin: 8px 0 0 0; color: #64748b; font-size: 14px; font-style: italic;">No resolution details provided.</p>
-                        `}
+                    ` : ''}
+                    <div class="report-header">
+                        <span class="report-type">${report.problem_type}</span>
+                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                            ${report.status}
+                        </span>
                     </div>
-                ` : ''}
-            </div>
-        `).join('');
+                    <div class="report-location">
+                        <i class="fas fa-location-dot"></i> ${report.location}
+                    </div>
+                    <div class="report-issue">${report.issue}</div>
+                    <div class="report-footer">
+                        <span>By: ${report.username}</span>
+                        <span>${report.date}</span>
+                    </div>
+                    ${report.photo_data ? `
+                        <div class="report-photo">
+                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                        </div>
+                    ` : ''}
+                    <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
+                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                        </select>
+                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                    ${report.status === 'Resolved' ? `
+                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
+                                <strong style="color: #1e40af; font-size: 14px;">Resolution Details</strong>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                    ${report.auditor_name ? `
+                                        <span style="color: #64748b; font-size: 12px; font-style: italic;">
+                                            <i class="fas fa-user-check"></i> Audited by: ${report.auditor_name}
+                                        </span>
+                                    ` : ''}
+                                    ${report.resolved_at ? `
+                                        <span style="color: #64748b; font-size: 12px; font-style: italic;">
+                                            <i class="fas fa-clock"></i> Resolved: ${report.resolved_at}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            ${report.resolution_notes ? `
+                                <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                            ` : `
+                                <p style="margin: 8px 0 0 0; color: #64748b; font-size: 14px; font-style: italic;">No resolution details provided.</p>
+                            `}
+                        </div>
+                    ` : ''}
+                </div>
+            `;
+        }).join('');
         
         // Update filter indicator
         const filterIndicator = document.getElementById('filter-indicator');
@@ -1338,4 +1353,5 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
+
 
