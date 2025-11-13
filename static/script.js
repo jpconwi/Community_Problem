@@ -38,20 +38,12 @@ function setupEventListeners() {
     if (reportForm) {
         reportForm.addEventListener('submit', handleReportSubmit);
     }
-    
-    // Event delegation for dynamically created admin dropdowns
-    document.addEventListener('change', function(e) {
-        if (e.target && e.target.classList.contains('status-select')) {
-            const reportId = e.target.getAttribute('data-report-id');
-            console.log('🎯 Event delegation caught status change for report:', reportId);
-            handleStatusChange(e.target, parseInt(reportId));
-        }
-    });
 }
 
 // Handle status changes in admin dashboard
 function handleStatusChange(selectElement, reportId) {
     const newStatus = selectElement.value;
+    console.log(`🔄 Status change for report ${reportId}: ${newStatus}`);
     
     if (newStatus === 'Resolved') {
         showResolutionModal(reportId, selectElement);
@@ -64,6 +56,7 @@ function handleStatusChange(selectElement, reportId) {
 // Update status for non-resolved changes
 async function updateStatus(reportId, newStatus) {
     try {
+        console.log(`📤 Updating report ${reportId} to status: ${newStatus}`);
         const response = await fetch('/api/update_report_status', {
             method: 'POST',
             headers: {
@@ -76,6 +69,7 @@ async function updateStatus(reportId, newStatus) {
         });
         
         const data = await response.json();
+        console.log('Status update response:', data);
         
         if (data.success) {
             showSnackbar('Status updated successfully!');
@@ -85,12 +79,15 @@ async function updateStatus(reportId, newStatus) {
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
+        console.error('Failed to update status:', error);
         showSnackbar('Failed to update status', 'error');
     }
 }
 
 // Resolution modal functions
 function showResolutionModal(reportId, selectElement) {
+    console.log(`📝 Showing resolution modal for report ${reportId}`);
+    
     // Create modal if it doesn't exist
     let modal = document.getElementById('resolution-modal');
     if (!modal) {
@@ -120,21 +117,26 @@ function showResolutionModal(reportId, selectElement) {
             </div>
         `;
         document.body.appendChild(modal);
-        
-        // Add event listener for the resolution modal button
-        document.getElementById('confirm-resolution-btn').addEventListener('click', submitResolution);
     }
 
     // Store the current select element and report ID
     modal.dataset.reportId = reportId;
     modal.dataset.selectElement = selectElement.id;
     
+    // Clear previous notes
+    document.getElementById('resolution-notes').value = '';
+    
     // Show modal
     modal.classList.remove('hidden');
     document.getElementById('resolution-notes').focus();
+    
+    // Add event listener for the resolution modal button (remove previous ones first)
+    const confirmBtn = document.getElementById('confirm-resolution-btn');
+    confirmBtn.onclick = submitResolution;
 }
 
 function cancelResolution() {
+    console.log('❌ Resolution cancelled');
     const modal = document.getElementById('resolution-modal');
     const selectElement = document.getElementById(modal.dataset.selectElement);
     
@@ -152,6 +154,8 @@ async function submitResolution() {
     const reportId = modal.dataset.reportId;
     const resolutionNotes = document.getElementById('resolution-notes').value;
     
+    console.log(`📤 Submitting resolution for report ${reportId}:`, resolutionNotes);
+    
     if (!resolutionNotes.trim()) {
         showSnackbar('Please provide resolution details', 'error');
         return;
@@ -164,13 +168,14 @@ async function submitResolution() {
                 'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-                report_id: reportId,
+                report_id: parseInt(reportId),
                 status: 'Resolved',
                 resolution_notes: resolutionNotes
             })
         });
         
         const data = await response.json();
+        console.log('Resolution submission response:', data);
         
         if (data.success) {
             showSnackbar('Report resolved with details!');
@@ -200,6 +205,7 @@ async function submitResolution() {
 // Filter reports by time period
 async function filterReports(period) {
     try {
+        console.log(`🔍 Filtering reports for: ${period}`);
         const response = await fetch('/api/all_reports');
         const data = await response.json();
         
