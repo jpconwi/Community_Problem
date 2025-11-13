@@ -176,9 +176,6 @@ document.addEventListener('click', function(e) {
     }
 });
 
-
-// Add these functions to script.js
-
 // Filter reports by time period
 async function filterReports(period) {
     try {
@@ -234,7 +231,7 @@ async function filterReports(period) {
     }
 }
 
-// Display filtered reports
+// Display filtered reports with audit information
 function displayFilteredReports(reports, period) {
     const reportsList = document.getElementById('admin-reports-list');
     
@@ -275,7 +272,21 @@ function displayFilteredReports(reports, period) {
                 </div>
                 ${report.status === 'Resolved' && report.resolution_notes ? `
                     <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
-                        <strong style="color: #1e40af; font-size: 14px;">Resolution Details:</strong>
+                        <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
+                            <strong style="color: #1e40af; font-size: 14px;">Resolution Details</strong>
+                            <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                ${report.auditor_name ? `
+                                    <span style="color: #64748b; font-size: 12px; font-style: italic;">
+                                        <i class="fas fa-user-check"></i> Audited by: ${report.auditor_name}
+                                    </span>
+                                ` : ''}
+                                ${report.resolved_at ? `
+                                    <span style="color: #64748b; font-size: 12px; font-style: italic;">
+                                        <i class="fas fa-clock"></i> Resolved: ${report.resolved_at}
+                                    </span>
+                                ` : ''}
+                            </div>
+                        </div>
                         <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
                     </div>
                 ` : ''}
@@ -323,7 +334,7 @@ function updateFilterStats(reports) {
             </div>
             <div class="admin-stat-card">
                 <div class="admin-stat-value">${inProgress}</div>
-                        <div class="admin-stat-label">In Progress</div>
+                <div class="admin-stat-label">In Progress</div>
             </div>
             <div class="admin-stat-card">
                 <div class="admin-stat-value">${resolved}</div>
@@ -332,7 +343,6 @@ function updateFilterStats(reports) {
         `;
     }
 }
-
 
 // Authentication functions
 async function checkAuthStatus() {
@@ -776,6 +786,7 @@ function showMyReports() {
     loadMyReports();
 }
 
+// Updated loadMyReports function with complete audit information
 async function loadMyReports() {
     try {
         const response = await fetch('/api/user_reports');
@@ -813,6 +824,22 @@ async function loadMyReports() {
                                     Resolved by ${report.resolved_by || 'Admin'}
                                 </strong>
                             </div>
+                            ${report.auditor_name ? `
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <i class="fas fa-user-check" style="color: #2563eb; margin-right: 8px;"></i>
+                                    <span style="color: #374151; font-size: 13px;">
+                                        Audited by: ${report.auditor_name}
+                                    </span>
+                                </div>
+                            ` : ''}
+                            ${report.resolved_at ? `
+                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
+                                    <i class="fas fa-clock" style="color: #6b7280; margin-right: 8px;"></i>
+                                    <span style="color: #6b7280; font-size: 13px;">
+                                        Resolved on: ${report.resolved_at}
+                                    </span>
+                                </div>
+                            ` : ''}
                             <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
                                 ${report.resolution_notes}
                             </p>
@@ -826,6 +853,14 @@ async function loadMyReports() {
                                     Status: Resolved by ${report.resolved_by || 'Admin'}
                                 </strong>
                             </div>
+                            ${report.auditor_name ? `
+                                <div style="display: flex; align-items: center; margin-top: 8px;">
+                                    <i class="fas fa-user-check" style="color: #2563eb; margin-right: 8px;"></i>
+                                    <span style="color: #374151; font-size: 13px;">
+                                        Audited by: ${report.auditor_name}
+                                    </span>
+                                </div>
+                            ` : ''}
                             <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
                                 Your report has been marked as resolved. No additional details were provided.
                             </p>
@@ -973,6 +1008,7 @@ async function loadAdminStats() {
     }
 }
 
+// Complete loadAllReports function
 async function loadAllReports() {
     try {
         const response = await fetch('/api/all_reports');
@@ -987,9 +1023,61 @@ async function loadAllReports() {
                 filterIndicator.textContent = `Showing: All Time (${data.reports.length} reports)`;
             }
             
-            // ... rest of your existing loadAllReports code remains the same
             reportsList.innerHTML = data.reports.map(report => `
-                // ... your existing report card HTML
+                <div class="report-card">
+                    <div class="report-header">
+                        <span class="report-type">${report.problem_type}</span>
+                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                            ${report.status}
+                        </span>
+                    </div>
+                    <div class="report-location">
+                        <i class="fas fa-location-dot"></i> ${report.location}
+                    </div>
+                    <div class="report-issue">${report.issue}</div>
+                    <div class="report-footer">
+                        <span>By: ${report.username}</span>
+                        <span>${report.date}</span>
+                    </div>
+                    ${report.photo_data ? `
+                        <div class="report-photo">
+                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                        </div>
+                    ` : ''}
+                    <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
+                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                        </select>
+                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
+                            Update
+                        </button>
+                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                            <i class="fas fa-trash"></i> Delete
+                        </button>
+                    </div>
+                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
+                                <strong style="color: #1e40af; font-size: 14px;">Resolution Details</strong>
+                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
+                                    ${report.auditor_name ? `
+                                        <span style="color: #64748b; font-size: 12px; font-style: italic;">
+                                            <i class="fas fa-user-check"></i> Audited by: ${report.auditor_name}
+                                        </span>
+                                    ` : ''}
+                                    ${report.resolved_at ? `
+                                        <span style="color: #64748b; font-size: 12px; font-style: italic;">
+                                            <i class="fas fa-clock"></i> Resolved: ${report.resolved_at}
+                                        </span>
+                                    ` : ''}
+                                </div>
+                            </div>
+                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                        </div>
+                    ` : ''}
+                </div>
             `).join('');
         } else {
             reportsList.innerHTML = `
@@ -1001,33 +1089,6 @@ async function loadAllReports() {
     } catch (error) {
         console.error('Failed to load all reports:', error);
         showSnackbar('Failed to load reports', 'error');
-    }
-}
-
-async function updateStatus(reportId, newStatus) {
-    try {
-        const response = await fetch('/api/update_report_status', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                report_id: reportId,
-                status: newStatus
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showSnackbar('Status updated successfully!');
-            await loadAdminStats();
-            await loadAllReports();
-        } else {
-            showSnackbar(data.message, 'error');
-        }
-    } catch (error) {
-        showSnackbar('Failed to update status', 'error');
     }
 }
 
@@ -1078,13 +1139,3 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
-
-
-
-
-
-
-
-
-
-
