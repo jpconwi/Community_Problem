@@ -18,193 +18,6 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuthStatus();
     setupEventListeners();
 });
-// Add this function to check for new reports notifications
-async function checkNewReportsNotification() {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    try {
-        const response = await fetch('/api/new_reports_count');
-        const data = await response.json();
-        
-        if (data.success && data.count > 0) {
-            showNewReportsNotification(data.count);
-        }
-    } catch (error) {
-        console.error('Failed to check new reports:', error);
-    }
-}
-
-// Function to show new reports notification
-function showNewReportsNotification(count) {
-    // Remove existing notification if any
-    const existingNotification = document.getElementById('new-reports-notification');
-    if (existingNotification) {
-        existingNotification.remove();
-    }
-    
-    // Create notification element
-    const notification = document.createElement('div');
-    notification.id = 'new-reports-notification';
-    notification.innerHTML = `
-        <div class="new-reports-alert">
-            <div class="alert-content">
-                <i class="fas fa-bell"></i>
-                <div class="alert-text">
-                    <strong>${count} new report${count > 1 ? 's' : ''} submitted!</strong>
-                    <span>Click to view</span>
-                </div>
-                <button class="alert-close" onclick="this.parentElement.parentElement.remove()">
-                    <i class="fas fa-times"></i>
-                </button>
-            </div>
-        </div>
-    `;
-    
-    // Add click handler to load reports
-    notification.addEventListener('click', function() {
-        loadAllReports();
-        this.remove();
-    });
-    
-    document.body.appendChild(notification);
-    
-    // Auto-remove after 10 seconds
-    setTimeout(() => {
-        if (notification.parentElement) {
-            notification.remove();
-        }
-    }, 10000);
-}
-
-// Update the loadAdminDashboard function to include notification check
-async function loadAdminDashboard() {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const adminContainer = document.querySelector('.admin-container');
-    adminContainer.innerHTML = `
-        <div class="screen-header">
-            <h2>Admin Dashboard</h2>
-            <div style="display: flex; align-items: center; gap: 10px;">
-                <button class="btn btn-outline" onclick="checkNewReportsNotification()" title="Check for new reports">
-                    <i class="fas fa-sync-alt"></i>
-                    Refresh
-                </button>
-                <button class="btn btn-danger" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
-            </div>
-        </div>
-        
-        <!-- Notification Status -->
-        <div id="admin-notification-status" class="notification-status hidden">
-            <!-- New reports notification will appear here -->
-        </div>
-        
-        <!-- Filter Controls -->
-        <div class="card">
-            <h3>Filter Reports</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-day"></i> Today
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-week"></i> This Week
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-alt"></i> This Month
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar"></i> All Time
-                </button>
-            </div>
-            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
-                Showing: All Time
-            </div>
-        </div>
-        
-        <div class="admin-stats" id="admin-stats">
-            <!-- Stats will be loaded here -->
-        </div>
-        
-        <div class="card">
-            <h3>Reports</h3>
-            <div id="admin-reports-list">
-                <!-- Reports will be loaded here -->
-            </div>
-        </div>
-    `;
-    
-    await loadAdminStats();
-    await loadAllReports();
-    await checkNewReportsNotification(); // Check for new reports when dashboard loads
-}
-
-// Update the checkAuthStatus function to setup periodic checking for admins
-async function checkAuthStatus() {
-    try {
-        console.log('Checking auth status...');
-        const response = await fetch('/api/user_info');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Auth response:', data);
-        
-        // Clear the timeout since we got a response
-        clearTimeout(authCheckTimeout);
-        
-        if (data.success) {
-            currentUser = data.user;
-            if (currentUser.role === 'admin') {
-                showScreen('admin-dashboard');
-                loadAdminDashboard();
-                // Setup periodic checking for new reports (every 30 seconds)
-                setupPeriodicReportCheck();
-            } else {
-                showScreen('user-dashboard');
-                loadUserDashboard();
-            }
-        } else {
-            console.log('Not logged in, showing login screen');
-            showScreen('login-screen');
-        }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        // Clear the timeout on error too
-        clearTimeout(authCheckTimeout);
-        showScreen('login-screen');
-    } finally {
-        hideLoading();
-    }
-}
-
-// Setup periodic checking for new reports (admin only)
-function setupPeriodicReportCheck() {
-    if (currentUser && currentUser.role === 'admin') {
-        // Check every 30 seconds
-        setInterval(async () => {
-            try {
-                const response = await fetch('/api/new_reports_count');
-                const data = await response.json();
-                
-                if (data.success && data.count > 0) {
-                    showNewReportsNotification(data.count);
-                }
-            } catch (error) {
-                console.error('Periodic report check failed:', error);
-            }
-        }, 30000); // 30 seconds
-    }
-}
-
-// Add this to the existing utility functions section
-function setupRealTimeNotifications() {
-    // This could be extended with WebSockets or Server-Sent Events for real-time updates
-    console.log('Setting up real-time notifications...');
-}
 
 // Event listeners
 function setupEventListeners() {
@@ -408,6 +221,321 @@ async function submitResolution() {
     }
 }
 
+// Notification functions for admin dashboard
+async function checkNewReportsNotification() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    
+    try {
+        const response = await fetch('/api/new_reports_count');
+        const data = await response.json();
+        
+        if (data.success && data.count > 0) {
+            showNewReportsNotification(data.count);
+        }
+    } catch (error) {
+        console.error('Failed to check new reports:', error);
+    }
+}
+
+// Function to show new reports notification
+function showNewReportsNotification(count) {
+    // Remove existing notification if any
+    const existingNotification = document.getElementById('new-reports-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.id = 'new-reports-notification';
+    notification.innerHTML = `
+        <div class="new-reports-alert">
+            <div class="alert-content">
+                <i class="fas fa-bell"></i>
+                <div class="alert-text">
+                    <strong>${count} new report${count > 1 ? 's' : ''} submitted!</strong>
+                    <span>Click to view</span>
+                </div>
+                <button class="alert-close" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add click handler to load reports
+    notification.addEventListener('click', function() {
+        loadAllReports();
+        this.remove();
+    });
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 10000);
+}
+
+// Load admin notifications count for the bell
+async function loadAdminNotificationsCount() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    
+    try {
+        const response = await fetch('/api/new_reports_count');
+        const data = await response.json();
+        
+        const badge = document.getElementById('admin-notification-badge');
+        if (data.success && data.count > 0) {
+            badge.textContent = data.count;
+            badge.classList.remove('hidden');
+        } else {
+            badge.classList.add('hidden');
+        }
+    } catch (error) {
+        console.error('Failed to load admin notifications count:', error);
+    }
+}
+
+// Show admin notifications
+function showAdminNotifications() {
+    // Create a modal or dropdown for admin notifications
+    showAdminNotificationsModal();
+}
+
+// Admin notifications modal
+function showAdminNotificationsModal() {
+    // Create modal if it doesn't exist
+    let modal = document.getElementById('admin-notifications-modal');
+    if (!modal) {
+        modal = document.createElement('div');
+        modal.id = 'admin-notifications-modal';
+        modal.className = 'modal hidden';
+        modal.innerHTML = `
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Admin Notifications</h3>
+                    <button class="close-btn" onclick="document.getElementById('admin-notifications-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="admin-notifications-list" class="notifications-list">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('admin-notifications-modal').classList.add('hidden')">
+                        Close
+                    </button>
+                </div>
+            </div>
+        `;
+        document.body.appendChild(modal);
+    }
+    
+    loadAdminNotifications();
+    modal.classList.remove('hidden');
+}
+
+// Load admin notifications
+async function loadAdminNotifications() {
+    try {
+        const response = await fetch('/api/new_reports_count');
+        const data = await response.json();
+        
+        const notificationsList = document.getElementById('admin-notifications-list');
+        
+        if (data.success && data.count > 0) {
+            // Get detailed new reports info
+            const reportsResponse = await fetch('/api/all_reports');
+            const reportsData = await reportsResponse.json();
+            
+            if (reportsData.success) {
+                const yesterday = new Date();
+                yesterday.setHours(yesterday.getHours() - 24);
+                
+                const newReports = reportsData.reports.filter(report => {
+                    const reportDate = new Date(report.date);
+                    return reportDate >= yesterday;
+                });
+                
+                notificationsList.innerHTML = `
+                    <div class="notification-header">
+                        <i class="fas fa-bell" style="color: #667eea;"></i>
+                        <span><strong>${data.count} new report${data.count > 1 ? 's' : ''} in last 24 hours</strong></span>
+                    </div>
+                    <div class="new-reports-list">
+                        ${newReports.map(report => `
+                            <div class="new-report-item">
+                                <div class="report-type-badge">${report.problem_type}</div>
+                                <div class="report-details">
+                                    <strong>${report.location}</strong>
+                                    <span>By: ${report.username}</span>
+                                    <small>${report.date}</small>
+                                </div>
+                                <div class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                    ${report.status}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            }
+        } else {
+            notificationsList.innerHTML = `
+                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                    <i class="fas fa-bell-slash" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                    <p>No new reports</p>
+                    <small>All caught up!</small>
+                </div>
+            `;
+        }
+        
+        // Update badge count
+        await loadAdminNotificationsCount();
+    } catch (error) {
+        console.error('Failed to load admin notifications:', error);
+        const notificationsList = document.getElementById('admin-notifications-list');
+        notificationsList.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>Failed to load notifications</p>
+            </div>
+        `;
+    }
+}
+
+// Update the loadAdminDashboard function to include notification bell
+async function loadAdminDashboard() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    
+    const adminContainer = document.querySelector('.admin-container');
+    adminContainer.innerHTML = `
+        <div class="screen-header">
+            <h2>Admin Dashboard</h2>
+            <div class="admin-header-actions">
+                <button class="icon-btn" onclick="showAdminNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span id="admin-notification-badge" class="badge hidden">0</span>
+                </button>
+                <button class="btn btn-outline" onclick="checkNewReportsNotification()" title="Check for new reports">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+        
+        <!-- Notification Status -->
+        <div id="admin-notification-status" class="notification-status hidden">
+            <!-- New reports notification will appear here -->
+        </div>
+        
+        <!-- Filter Controls -->
+        <div class="card">
+            <h3>Filter Reports</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-day"></i> Today
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-week"></i> This Week
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-alt"></i> This Month
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar"></i> All Time
+                </button>
+            </div>
+            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
+                Showing: All Time
+            </div>
+        </div>
+        
+        <div class="admin-stats" id="admin-stats">
+            <!-- Stats will be loaded here -->
+        </div>
+        
+        <div class="card">
+            <h3>Reports</h3>
+            <div id="admin-reports-list">
+                <!-- Reports will be loaded here -->
+            </div>
+        </div>
+    `;
+    
+    await loadAdminStats();
+    await loadAllReports();
+    await checkNewReportsNotification(); // Check for new reports when dashboard loads
+    await loadAdminNotificationsCount(); // Load notification count for the bell
+}
+
+// Setup periodic checking for new reports (admin only)
+function setupPeriodicReportCheck() {
+    if (currentUser && currentUser.role === 'admin') {
+        // Check every 30 seconds
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/new_reports_count');
+                const data = await response.json();
+                
+                if (data.success && data.count > 0) {
+                    showNewReportsNotification(data.count);
+                    await loadAdminNotificationsCount(); // Update badge count
+                }
+            } catch (error) {
+                console.error('Periodic report check failed:', error);
+            }
+        }, 30000); // 30 seconds
+    }
+}
+
+// Update the checkAuthStatus function to setup periodic checking for admins
+async function checkAuthStatus() {
+    try {
+        console.log('Checking auth status...');
+        const response = await fetch('/api/user_info');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Auth response:', data);
+        
+        // Clear the timeout since we got a response
+        clearTimeout(authCheckTimeout);
+        
+        if (data.success) {
+            currentUser = data.user;
+            if (currentUser.role === 'admin') {
+                showScreen('admin-dashboard');
+                loadAdminDashboard();
+                // Setup periodic checking for new reports (every 30 seconds)
+                setupPeriodicReportCheck();
+            } else {
+                showScreen('user-dashboard');
+                loadUserDashboard();
+            }
+        } else {
+            console.log('Not logged in, showing login screen');
+            showScreen('login-screen');
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        // Clear the timeout on error too
+        clearTimeout(authCheckTimeout);
+        showScreen('login-screen');
+    } finally {
+        hideLoading();
+    }
+}
+
 // Filter reports by time period
 async function filterReports(period) {
     try {
@@ -465,7 +593,6 @@ async function filterReports(period) {
 }
 
 // Display filtered reports with audit information
-// Enhanced displayFilteredReports function to highlight new reports
 function displayFilteredReports(reports, period) {
     const reportsList = document.getElementById('admin-reports-list');
     
@@ -1143,58 +1270,6 @@ async function loadNotifications() {
     }
 }
 
-// Admin functions
-async function loadAdminDashboard() {
-    if (!currentUser || currentUser.role !== 'admin') return;
-    
-    const adminContainer = document.querySelector('.admin-container');
-    adminContainer.innerHTML = `
-        <div class="screen-header">
-            <h2>Admin Dashboard</h2>
-            <button class="btn btn-danger" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Logout
-            </button>
-        </div>
-        
-        <!-- Filter Controls -->
-        <div class="card">
-            <h3>Filter Reports</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-day"></i> Today
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-week"></i> This Week
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-alt"></i> This Month
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar"></i> All Time
-                </button>
-            </div>
-            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
-                Showing: All Time
-            </div>
-        </div>
-        
-        <div class="admin-stats" id="admin-stats">
-            <!-- Stats will be loaded here -->
-        </div>
-        
-        <div class="card">
-            <h3>Reports</h3>
-            <div id="admin-reports-list">
-                <!-- Reports will be loaded here -->
-            </div>
-        </div>
-    `;
-    
-    await loadAdminStats();
-    await loadAllReports();
-}
-
 async function loadAdminStats() {
     try {
         const response = await fetch('/api/stats');
@@ -1353,5 +1428,3 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
-
-
