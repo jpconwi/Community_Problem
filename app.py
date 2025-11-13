@@ -184,13 +184,19 @@ def update_report_with_resolution():
     
     try:
         data = request.get_json()
-        report = Report.query.get(data.get('report_id'))
+        report_id = data.get('report_id')
+        auditor_name = data.get('auditor_name')
+        resolution_notes = data.get('resolution_notes', '')
+        
+        print(f"🔄 Updating report {report_id} with resolution - Auditor: {auditor_name}")
+        
+        report = Report.query.get(report_id)
         if report:
-            report.status = data.get('status')
-            report.resolution_notes = data.get('resolution_notes', '')
+            report.status = 'Resolved'
+            report.resolution_notes = resolution_notes
             report.resolved_by = session['user_id']
-            report.auditor_name = session['username']  # Track auditor name
-            report.resolved_at = datetime.utcnow()  # Track resolution time
+            report.auditor_name = auditor_name  # Use the provided auditor name
+            report.resolved_at = datetime.utcnow()
             
             db.session.commit()
             
@@ -202,7 +208,7 @@ def update_report_with_resolution():
             notification = Notification(
                 user_id=report.user_id,
                 report_id=report.id,
-                message=f'Your report "{report.problem_type}" has been resolved by {admin_name}: {data.get("resolution_notes", "No details provided")}',
+                message=f'Your report "{report.problem_type}" has been resolved by {auditor_name}: {resolution_notes}',
                 type='status_update'
             )
             db.session.add(notification)
@@ -213,16 +219,19 @@ def update_report_with_resolution():
                 action='resolve_report',
                 target_type='report',
                 target_id=report.id,
-                details=f'Resolved report #{report.id} with notes: {data.get("resolution_notes", "No details")}'
+                details=f'Resolved report #{report.id} as {auditor_name} with notes: {resolution_notes}'
             )
             db.session.add(admin_log)
             db.session.commit()
             
+            print(f"✅ Report {report_id} resolved successfully by {auditor_name}")
             return jsonify({'success': True, 'message': 'Status updated successfully!'})
         else:
+            print(f"❌ Report {report_id} not found")
             return jsonify({'success': False, 'message': 'Report not found'})
     except Exception as e:
         db.session.rollback()
+        print(f"💥 Error updating report: {e}")
         return jsonify({'success': False, 'message': 'Failed to update status'})
 
 @app.route('/api/delete_report', methods=['POST'])
@@ -737,6 +746,7 @@ def get_admin_audit_logs():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
