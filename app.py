@@ -348,6 +348,7 @@ def submit_report():
         return jsonify({'success': False, 'message': 'Failed to submit report'})
 
 @app.route('/api/user_reports')
+@app.route('/api/user_reports')
 def get_user_reports():
     if 'user_id' not in session:
         return jsonify({'success': False, 'message': 'Not logged in'})
@@ -374,6 +375,16 @@ def get_user_reports():
                 report_data['resolution_notes'] = None
         except:
             report_data['resolution_notes'] = None
+            
+        # Add resolved_by info if available
+        try:
+            if hasattr(report, 'resolved_by') and report.resolved_by:
+                resolver = User.query.get(report.resolved_by)
+                report_data['resolved_by'] = resolver.username if resolver else 'Admin'
+            else:
+                report_data['resolved_by'] = None
+        except:
+            report_data['resolved_by'] = None
             
         reports_data.append(report_data)
     
@@ -608,5 +619,6 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
