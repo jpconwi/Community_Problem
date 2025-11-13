@@ -40,6 +40,206 @@ function setupEventListeners() {
     }
 }
 
+// Browser Notification Functions
+function requestNotificationPermission() {
+    if (!("Notification" in window)) {
+        console.log("This browser does not support notifications");
+        return false;
+    }
+    
+    if (Notification.permission === "granted") {
+        console.log("Notification permission already granted");
+        return true;
+    }
+    
+    if (Notification.permission !== "denied") {
+        Notification.requestPermission().then(permission => {
+            if (permission === "granted") {
+                console.log("Notification permission granted");
+                showSnackbar('Notifications enabled! You will receive updates.');
+            }
+        });
+    }
+    
+    return false;
+}
+
+function showBrowserNotification(title, message, icon = null) {
+    if (Notification.permission !== "granted") {
+        requestNotificationPermission();
+        return;
+    }
+    
+    const options = {
+        body: message,
+        icon: icon || '/static/favicon.ico',
+        badge: '/static/favicon.ico',
+        tag: 'communitycare-update',
+        requireInteraction: true,
+        actions: [
+            {
+                action: 'view',
+                title: 'View'
+            },
+            {
+                action: 'close',
+                title: 'Close'
+            }
+        ]
+    };
+    
+    const notification = new Notification(title, options);
+    
+    notification.onclick = function() {
+        window.focus();
+        notification.close();
+        // Navigate to relevant section based on user role
+        if (currentUser && currentUser.role === 'admin') {
+            showScreen('admin-dashboard');
+            loadAllReports();
+        } else {
+            showMyReports();
+        }
+    };
+    
+    notification.onclose = function() {
+        console.log('Notification closed');
+    };
+    
+    // Auto-close after 10 seconds
+    setTimeout(() => {
+        notification.close();
+    }, 10000);
+    
+    return notification;
+}
+
+// Periodic check for updates
+function setupPeriodicUpdateCheck() {
+    if (!currentUser) return;
+    
+    // Check every 30 seconds for updates
+    setInterval(async () => {
+        try {
+            await checkForUpdates();
+        } catch (error) {
+            console.error('Periodic update check failed:', error);
+        }
+    }, 30000); // 30 seconds
+}
+
+// Check for new reports, status updates, etc.
+async function checkForUpdates() {
+    if (!currentUser) return;
+    
+    try {
+        if (currentUser.role === 'admin') {
+            await checkAdminUpdates();
+        } else {
+            await checkUserUpdates();
+        }
+    } catch (error) {
+        console.error('Update check failed:', error);
+    }
+}
+
+// Check updates for regular users
+async function checkUserUpdates() {
+    const lastCheck = localStorage.getItem('lastUpdateCheck') || Date.now();
+    
+    try {
+        // Check for new notifications
+        const notificationsResponse = await fetch('/api/notifications_count');
+        const notificationsData = await notificationsResponse.json();
+        
+        // Check for report status updates
+        const reportsResponse = await fetch('/api/user_reports');
+        const reportsData = await reportsResponse.json();
+        
+        if (reportsData.success) {
+            const storedReports = JSON.parse(localStorage.getItem('userReports') || '[]');
+            const newResolvedReports = reportsData.reports.filter(newReport => {
+                const oldReport = storedReports.find(r => r.id === newReport.id);
+                return newReport.status === 'Resolved' && 
+                       (!oldReport || oldReport.status !== 'Resolved');
+            });
+            
+            if (newResolvedReports.length > 0) {
+                newResolvedReports.forEach(report => {
+                    showBrowserNotification(
+                        'Report Resolved!',
+                        `Your report "${report.problem_type}" has been resolved. Click to view details.`,
+                        '/static/favicon.ico'
+                    );
+                });
+            }
+            
+            // Store current reports for next comparison
+            localStorage.setItem('userReports', JSON.stringify(reportsData.reports));
+        }
+        
+        localStorage.setItem('lastUpdateCheck', Date.now());
+    } catch (error) {
+        console.error('User update check failed:', error);
+    }
+}
+
+// Check updates for admin users
+async function checkAdminUpdates() {
+    const lastCheck = localStorage.getItem('lastAdminUpdateCheck') || Date.now();
+    
+    try {
+        // Check for new reports
+        const newReportsResponse = await fetch('/api/new_reports_count');
+        const newReportsData = await newReportsResponse.json();
+        
+        if (newReportsData.success && newReportsData.count > 0) {
+            const lastNewReportCount = parseInt(localStorage.getItem('lastNewReportCount') || '0');
+            
+            if (newReportsData.count > lastNewReportCount) {
+                const newCount = newReportsData.count - lastNewReportCount;
+                showBrowserNotification(
+                    'New Reports Submitted',
+                    `${newCount} new report${newCount > 1 ? 's' : ''} waiting for review. Click to view.`,
+                    '/static/favicon.ico'
+                );
+            }
+            
+            localStorage.setItem('lastNewReportCount', newReportsData.count);
+        }
+        
+        localStorage.setItem('lastAdminUpdateCheck', Date.now());
+    } catch (error) {
+        console.error('Admin update check failed:', error);
+    }
+}
+
+// Real-time notification for immediate updates
+function setupRealTimeNotifications() {
+    if (!currentUser) return;
+    
+    // Listen for custom events (you can trigger these from your backend)
+    document.addEventListener('newReportSubmitted', (event) => {
+        if (currentUser.role === 'admin') {
+            showBrowserNotification(
+                'New Report Submitted',
+                `A new ${event.detail.problemType} report has been submitted.`,
+                '/static/favicon.ico'
+            );
+        }
+    });
+    
+    document.addEventListener('reportStatusUpdated', (event) => {
+        if (currentUser.role === 'user' && event.detail.userId === currentUser.id) {
+            showBrowserNotification(
+                'Report Status Updated',
+                `Your report "${event.detail.problemType}" is now ${event.detail.status}.`,
+                '/static/favicon.ico'
+            );
+        }
+    });
+}
+
 // Handle status changes in admin dashboard
 function handleStatusChange(selectElement, reportId) {
     const newStatus = selectElement.value;
@@ -513,10 +713,15 @@ async function checkAuthStatus() {
         
         if (data.success) {
             currentUser = data.user;
+            
+            // Request notification permission and setup notifications
+            requestNotificationPermission();
+            setupPeriodicUpdateCheck();
+            setupRealTimeNotifications();
+            
             if (currentUser.role === 'admin') {
                 showScreen('admin-dashboard');
                 loadAdminDashboard();
-                // Setup periodic checking for new reports (every 30 seconds)
                 setupPeriodicReportCheck();
             } else {
                 showScreen('user-dashboard');
@@ -751,84 +956,6 @@ function updateFilterStats(reports) {
 }
 
 // Authentication functions
-async function checkAuthStatus() {
-    try {
-        console.log('Checking auth status...');
-        const response = await fetch('/api/user_info');
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        console.log('Auth response:', data);
-        
-        // Clear the timeout since we got a response
-        clearTimeout(authCheckTimeout);
-        
-        if (data.success) {
-            currentUser = data.user;
-            if (currentUser.role === 'admin') {
-                showScreen('admin-dashboard');
-                loadAdminDashboard();
-            } else {
-                showScreen('user-dashboard');
-                loadUserDashboard();
-            }
-        } else {
-            console.log('Not logged in, showing login screen');
-            showScreen('login-screen');
-        }
-    } catch (error) {
-        console.error('Auth check failed:', error);
-        // Clear the timeout on error too
-        clearTimeout(authCheckTimeout);
-        showScreen('login-screen');
-    } finally {
-        hideLoading();
-    }
-}
-
-// Delete report functions
-async function deleteReport(reportId, isAdmin = false) {
-    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
-        return;
-    }
-    
-    try {
-        const endpoint = isAdmin ? '/api/delete_report' : '/api/delete_user_report';
-        
-        const response = await fetch(endpoint, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                report_id: reportId
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showSnackbar('Report deleted successfully!');
-            // Reload the appropriate list
-            if (isAdmin) {
-                await loadAllReports();
-                await loadAdminStats();
-            } else {
-                await loadMyReports();
-                await loadStats();
-            }
-        } else {
-            showSnackbar(data.message, 'error');
-        }
-    } catch (error) {
-        console.error('Delete report error:', error);
-        showSnackbar('Failed to delete report', 'error');
-    }
-}
-
 async function handleLogin(e) {
     e.preventDefault();
     console.log('Login form submitted');
@@ -859,6 +986,11 @@ async function handleLogin(e) {
         if (data.success) {
             currentUser = data.user;
             console.log(`Login successful! User role: ${currentUser.role}`);
+            
+            // Request notification permission and setup notifications
+            requestNotificationPermission();
+            setupPeriodicUpdateCheck();
+            setupRealTimeNotifications();
             
             if (currentUser.role === 'admin') {
                 console.log('Redirecting to admin dashboard...');
@@ -1385,6 +1517,46 @@ async function loadAllReports() {
     } catch (error) {
         console.error('Failed to load all reports:', error);
         showSnackbar('Failed to load reports', 'error');
+    }
+}
+
+// Delete report functions
+async function deleteReport(reportId, isAdmin = false) {
+    if (!confirm('Are you sure you want to delete this report? This action cannot be undone.')) {
+        return;
+    }
+    
+    try {
+        const endpoint = isAdmin ? '/api/delete_report' : '/api/delete_user_report';
+        
+        const response = await fetch(endpoint, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: reportId
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSnackbar('Report deleted successfully!');
+            // Reload the appropriate list
+            if (isAdmin) {
+                await loadAllReports();
+                await loadAdminStats();
+            } else {
+                await loadMyReports();
+                await loadStats();
+            }
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        console.error('Delete report error:', error);
+        showSnackbar('Failed to delete report', 'error');
     }
 }
 
