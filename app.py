@@ -176,6 +176,54 @@ with app.app_context():
             time.sleep(2)
 
 # Routes
+# Add this endpoint to count new reports (reports from last 24 hours)
+@app.route('/api/new_reports_count')
+def get_new_reports_count():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        # Get reports from last 24 hours
+        yesterday = datetime.utcnow() - timedelta(hours=24)
+        new_reports_count = Report.query.filter(Report.created_at >= yesterday).count()
+        
+        return jsonify({
+            'success': True, 
+            'count': new_reports_count,
+            'message': f'{new_reports_count} new reports in last 24 hours'
+        })
+    except Exception as e:
+        print(f"Error getting new reports count: {e}")
+        return jsonify({'success': False, 'count': 0})
+
+# Update the submit_report endpoint to log the submission
+@app.route('/api/submit_report', methods=['POST'])
+def submit_report():
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Please login first!'})
+    
+    try:
+        data = request.get_json()
+        report = Report(
+            user_id=session['user_id'],
+            name=session['username'],
+            problem_type=data.get('problem_type'),
+            location=data.get('location'),
+            issue=data.get('issue'),
+            priority=data.get('priority', 'Medium'),
+            photo_data=data.get('photo_data'),
+            date=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
+        )
+        db.session.add(report)
+        db.session.commit()
+        
+        # Log the report submission for admin tracking
+        print(f"📝 New report submitted by {session['username']}: {data.get('problem_type')} at {data.get('location')}")
+        
+        return jsonify({'success': True, 'message': 'Report submitted successfully!'})
+    except Exception as e:
+        print(f"Error submitting report: {e}")
+        return jsonify({'success': False, 'message': 'Failed to submit report'})
 
 @app.route('/api/update_report_with_resolution', methods=['POST'])
 def update_report_with_resolution():
@@ -746,6 +794,7 @@ def get_admin_audit_logs():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
