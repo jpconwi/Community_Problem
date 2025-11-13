@@ -265,8 +265,28 @@
         </div>
 
         <!-- Resolution Modal -->
+                <!-- Resolution Modal -->
         <div id="resolution-modal" class="modal hidden">
-            <!-- Resolution modal content will be loaded dynamically -->
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Resolution Details</h3>
+                    <button class="close-btn" onclick="cancelResolution()">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <p>Please provide details on how this issue was resolved:</p>
+                    <div class="form-group">
+                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="cancelResolution()">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
+                        Submit Resolution
+                    </button>
+                </div>
+            </div>
         </div>
 
         <!-- Delete Confirmation Modal -->
@@ -402,3 +422,4 @@
     </style>
 </body>
 </html>
+
