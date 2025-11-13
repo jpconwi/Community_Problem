@@ -348,7 +348,6 @@ def submit_report():
         return jsonify({'success': False, 'message': 'Failed to submit report'})
 
 @app.route('/api/user_reports')
-@app.route('/api/user_reports')
 def get_user_reports():
     if 'user_id' not in session:
         return jsonify({'success': False, 'message': 'Not logged in'})
@@ -619,6 +618,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
