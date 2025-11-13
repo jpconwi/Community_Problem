@@ -2,7 +2,7 @@ from flask import Flask, render_template, request, jsonify, session, send_from_d
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy import text
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timedelta
 import base64
 import os
 import re
@@ -59,10 +59,10 @@ class Report(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     resolution_notes = db.Column(db.Text)
-    resolved_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Add this line
-    auditor_name = db.Column(db.String(100))  # Auditor name field
+    resolved_by = db.Column(db.Integer, db.ForeignKey('users.id'))
+    auditor_name = db.Column(db.String(100))
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
-    resolved_at = db.Column(db.DateTime)  # Add resolution timestamp
+    resolved_at = db.Column(db.DateTime)
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
@@ -86,7 +86,6 @@ class AdminLog(db.Model):
     details = db.Column(db.Text)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
-# Initialize database
 # Initialize database
 with app.app_context():
     max_retries = 3
@@ -176,54 +175,6 @@ with app.app_context():
             time.sleep(2)
 
 # Routes
-# Add this endpoint to count new reports (reports from last 24 hours)
-@app.route('/api/new_reports_count')
-def get_new_reports_count():
-    if 'user_id' not in session or session.get('role') != 'admin':
-        return jsonify({'success': False, 'message': 'Unauthorized'})
-    
-    try:
-        # Get reports from last 24 hours
-        yesterday = datetime.utcnow() - timedelta(hours=24)
-        new_reports_count = Report.query.filter(Report.created_at >= yesterday).count()
-        
-        return jsonify({
-            'success': True, 
-            'count': new_reports_count,
-            'message': f'{new_reports_count} new reports in last 24 hours'
-        })
-    except Exception as e:
-        print(f"Error getting new reports count: {e}")
-        return jsonify({'success': False, 'count': 0})
-
-# Update the submit_report endpoint to log the submission
-@app.route('/api/submit_report', methods=['POST'])
-def submit_report():
-    if 'user_id' not in session:
-        return jsonify({'success': False, 'message': 'Please login first!'})
-    
-    try:
-        data = request.get_json()
-        report = Report(
-            user_id=session['user_id'],
-            name=session['username'],
-            problem_type=data.get('problem_type'),
-            location=data.get('location'),
-            issue=data.get('issue'),
-            priority=data.get('priority', 'Medium'),
-            photo_data=data.get('photo_data'),
-            date=datetime.utcnow().strftime('%Y-%m-%d %H:%M:%S')
-        )
-        db.session.add(report)
-        db.session.commit()
-        
-        # Log the report submission for admin tracking
-        print(f"📝 New report submitted by {session['username']}: {data.get('problem_type')} at {data.get('location')}")
-        
-        return jsonify({'success': True, 'message': 'Report submitted successfully!'})
-    except Exception as e:
-        print(f"Error submitting report: {e}")
-        return jsonify({'success': False, 'message': 'Failed to submit report'})
 
 @app.route('/api/update_report_with_resolution', methods=['POST'])
 def update_report_with_resolution():
@@ -243,7 +194,7 @@ def update_report_with_resolution():
             report.status = 'Resolved'
             report.resolution_notes = resolution_notes
             report.resolved_by = session['user_id']
-            report.auditor_name = auditor_name  # Use the provided auditor name
+            report.auditor_name = auditor_name
             report.resolved_at = datetime.utcnow()
             
             db.session.commit()
@@ -353,7 +304,6 @@ def delete_user_report():
         db.session.rollback()
         return jsonify({'success': False, 'message': 'Failed to delete report'})
 
-
 @app.route('/api/debug/check_admin')
 def check_admin():
     """Check if admin user exists and can login"""
@@ -425,6 +375,8 @@ def debug_users():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
+# REMOVED DUPLICATE SUBMIT_REPORT ROUTE - KEEP ONLY ONE VERSION
+
 @app.route('/api/submit_report', methods=['POST'])
 def submit_report():
     if 'user_id' not in session:
@@ -445,8 +397,12 @@ def submit_report():
         db.session.add(report)
         db.session.commit()
         
+        # Log the report submission for admin tracking
+        print(f"📝 New report submitted by {session['username']}: {data.get('problem_type')} at {data.get('location')}")
+        
         return jsonify({'success': True, 'message': 'Report submitted successfully!'})
     except Exception as e:
+        print(f"Error submitting report: {e}")
         return jsonify({'success': False, 'message': 'Failed to submit report'})
 
 @app.route('/api/user_reports')
@@ -645,6 +601,26 @@ def get_notifications_count():
     
     count = Notification.query.filter_by(user_id=session['user_id'], is_read=False).count()
     return jsonify({'count': count})
+
+# NEW: Add endpoint to count new reports (reports from last 24 hours)
+@app.route('/api/new_reports_count')
+def get_new_reports_count():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        # Get reports from last 24 hours
+        yesterday = datetime.utcnow() - timedelta(hours=24)
+        new_reports_count = Report.query.filter(Report.created_at >= yesterday).count()
+        
+        return jsonify({
+            'success': True, 
+            'count': new_reports_count,
+            'message': f'{new_reports_count} new reports in last 24 hours'
+        })
+    except Exception as e:
+        print(f"Error getting new reports count: {e}")
+        return jsonify({'success': False, 'count': 0})
             
 @app.route('/')
 def index():
@@ -766,7 +742,6 @@ def logout():
     session.clear()
     return jsonify({'success': True, 'message': 'Logged out successfully!'})
 
-
 @app.route('/api/admin_audit_logs')
 def get_admin_audit_logs():
     if 'user_id' not in session or session.get('role') != 'admin':
@@ -794,17 +769,3 @@ def get_admin_audit_logs():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
