@@ -436,7 +436,7 @@ def get_all_reports():
             'status': report.status,
             'priority': report.priority,
             'date': report.date,
-            'photo_data': report.photo_data,  # Make sure this is included
+            'photo_data': report.photo_data,
             'username': user.username if user else 'Unknown'
         }
         
@@ -448,6 +448,19 @@ def get_all_reports():
                 report_data['resolution_notes'] = None
         except:
             report_data['resolution_notes'] = None
+            
+        # Add resolved_by info if available
+        try:
+            if hasattr(report, 'resolved_by') and report.resolved_by:
+                resolver = User.query.get(report.resolved_by)
+                report_data['resolved_by'] = {
+                    'id': resolver.id,
+                    'username': resolver.username
+                } if resolver else {'id': None, 'username': 'Admin'}
+            else:
+                report_data['resolved_by'] = None
+        except:
+            report_data['resolved_by'] = None
             
         reports_data.append(report_data)
     
@@ -617,6 +630,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
