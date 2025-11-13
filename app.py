@@ -58,7 +58,8 @@ class Report(db.Model):
     photo_data = db.Column(db.Text)
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
-    resolution_notes = db.Column(db.Text)  # Add this line for resolution notes
+    resolution_notes = db.Column(db.Text)
+    auditor_name = db.Column(db.String(100))  # Add this line for auditor name
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 class Notification(db.Model):
@@ -601,3 +602,4 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
