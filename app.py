@@ -375,8 +375,6 @@ def debug_users():
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)})
 
-# REMOVED DUPLICATE SUBMIT_REPORT ROUTE - KEEP ONLY ONE VERSION
-
 @app.route('/api/submit_report', methods=['POST'])
 def submit_report():
     if 'user_id' not in session:
@@ -399,6 +397,19 @@ def submit_report():
         
         # Log the report submission for admin tracking
         print(f"📝 New report submitted by {session['username']}: {data.get('problem_type')} at {data.get('location')}")
+        
+        # Create notification for admins about new report
+        admins = User.query.filter_by(role='admin').all()
+        for admin in admins:
+            notification = Notification(
+                user_id=admin.id,
+                report_id=report.id,
+                message=f'New report submitted: {data.get("problem_type")} at {data.get("location")}',
+                type='new_report'
+            )
+            db.session.add(notification)
+        
+        db.session.commit()
         
         return jsonify({'success': True, 'message': 'Report submitted successfully!'})
     except Exception as e:
@@ -570,8 +581,21 @@ def update_report_status():
         data = request.get_json()
         report = Report.query.get(data.get('report_id'))
         if report:
+            old_status = report.status
             report.status = data.get('status')
             db.session.commit()
+            
+            # Create notification for user about status change
+            if old_status != data.get('status'):
+                notification = Notification(
+                    user_id=report.user_id,
+                    report_id=report.id,
+                    message=f'Your report "{report.problem_type}" status changed from {old_status} to {report.status}',
+                    type='status_update'
+                )
+                db.session.add(notification)
+                db.session.commit()
+            
             return jsonify({'success': True, 'message': 'Status updated successfully!'})
         else:
             return jsonify({'success': False, 'message': 'Report not found'})
@@ -621,6 +645,26 @@ def get_new_reports_count():
     except Exception as e:
         print(f"Error getting new reports count: {e}")
         return jsonify({'success': False, 'count': 0})
+
+# Real-time notification endpoints
+@app.route('/api/trigger_notification', methods=['POST'])
+def trigger_notification():
+    """Endpoint to trigger browser notifications (simulated real-time)"""
+    if 'user_id' not in session:
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        data = request.get_json()
+        user_id = data.get('user_id')
+        title = data.get('title')
+        message = data.get('message')
+        
+        # In a real implementation, you'd use WebSockets or Server-Sent Events
+        # For now, we'll rely on the frontend polling
+        
+        return jsonify({'success': True, 'message': 'Notification triggered'})
+    except Exception as e:
+        return jsonify({'success': False, 'message': str(e)})
             
 @app.route('/')
 def index():
