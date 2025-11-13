@@ -20,6 +20,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Event listeners
+// Event listeners
 function setupEventListeners() {
     // Login form
     const loginForm = document.getElementById('login-form');
@@ -38,6 +39,15 @@ function setupEventListeners() {
     if (reportForm) {
         reportForm.addEventListener('submit', handleReportSubmit);
     }
+    
+    // Event delegation for dynamically created admin dropdowns
+    document.addEventListener('change', function(e) {
+        if (e.target && e.target.classList.contains('status-select')) {
+            const reportId = e.target.getAttribute('data-report-id');
+            console.log('🎯 Event delegation caught status change for report:', reportId);
+            handleStatusChange(e.target, parseInt(reportId));
+        }
+    });
 }
 
 // Handle status changes in admin dashboard
@@ -1121,4 +1131,5 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
+
 
