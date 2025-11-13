@@ -188,7 +188,10 @@ def update_report_with_resolution():
         if report:
             report.status = data.get('status')
             report.resolution_notes = data.get('resolution_notes', '')
-            report.resolved_by = session['user_id']  # Track who resolved it
+            report.resolved_by = session['user_id']
+            report.auditor_name = session['username']  # Track auditor name
+            report.resolved_at = datetime.utcnow()  # Track resolution time
+            
             db.session.commit()
             
             # Get admin user info for the notification
@@ -203,6 +206,16 @@ def update_report_with_resolution():
                 type='status_update'
             )
             db.session.add(notification)
+            
+            # Log admin action
+            admin_log = AdminLog(
+                admin_id=session['user_id'],
+                action='resolve_report',
+                target_type='report',
+                target_id=report.id,
+                details=f'Resolved report #{report.id} with notes: {data.get("resolution_notes", "No details")}'
+            )
+            db.session.add(admin_log)
             db.session.commit()
             
             return jsonify({'success': True, 'message': 'Status updated successfully!'})
@@ -663,6 +676,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
