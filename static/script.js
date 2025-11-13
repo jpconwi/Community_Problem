@@ -84,7 +84,6 @@ async function updateStatus(reportId, newStatus) {
     }
 }
 
-
 // Resolution modal functions
 function showResolutionModal(reportId, selectElement) {
     console.log(`📝 Showing resolution modal for report ${reportId}`);
@@ -222,73 +221,6 @@ async function submitResolution() {
     }
 }
 
-function cancelResolution() {
-    console.log('❌ Resolution cancelled');
-    const modal = document.getElementById('resolution-modal');
-    const selectElement = document.getElementById(modal.dataset.selectElement);
-    
-    // Reset to previous value (In Progress)
-    if (selectElement) {
-        selectElement.value = 'In Progress';
-    }
-    
-    modal.classList.add('hidden');
-    document.getElementById('resolution-notes').value = '';
-}
-
-async function submitResolution() {
-    const modal = document.getElementById('resolution-modal');
-    const reportId = modal.dataset.reportId;
-    const resolutionNotes = document.getElementById('resolution-notes').value;
-    
-    console.log(`📤 Submitting resolution for report ${reportId}:`, resolutionNotes);
-    
-    if (!resolutionNotes.trim()) {
-        showSnackbar('Please provide resolution details', 'error');
-        return;
-    }
-    
-    try {
-        const response = await fetch('/api/update_report_with_resolution', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                report_id: parseInt(reportId),
-                status: 'Resolved',
-                resolution_notes: resolutionNotes
-            })
-        });
-        
-        const data = await response.json();
-        console.log('Resolution submission response:', data);
-        
-        if (data.success) {
-            showSnackbar('Report resolved with details!');
-            modal.classList.add('hidden');
-            document.getElementById('resolution-notes').value = '';
-            await loadAdminStats();
-            await loadAllReports();
-        } else {
-            showSnackbar(data.message, 'error');
-            // Reset the select element if failed
-            const selectElement = document.getElementById(modal.dataset.selectElement);
-            if (selectElement) {
-                selectElement.value = 'In Progress';
-            }
-        }
-    } catch (error) {
-        console.error('Resolution error:', error);
-        showSnackbar('Failed to update report', 'error');
-        // Reset the select element if error
-        const selectElement = document.getElementById(modal.dataset.selectElement);
-        if (selectElement) {
-            selectElement.value = 'In Progress';
-        }
-    }
-}
-
 // Filter reports by time period
 async function filterReports(period) {
     try {
@@ -381,7 +313,7 @@ function displayFilteredReports(reports, period) {
                         <i class="fas fa-trash"></i> Delete
                     </button>
                 </div>
-                ${report.status === 'Resolved' && report.resolution_notes ? `
+                ${report.status === 'Resolved' ? `
                     <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
                         <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
                             <strong style="color: #1e40af; font-size: 14px;">Resolution Details</strong>
@@ -398,7 +330,11 @@ function displayFilteredReports(reports, period) {
                                 ` : ''}
                             </div>
                         </div>
-                        <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                        ${report.resolution_notes ? `
+                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                        ` : `
+                            <p style="margin: 8px 0 0 0; color: #64748b; font-size: 14px; font-style: italic;">No resolution details provided.</p>
+                        `}
                     </div>
                 ` : ''}
             </div>
@@ -910,54 +846,42 @@ async function loadMyReports() {
                             <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
                         </div>
                     ` : ''}
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                    ${report.status === 'Resolved' ? `
                         <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
-                            <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
-                                <strong style="color: #047857; font-size: 14px;">
-                                    Resolved by ${report.resolved_by || 'Admin'}
-                                </strong>
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
+                                <div>
+                                    <div style="display: flex; align-items: center; margin-bottom: 4px;">
+                                        <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
+                                        <strong style="color: #047857; font-size: 14px;">
+                                            Report Resolved
+                                        </strong>
+                                    </div>
+                                    ${report.auditor_name ? `
+                                        <div style="display: flex; align-items: center;">
+                                            <i class="fas fa-user-check" style="color: #2563eb; margin-right: 8px;"></i>
+                                            <span style="color: #374151; font-size: 13px;">
+                                                Audited by: ${report.auditor_name}
+                                            </span>
+                                        </div>
+                                    ` : ''}
+                                </div>
+                                ${report.resolved_at ? `
+                                    <div style="display: flex; align-items: center; color: #64748b; font-size: 12px;">
+                                        <i class="fas fa-clock" style="margin-right: 4px;"></i>
+                                        ${report.resolved_at}
+                                    </div>
+                                ` : ''}
                             </div>
-                            ${report.auditor_name ? `
-                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                    <i class="fas fa-user-check" style="color: #2563eb; margin-right: 8px;"></i>
-                                    <span style="color: #374151; font-size: 13px;">
-                                        Audited by: ${report.auditor_name}
-                                    </span>
+                            ${report.resolution_notes ? `
+                                <div style="margin-top: 8px; padding: 10px; background: white; border-radius: 6px; border: 1px solid #d1fae5;">
+                                    <strong style="color: #047857; font-size: 13px; display: block; margin-bottom: 4px;">Resolution Notes:</strong>
+                                    <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
                                 </div>
-                            ` : ''}
-                            ${report.resolved_at ? `
-                                <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                                    <i class="fas fa-clock" style="color: #6b7280; margin-right: 8px;"></i>
-                                    <span style="color: #6b7280; font-size: 13px;">
-                                        Resolved on: ${report.resolved_at}
-                                    </span>
-                                </div>
-                            ` : ''}
-                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
-                                ${report.resolution_notes}
-                            </p>
-                        </div>
-                    ` : ''}
-                    ${report.status === 'Resolved' && !report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
-                            <div style="display: flex; align-items: center;">
-                                <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
-                                <strong style="color: #d97706; font-size: 14px;">
-                                    Status: Resolved by ${report.resolved_by || 'Admin'}
-                                </strong>
-                            </div>
-                            ${report.auditor_name ? `
-                                <div style="display: flex; align-items: center; margin-top: 8px;">
-                                    <i class="fas fa-user-check" style="color: #2563eb; margin-right: 8px;"></i>
-                                    <span style="color: #374151; font-size: 13px;">
-                                        Audited by: ${report.auditor_name}
-                                    </span>
-                                </div>
-                            ` : ''}
-                            <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
-                                Your report has been marked as resolved. No additional details were provided.
-                            </p>
+                            ` : `
+                                <p style="margin: 8px 0 0 0; color: #64748b; font-size: 13px; font-style: italic;">
+                                    No additional resolution details provided.
+                                </p>
+                            `}
                         </div>
                     ` : ''}
                     <div class="report-actions" style="margin-top: 12px; display: flex; justify-content: flex-end;">
@@ -1148,7 +1072,7 @@ async function loadAllReports() {
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
+                    ${report.status === 'Resolved' ? `
                         <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
                             <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
                                 <strong style="color: #1e40af; font-size: 14px;">Resolution Details</strong>
@@ -1165,7 +1089,11 @@ async function loadAllReports() {
                                     ` : ''}
                                 </div>
                             </div>
-                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                            ${report.resolution_notes ? `
+                                <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                            ` : `
+                                <p style="margin: 8px 0 0 0; color: #64748b; font-size: 14px; font-style: italic;">No resolution details provided.</p>
+                            `}
                         </div>
                     ` : ''}
                 </div>
@@ -1223,4 +1151,3 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
-
