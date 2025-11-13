@@ -51,33 +51,6 @@ function handleStatusChange(selectElement, reportId) {
     }
 }
 
-async function updateStatus(reportId, newStatus) {
-    try {
-        const response = await fetch('/api/update_report_status', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                report_id: reportId,
-                status: newStatus
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showSnackbar('Status updated successfully!');
-            await loadAdminStats();
-            await loadAllReports();
-        } else {
-            showSnackbar(data.message, 'error');
-        }
-    } catch (error) {
-        showSnackbar('Failed to update status', 'error');
-    }
-}
-
 function showResolutionModal(reportId, selectElement) {
     // Create modal if it doesn't exist
     let modal = document.getElementById('resolution-modal');
@@ -89,7 +62,7 @@ function showResolutionModal(reportId, selectElement) {
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Resolution Details</h3>
-                    <button class="close-btn" onclick="document.getElementById('resolution-modal').classList.add('hidden')">&times;</button>
+                    <button class="close-btn" onclick="cancelResolution()">&times;</button>
                 </div>
                 <div class="modal-body">
                     <p>Please provide details on how this issue was resolved:</p>
@@ -108,6 +81,9 @@ function showResolutionModal(reportId, selectElement) {
             </div>
         `;
         document.body.appendChild(modal);
+        
+        // Add event listener for the resolution modal button
+        document.getElementById('confirm-resolution-btn').addEventListener('click', submitResolution);
     }
 
     // Store the current select element and report ID
@@ -123,10 +99,13 @@ function cancelResolution() {
     const modal = document.getElementById('resolution-modal');
     const selectElement = document.getElementById(modal.dataset.selectElement);
     
-    // Reset to previous value
-    selectElement.value = 'In Progress';
+    // Reset to previous value (In Progress)
+    if (selectElement) {
+        selectElement.value = 'In Progress';
+    }
     
     modal.classList.add('hidden');
+    document.getElementById('resolution-notes').value = '';
 }
 
 async function submitResolution() {
@@ -164,17 +143,13 @@ async function submitResolution() {
             showSnackbar(data.message, 'error');
         }
     } catch (error) {
+        console.error('Resolution error:', error);
         showSnackbar('Failed to update report', 'error');
     }
 }
 
-// Update the existing updateStatus function to handle Resolved status differently
+// SINGLE updateStatus function (removed duplicate)
 async function updateStatus(reportId, newStatus) {
-    if (newStatus === 'Resolved') {
-        showResolutionModal(reportId, document.querySelector(`[data-report-id="${reportId}"]`));
-        return;
-    }
-    
     try {
         const response = await fetch('/api/update_report_status', {
             method: 'POST',
@@ -200,13 +175,6 @@ async function updateStatus(reportId, newStatus) {
         showSnackbar('Failed to update status', 'error');
     }
 }
-
-// Add event listener for the resolution modal button
-document.addEventListener('click', function(e) {
-    if (e.target && e.target.id === 'confirm-resolution-btn') {
-        submitResolution();
-    }
-});
 
 // Filter reports by time period
 async function filterReports(period) {
@@ -295,9 +263,6 @@ function displayFilteredReports(reports, period) {
                         <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                         <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
                     </select>
-                    <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
-                        Update
-                    </button>
                     <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
                         <i class="fas fa-trash"></i> Delete
                     </button>
@@ -453,53 +418,6 @@ async function deleteReport(reportId, isAdmin = false) {
         console.error('Delete report error:', error);
         showSnackbar('Failed to delete report', 'error');
     }
-}
-
-// Add confirmation modal for delete (optional enhancement)
-function showDeleteConfirmation(reportId, isAdmin = false) {
-    const modal = document.getElementById('delete-confirmation-modal');
-    if (!modal) {
-        // Create modal if it doesn't exist
-        createDeleteConfirmationModal();
-    }
-    
-    const modalInstance = document.getElementById('delete-confirmation-modal');
-    const confirmBtn = document.getElementById('confirm-delete-btn');
-    
-    // Set up the confirmation button
-    confirmBtn.onclick = function() {
-        deleteReport(reportId, isAdmin);
-        modalInstance.classList.add('hidden');
-    };
-    
-    modalInstance.classList.remove('hidden');
-}
-
-function createDeleteConfirmationModal() {
-    const modalHTML = `
-        <div id="delete-confirmation-modal" class="modal hidden">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h3>Delete Report</h3>
-                    <button class="close-btn" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">&times;</button>
-                </div>
-                <div class="modal-body">
-                    <p>Are you sure you want to delete this report?</p>
-                    <p style="color: #ef4444; font-size: 14px; margin-top: 10px;">This action cannot be undone.</p>
-                </div>
-                <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">
-                        Cancel
-                    </button>
-                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">
-                        Delete Report
-                    </button>
-                </div>
-            </div>
-        </div>
-    `;
-    
-    document.body.insertAdjacentHTML('beforeend', modalHTML);
 }
 
 async function handleLogin(e) {
@@ -1082,9 +1000,6 @@ async function loadAllReports() {
                             <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
                             <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
                         </select>
-                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
-                            Update
-                        </button>
                         <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
                             <i class="fas fa-trash"></i> Delete
                         </button>
@@ -1164,11 +1079,3 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
-
-// Temporary fix function
-function forceShowLogin() {
-    console.log('Manual override: forcing login screen');
-    hideLoading();
-    showScreen('login-screen');
-}
-
