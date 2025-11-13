@@ -145,6 +145,7 @@ with app.app_context():
 # Routes
 
 @app.route('/api/update_report_with_resolution', methods=['POST'])
+@app.route('/api/update_report_with_resolution', methods=['POST'])
 def update_report_with_resolution():
     if 'user_id' not in session or session.get('role') != 'admin':
         return jsonify({'success': False, 'message': 'Unauthorized'})
@@ -155,13 +156,18 @@ def update_report_with_resolution():
         if report:
             report.status = data.get('status')
             report.resolution_notes = data.get('resolution_notes', '')
+            report.resolved_by = session['user_id']  # Track who resolved it
             db.session.commit()
+            
+            # Get admin user info for the notification
+            admin_user = User.query.get(session['user_id'])
+            admin_name = admin_user.username if admin_user else 'Admin'
             
             # Create notification for the user
             notification = Notification(
                 user_id=report.user_id,
                 report_id=report.id,
-                message=f'Your report "{report.problem_type}" has been resolved: {data.get("resolution_notes", "No details provided")}',
+                message=f'Your report "{report.problem_type}" has been resolved by {admin_name}: {data.get("resolution_notes", "No details provided")}',
                 type='status_update'
             )
             db.session.add(notification)
@@ -602,4 +608,5 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
