@@ -59,8 +59,10 @@ class Report(db.Model):
     latitude = db.Column(db.Float)
     longitude = db.Column(db.Float)
     resolution_notes = db.Column(db.Text)
-    auditor_name = db.Column(db.String(100))  # Add this line for auditor name
+    resolved_by = db.Column(db.Integer, db.ForeignKey('users.id'))  # Add this line
+    auditor_name = db.Column(db.String(100))  # Auditor name field
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    resolved_at = db.Column(db.DateTime)  # Add resolution timestamp
 
 class Notification(db.Model):
     __tablename__ = 'notifications'
@@ -85,6 +87,7 @@ class AdminLog(db.Model):
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 # Initialize database
+# Initialize database
 with app.app_context():
     max_retries = 3
     for attempt in range(max_retries):
@@ -99,10 +102,12 @@ with app.app_context():
             db.create_all()
             print("✅ Tables created/verified")
             
-            # Check if resolution_notes column exists using inspector
+            # Check and add missing columns using inspector
             try:
                 inspector = db.inspect(db.engine)
                 columns = [col['name'] for col in inspector.get_columns('reports')]
+                
+                # Check and add resolution_notes
                 if 'resolution_notes' not in columns:
                     print("🔄 Adding resolution_notes column to reports table...")
                     db.session.execute(text('ALTER TABLE reports ADD COLUMN resolution_notes TEXT'))
@@ -110,6 +115,34 @@ with app.app_context():
                     print("✅ resolution_notes column added successfully")
                 else:
                     print("✅ resolution_notes column already exists")
+                
+                # Check and add resolved_by
+                if 'resolved_by' not in columns:
+                    print("🔄 Adding resolved_by column to reports table...")
+                    db.session.execute(text('ALTER TABLE reports ADD COLUMN resolved_by INTEGER REFERENCES users(id)'))
+                    db.session.commit()
+                    print("✅ resolved_by column added successfully")
+                else:
+                    print("✅ resolved_by column already exists")
+                
+                # Check and add auditor_name
+                if 'auditor_name' not in columns:
+                    print("🔄 Adding auditor_name column to reports table...")
+                    db.session.execute(text('ALTER TABLE reports ADD COLUMN auditor_name VARCHAR(100)'))
+                    db.session.commit()
+                    print("✅ auditor_name column added successfully")
+                else:
+                    print("✅ auditor_name column already exists")
+                
+                # Check and add resolved_at
+                if 'resolved_at' not in columns:
+                    print("🔄 Adding resolved_at column to reports table...")
+                    db.session.execute(text('ALTER TABLE reports ADD COLUMN resolved_at TIMESTAMP'))
+                    db.session.commit()
+                    print("✅ resolved_at column added successfully")
+                else:
+                    print("✅ resolved_at column already exists")
+                    
             except Exception as e:
                 print(f"⚠️  Column check failed: {e}")
             
@@ -630,6 +663,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
