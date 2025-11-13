@@ -898,12 +898,34 @@ async function loadAdminDashboard() {
             </button>
         </div>
         
+        <!-- Filter Controls -->
+        <div class="card">
+            <h3>Filter Reports</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-day"></i> Today
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-week"></i> This Week
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-alt"></i> This Month
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar"></i> All Time
+                </button>
+            </div>
+            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
+                Showing: All Time
+            </div>
+        </div>
+        
         <div class="admin-stats" id="admin-stats">
             <!-- Stats will be loaded here -->
         </div>
         
         <div class="card">
-            <h3>Recent Reports</h3>
+            <h3>Reports</h3>
             <div id="admin-reports-list">
                 <!-- Reports will be loaded here -->
             </div>
@@ -1084,6 +1106,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
