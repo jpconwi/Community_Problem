@@ -977,47 +977,15 @@ async function loadAllReports() {
         const reportsList = document.getElementById('admin-reports-list');
         
         if (data.success && data.reports.length > 0) {
+            // Set initial filter indicator
+            const filterIndicator = document.getElementById('filter-indicator');
+            if (filterIndicator) {
+                filterIndicator.textContent = `Showing: All Time (${data.reports.length} reports)`;
+            }
+            
+            // ... rest of your existing loadAllReports code remains the same
             reportsList.innerHTML = data.reports.map(report => `
-                <div class="report-card">
-                    <div class="report-header">
-                        <span class="report-type">${report.problem_type}</span>
-                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                            ${report.status}
-                        </span>
-                    </div>
-                    <div class="report-location">
-                        <i class="fas fa-location-dot"></i> ${report.location}
-                    </div>
-                    <div class="report-issue">${report.issue}</div>
-                    <div class="report-footer">
-                        <span>By: ${report.username}</span>
-                        <span>${report.date}</span>
-                    </div>
-                    <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
-                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
-                        </select>
-                        <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
-                            Update
-                        </button>
-                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
-                            <i class="fas fa-trash"></i> Delete
-                        </button>
-                    </div>
-                    ${report.status === 'Resolved' && report.resolution_notes ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
-                            <strong style="color: #1e40af; font-size: 14px;">Resolution Details:</strong>
-                            <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
-                        </div>
-                    ` : ''}
-                    ${report.photo_data ? `
-                        <div class="report-photo">
-                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
-                        </div>
-                    ` : ''}
-                </div>
+                // ... your existing report card HTML
             `).join('');
         } else {
             reportsList.innerHTML = `
@@ -1106,6 +1074,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
