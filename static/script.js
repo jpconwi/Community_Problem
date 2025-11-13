@@ -20,7 +20,6 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Event listeners
-// Event listeners
 function setupEventListeners() {
     // Login form
     const loginForm = document.getElementById('login-form');
@@ -332,6 +331,7 @@ function displayFilteredReports(reports, period) {
         `;
     }
 }
+
 // Show detailed audit information
 function showAuditInfo(report) {
     const modal = document.getElementById('audit-info-modal');
@@ -391,7 +391,6 @@ function updateFilterStats(reports) {
         `;
     }
 }
-
 
 // Authentication functions
 async function checkAuthStatus() {
@@ -1131,5 +1130,3 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
-
-
