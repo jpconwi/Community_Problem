@@ -526,6 +526,24 @@ def get_all_reports():
         except:
             report_data['resolved_by'] = None
             
+        # Add auditor_name info if available
+        try:
+            if hasattr(report, 'auditor_name'):
+                report_data['auditor_name'] = report.auditor_name
+            else:
+                report_data['auditor_name'] = None
+        except:
+            report_data['auditor_name'] = None
+            
+        # Add resolved_at info if available
+        try:
+            if hasattr(report, 'resolved_at') and report.resolved_at:
+                report_data['resolved_at'] = report.resolved_at.strftime('%Y-%m-%d %H:%M:%S')
+            else:
+                report_data['resolved_at'] = None
+        except:
+            report_data['resolved_at'] = None
+            
         reports_data.append(report_data)
     
     return jsonify({'success': True, 'reports': reports_data})
@@ -694,6 +712,7 @@ def logout():
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
