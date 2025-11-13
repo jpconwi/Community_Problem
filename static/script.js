@@ -4,15 +4,83 @@ let stream = null;
 let photoData = null;
 let authCheckTimeout;
 
+// Initialize app
 document.addEventListener('DOMContentLoaded', function() {
-    // This will be added when the modal is created, but we can also add it here for safety
-    document.addEventListener('click', function(e) {
-        if (e.target && e.target.id === 'confirm-resolution-btn') {
-            submitResolution();
-        }
-    });
+    console.log('DOM loaded, starting auth check...');
+    
+    // Set a timeout to ensure loading screen doesn't stay forever
+    authCheckTimeout = setTimeout(() => {
+        console.log('Auth check timeout reached, forcing login screen');
+        hideLoading();
+        showScreen('login-screen');
+    }, 5000); // 5 second timeout
+    
+    checkAuthStatus();
+    setupEventListeners();
 });
 
+// Event listeners
+function setupEventListeners() {
+    // Login form
+    const loginForm = document.getElementById('login-form');
+    if (loginForm) {
+        loginForm.addEventListener('submit', handleLogin);
+    }
+    
+    // Register form
+    const registerForm = document.getElementById('register-form');
+    if (registerForm) {
+        registerForm.addEventListener('submit', handleRegister);
+    }
+    
+    // Report form
+    const reportForm = document.getElementById('report-form');
+    if (reportForm) {
+        reportForm.addEventListener('submit', handleReportSubmit);
+    }
+}
+
+// Handle status changes in admin dashboard
+function handleStatusChange(selectElement, reportId) {
+    const newStatus = selectElement.value;
+    
+    if (newStatus === 'Resolved') {
+        showResolutionModal(reportId, selectElement);
+    } else {
+        // For other status changes, update immediately
+        updateStatus(reportId, newStatus);
+    }
+}
+
+// Update status for non-resolved changes
+async function updateStatus(reportId, newStatus) {
+    try {
+        const response = await fetch('/api/update_report_status', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: reportId,
+                status: newStatus
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showSnackbar('Status updated successfully!');
+            await loadAdminStats();
+            await loadAllReports();
+        } else {
+            showSnackbar(data.message, 'error');
+        }
+    } catch (error) {
+        showSnackbar('Failed to update status', 'error');
+    }
+}
+
+// Resolution modal functions
 function showResolutionModal(reportId, selectElement) {
     // Create modal if it doesn't exist
     let modal = document.getElementById('resolution-modal');
@@ -103,38 +171,20 @@ async function submitResolution() {
             await loadAllReports();
         } else {
             showSnackbar(data.message, 'error');
+            // Reset the select element if failed
+            const selectElement = document.getElementById(modal.dataset.selectElement);
+            if (selectElement) {
+                selectElement.value = 'In Progress';
+            }
         }
     } catch (error) {
         console.error('Resolution error:', error);
         showSnackbar('Failed to update report', 'error');
-    }
-}
-
-// SINGLE updateStatus function (removed duplicate)
-async function updateStatus(reportId, newStatus) {
-    try {
-        const response = await fetch('/api/update_report_status', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-                report_id: reportId,
-                status: newStatus
-            })
-        });
-        
-        const data = await response.json();
-        
-        if (data.success) {
-            showSnackbar('Status updated successfully!');
-            await loadAdminStats();
-            await loadAllReports();
-        } else {
-            showSnackbar(data.message, 'error');
+        // Reset the select element if error
+        const selectElement = document.getElementById(modal.dataset.selectElement);
+        if (selectElement) {
+            selectElement.value = 'In Progress';
         }
-    } catch (error) {
-        showSnackbar('Failed to update status', 'error');
     }
 }
 
@@ -1041,5 +1091,3 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
-
-
