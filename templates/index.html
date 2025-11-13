@@ -490,6 +490,162 @@ async function loadMyReports() {
 
         // Load admin reports with delete buttons
         // Load admin reports with delete buttons
+// Load admin reports with delete buttons
+        // Add these new filtering functions after the existing loadAllReports() function
+
+// Filter reports by time period
+async function filterReports(period) {
+    try {
+        const response = await fetch('/api/all_reports');
+        const data = await response.json();
+        
+        if (data.success && data.reports.length > 0) {
+            const now = new Date();
+            let filteredReports = [];
+            
+            switch(period) {
+                case 'today':
+                    filteredReports = data.reports.filter(report => {
+                        const reportDate = new Date(report.date);
+                        return reportDate.toDateString() === now.toDateString();
+                    });
+                    break;
+                    
+                case 'week':
+                    const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                    filteredReports = data.reports.filter(report => {
+                        const reportDate = new Date(report.date);
+                        return reportDate >= oneWeekAgo;
+                    });
+                    break;
+                    
+                case 'month':
+                    const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                    filteredReports = data.reports.filter(report => {
+                        const reportDate = new Date(report.date);
+                        return reportDate >= oneMonthAgo;
+                    });
+                    break;
+                    
+                case 'all':
+                default:
+                    filteredReports = data.reports;
+                    break;
+            }
+            
+            displayFilteredReports(filteredReports, period);
+            updateFilterStats(filteredReports);
+        } else {
+            document.getElementById('admin-reports-list').innerHTML = `
+                <div style="text-align: center; padding: 20px; color: #64748b;">
+                    <p>No reports found</p>
+                </div>
+            `;
+        }
+    } catch (error) {
+        console.error('Failed to filter reports:', error);
+        showSnackbar('Failed to filter reports', 'error');
+    }
+}
+
+// Display filtered reports
+function displayFilteredReports(reports, period) {
+    const reportsList = document.getElementById('admin-reports-list');
+    
+    if (reports.length > 0) {
+        reportsList.innerHTML = reports.map(report => `
+            <div class="report-card">
+                <div class="report-header">
+                    <span class="report-type">${report.problem_type}</span>
+                    <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                        ${report.status}
+                    </span>
+                </div>
+                <div class="report-location">
+                    <i class="fas fa-location-dot"></i> ${report.location}
+                </div>
+                <div class="report-issue">${report.issue}</div>
+                <div class="report-footer">
+                    <span>By: ${report.username}</span>
+                    <span>${report.date}</span>
+                </div>
+                ${report.photo_data ? `
+                    <div class="report-photo">
+                        <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                    </div>
+                ` : ''}
+                <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
+                    <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
+                        <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                    </select>
+                    <button class="btn btn-outline" onclick="updateStatus(${report.id}, this.parentElement.querySelector('.status-select').value)" style="padding: 8px 12px; flex: 1;">
+                        Update
+                    </button>
+                    <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+                ${report.status === 'Resolved' && report.resolution_notes ? `
+                    <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                        <strong style="color: #1e40af; font-size: 14px;">Resolution Details:</strong>
+                        <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
+        // Update filter indicator
+        const filterIndicator = document.getElementById('filter-indicator');
+        if (filterIndicator) {
+            const periodText = period === 'today' ? 'Today' : 
+                             period === 'week' ? 'This Week' : 
+                             period === 'month' ? 'This Month' : 'All Time';
+            filterIndicator.textContent = `Showing: ${periodText} (${reports.length} reports)`;
+        }
+    } else {
+        const periodText = period === 'today' ? 'today' : 
+                         period === 'week' ? 'this week' : 
+                         period === 'month' ? 'this month' : 'all time';
+        reportsList.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
+                <p>No reports found for ${periodText}</p>
+            </div>
+        `;
+    }
+}
+
+// Update stats for filtered reports
+function updateFilterStats(reports) {
+    const total = reports.length;
+    const pending = reports.filter(r => r.status === 'Pending').length;
+    const inProgress = reports.filter(r => r.status === 'In Progress').length;
+    const resolved = reports.filter(r => r.status === 'Resolved').length;
+    
+    const statsContainer = document.getElementById('admin-stats');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <div class="admin-stat-card">
+                <div class="admin-stat-value">${total}</div>
+                <div class="admin-stat-label">Total Reports</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-value">${pending}</div>
+                <div class="admin-stat-label">Pending</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-value">${inProgress}</div>
+                <div class="admin-stat-label">In Progress</div>
+            </div>
+            <div class="admin-stat-card">
+                <div class="admin-stat-value">${resolved}</div>
+                <div class="admin-stat-label">Resolved</div>
+            </div>
+        `;
+    }
+}
 async function loadAllReports() {
     try {
         const response = await fetch('/api/all_reports');
@@ -498,6 +654,12 @@ async function loadAllReports() {
         const reportsList = document.getElementById('admin-reports-list');
         
         if (data.success && data.reports.length > 0) {
+            // Set initial filter indicator
+            const filterIndicator = document.getElementById('filter-indicator');
+            if (filterIndicator) {
+                filterIndicator.textContent = `Showing: All Time (${data.reports.length} reports)`;
+            }
+            
             reportsList.innerHTML = data.reports.map(report => `
                 <div class="report-card">
                     <div class="report-header">
@@ -556,6 +718,7 @@ async function loadAllReports() {
     </script>
 </body>
 </html>
+
 
 
 
