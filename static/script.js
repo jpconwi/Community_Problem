@@ -809,7 +809,9 @@ async function loadMyReports() {
                         <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #10b981;">
                             <div style="display: flex; align-items: center; margin-bottom: 8px;">
                                 <i class="fas fa-check-circle" style="color: #10b981; margin-right: 8px;"></i>
-                                <strong style="color: #047857; font-size: 14px;">Admin Resolution:</strong>
+                                <strong style="color: #047857; font-size: 14px;">
+                                    Resolved by ${report.resolved_by || 'Admin'}
+                                </strong>
                             </div>
                             <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4; background: white; padding: 10px; border-radius: 6px; border: 1px solid #d1fae5;">
                                 ${report.resolution_notes}
@@ -820,10 +822,12 @@ async function loadMyReports() {
                         <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #fef3c7; border-radius: 8px; border-left: 4px solid #f59e0b;">
                             <div style="display: flex; align-items: center;">
                                 <i class="fas fa-info-circle" style="color: #f59e0b; margin-right: 8px;"></i>
-                                <strong style="color: #d97706; font-size: 14px;">Status: Resolved</strong>
+                                <strong style="color: #d97706; font-size: 14px;">
+                                    Status: Resolved by ${report.resolved_by || 'Admin'}
+                                </strong>
                             </div>
                             <p style="margin: 8px 0 0 0; color: #92400e; font-size: 13px;">
-                                Your report has been marked as resolved. No additional details were provided by the admin.
+                                Your report has been marked as resolved. No additional details were provided.
                             </p>
                         </div>
                     ` : ''}
@@ -1074,6 +1078,7 @@ function forceShowLogin() {
     hideLoading();
     showScreen('login-screen');
 }
+
 
 
 
