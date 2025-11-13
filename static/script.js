@@ -84,6 +84,7 @@ async function updateStatus(reportId, newStatus) {
     }
 }
 
+
 // Resolution modal functions
 function showResolutionModal(reportId, selectElement) {
     console.log(`📝 Showing resolution modal for report ${reportId}`);
@@ -102,8 +103,15 @@ function showResolutionModal(reportId, selectElement) {
                 </div>
                 <div class="modal-body">
                     <p>Please provide details on how this issue was resolved:</p>
+                    
                     <div class="form-group">
-                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;"></textarea>
+                        <i class="fas fa-user-check"></i>
+                        <input type="text" id="auditor-name" placeholder="Enter your name (auditor)" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <i class="fas fa-file-lines"></i>
+                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;" required></textarea>
                     </div>
                 </div>
                 <div class="modal-actions">
@@ -123,16 +131,95 @@ function showResolutionModal(reportId, selectElement) {
     modal.dataset.reportId = reportId;
     modal.dataset.selectElement = selectElement.id;
     
-    // Clear previous notes
+    // Clear previous inputs
+    document.getElementById('auditor-name').value = '';
     document.getElementById('resolution-notes').value = '';
     
     // Show modal
     modal.classList.remove('hidden');
-    document.getElementById('resolution-notes').focus();
+    document.getElementById('auditor-name').focus();
     
     // Add event listener for the resolution modal button (remove previous ones first)
     const confirmBtn = document.getElementById('confirm-resolution-btn');
     confirmBtn.onclick = submitResolution;
+}
+
+function cancelResolution() {
+    console.log('❌ Resolution cancelled');
+    const modal = document.getElementById('resolution-modal');
+    const selectElement = document.getElementById(modal.dataset.selectElement);
+    
+    // Reset to previous value (In Progress)
+    if (selectElement) {
+        selectElement.value = 'In Progress';
+    }
+    
+    modal.classList.add('hidden');
+    document.getElementById('auditor-name').value = '';
+    document.getElementById('resolution-notes').value = '';
+}
+
+async function submitResolution() {
+    const modal = document.getElementById('resolution-modal');
+    const reportId = modal.dataset.reportId;
+    const auditorName = document.getElementById('auditor-name').value;
+    const resolutionNotes = document.getElementById('resolution-notes').value;
+    
+    console.log(`📤 Submitting resolution for report ${reportId}:`, { auditorName, resolutionNotes });
+    
+    if (!auditorName.trim()) {
+        showSnackbar('Please enter your name as auditor', 'error');
+        document.getElementById('auditor-name').focus();
+        return;
+    }
+    
+    if (!resolutionNotes.trim()) {
+        showSnackbar('Please provide resolution details', 'error');
+        document.getElementById('resolution-notes').focus();
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/update_report_with_resolution', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                report_id: parseInt(reportId),
+                status: 'Resolved',
+                auditor_name: auditorName,
+                resolution_notes: resolutionNotes
+            })
+        });
+        
+        const data = await response.json();
+        console.log('Resolution submission response:', data);
+        
+        if (data.success) {
+            showSnackbar('Report resolved successfully!');
+            modal.classList.add('hidden');
+            document.getElementById('auditor-name').value = '';
+            document.getElementById('resolution-notes').value = '';
+            await loadAdminStats();
+            await loadAllReports();
+        } else {
+            showSnackbar(data.message, 'error');
+            // Reset the select element if failed
+            const selectElement = document.getElementById(modal.dataset.selectElement);
+            if (selectElement) {
+                selectElement.value = 'In Progress';
+            }
+        }
+    } catch (error) {
+        console.error('Resolution error:', error);
+        showSnackbar('Failed to update report', 'error');
+        // Reset the select element if error
+        const selectElement = document.getElementById(modal.dataset.selectElement);
+        if (selectElement) {
+            selectElement.value = 'In Progress';
+        }
+    }
 }
 
 function cancelResolution() {
@@ -1136,3 +1223,4 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
+
