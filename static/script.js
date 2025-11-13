@@ -18,6 +18,193 @@ document.addEventListener('DOMContentLoaded', function() {
     checkAuthStatus();
     setupEventListeners();
 });
+// Add this function to check for new reports notifications
+async function checkNewReportsNotification() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    
+    try {
+        const response = await fetch('/api/new_reports_count');
+        const data = await response.json();
+        
+        if (data.success && data.count > 0) {
+            showNewReportsNotification(data.count);
+        }
+    } catch (error) {
+        console.error('Failed to check new reports:', error);
+    }
+}
+
+// Function to show new reports notification
+function showNewReportsNotification(count) {
+    // Remove existing notification if any
+    const existingNotification = document.getElementById('new-reports-notification');
+    if (existingNotification) {
+        existingNotification.remove();
+    }
+    
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.id = 'new-reports-notification';
+    notification.innerHTML = `
+        <div class="new-reports-alert">
+            <div class="alert-content">
+                <i class="fas fa-bell"></i>
+                <div class="alert-text">
+                    <strong>${count} new report${count > 1 ? 's' : ''} submitted!</strong>
+                    <span>Click to view</span>
+                </div>
+                <button class="alert-close" onclick="this.parentElement.parentElement.remove()">
+                    <i class="fas fa-times"></i>
+                </button>
+            </div>
+        </div>
+    `;
+    
+    // Add click handler to load reports
+    notification.addEventListener('click', function() {
+        loadAllReports();
+        this.remove();
+    });
+    
+    document.body.appendChild(notification);
+    
+    // Auto-remove after 10 seconds
+    setTimeout(() => {
+        if (notification.parentElement) {
+            notification.remove();
+        }
+    }, 10000);
+}
+
+// Update the loadAdminDashboard function to include notification check
+async function loadAdminDashboard() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    
+    const adminContainer = document.querySelector('.admin-container');
+    adminContainer.innerHTML = `
+        <div class="screen-header">
+            <h2>Admin Dashboard</h2>
+            <div style="display: flex; align-items: center; gap: 10px;">
+                <button class="btn btn-outline" onclick="checkNewReportsNotification()" title="Check for new reports">
+                    <i class="fas fa-sync-alt"></i>
+                    Refresh
+                </button>
+                <button class="btn btn-danger" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+        
+        <!-- Notification Status -->
+        <div id="admin-notification-status" class="notification-status hidden">
+            <!-- New reports notification will appear here -->
+        </div>
+        
+        <!-- Filter Controls -->
+        <div class="card">
+            <h3>Filter Reports</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-day"></i> Today
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-week"></i> This Week
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-alt"></i> This Month
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar"></i> All Time
+                </button>
+            </div>
+            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
+                Showing: All Time
+            </div>
+        </div>
+        
+        <div class="admin-stats" id="admin-stats">
+            <!-- Stats will be loaded here -->
+        </div>
+        
+        <div class="card">
+            <h3>Reports</h3>
+            <div id="admin-reports-list">
+                <!-- Reports will be loaded here -->
+            </div>
+        </div>
+    `;
+    
+    await loadAdminStats();
+    await loadAllReports();
+    await checkNewReportsNotification(); // Check for new reports when dashboard loads
+}
+
+// Update the checkAuthStatus function to setup periodic checking for admins
+async function checkAuthStatus() {
+    try {
+        console.log('Checking auth status...');
+        const response = await fetch('/api/user_info');
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Auth response:', data);
+        
+        // Clear the timeout since we got a response
+        clearTimeout(authCheckTimeout);
+        
+        if (data.success) {
+            currentUser = data.user;
+            if (currentUser.role === 'admin') {
+                showScreen('admin-dashboard');
+                loadAdminDashboard();
+                // Setup periodic checking for new reports (every 30 seconds)
+                setupPeriodicReportCheck();
+            } else {
+                showScreen('user-dashboard');
+                loadUserDashboard();
+            }
+        } else {
+            console.log('Not logged in, showing login screen');
+            showScreen('login-screen');
+        }
+    } catch (error) {
+        console.error('Auth check failed:', error);
+        // Clear the timeout on error too
+        clearTimeout(authCheckTimeout);
+        showScreen('login-screen');
+    } finally {
+        hideLoading();
+    }
+}
+
+// Setup periodic checking for new reports (admin only)
+function setupPeriodicReportCheck() {
+    if (currentUser && currentUser.role === 'admin') {
+        // Check every 30 seconds
+        setInterval(async () => {
+            try {
+                const response = await fetch('/api/new_reports_count');
+                const data = await response.json();
+                
+                if (data.success && data.count > 0) {
+                    showNewReportsNotification(data.count);
+                }
+            } catch (error) {
+                console.error('Periodic report check failed:', error);
+            }
+        }, 30000); // 30 seconds
+    }
+}
+
+// Add this to the existing utility functions section
+function setupRealTimeNotifications() {
+    // This could be extended with WebSockets or Server-Sent Events for real-time updates
+    console.log('Setting up real-time notifications...');
+}
 
 // Event listeners
 function setupEventListeners() {
@@ -1151,3 +1338,4 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
+
