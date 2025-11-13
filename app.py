@@ -709,9 +709,35 @@ def logout():
     session.clear()
     return jsonify({'success': True, 'message': 'Logged out successfully!'})
 
+
+@app.route('/api/admin_audit_logs')
+def get_admin_audit_logs():
+    if 'user_id' not in session or session.get('role') != 'admin':
+        return jsonify({'success': False, 'message': 'Unauthorized'})
+    
+    try:
+        logs = AdminLog.query.order_by(AdminLog.created_at.desc()).limit(50).all()
+        logs_data = []
+        for log in logs:
+            admin_user = User.query.get(log.admin_id)
+            logs_data.append({
+                'id': log.id,
+                'admin_name': admin_user.username if admin_user else 'Unknown',
+                'action': log.action,
+                'target_type': log.target_type,
+                'target_id': log.target_id,
+                'details': log.details,
+                'created_at': log.created_at.strftime('%Y-%m-%d %H:%M:%S')
+            })
+        
+        return jsonify({'success': True, 'logs': logs_data})
+    except Exception as e:
+        return jsonify({'success': False, 'message': 'Failed to load audit logs'})
+
 if __name__ == '__main__':
     port = int(os.environ.get('PORT', 5000))
     app.run(host='0.0.0.0', port=port, debug=False)
+
 
 
 
