@@ -1,0 +1,16 @@
+{
+    "name": "CommunityCare Report System",
+    "short_name": "CommunityCare",
+    "description": "Report community issues with ease",
+    "start_url": "/",
+    "display": "standalone",
+    "background_color": "#f8fafc",
+    "theme_color": "#2563eb",
+    "icons": [
+        {
+            "src": "/static/favicon.ico",
+            "sizes": "64x64",
+            "type": "image/x-icon"
+        }
+    ]
+}
