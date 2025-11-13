@@ -322,6 +322,35 @@ function displayFilteredReports(reports, period) {
         `;
     }
 }
+// Show detailed audit information
+function showAuditInfo(report) {
+    const modal = document.getElementById('audit-info-modal');
+    
+    // Populate audit information
+    document.getElementById('audit-report-id').textContent = report.id || '-';
+    document.getElementById('audit-submitter').textContent = report.username || 'Unknown';
+    document.getElementById('audit-submitted-date').textContent = report.date || '-';
+    document.getElementById('audit-resolver').textContent = report.resolved_by || 'Not resolved';
+    document.getElementById('audit-auditor').textContent = report.auditor_name || 'Not audited';
+    document.getElementById('audit-resolved-date').textContent = report.resolved_at || 'Not resolved';
+    document.getElementById('audit-resolution-notes').textContent = report.resolution_notes || 'No resolution notes provided';
+    
+    modal.classList.remove('hidden');
+}
+
+// Enhanced delete with modal confirmation
+function showDeleteConfirmation(reportId, isAdmin = false) {
+    const modal = document.getElementById('delete-confirmation-modal');
+    const confirmBtn = document.getElementById('confirm-delete-btn');
+    
+    // Set up the confirmation button
+    confirmBtn.onclick = function() {
+        deleteReport(reportId, isAdmin);
+        modal.classList.add('hidden');
+    };
+    
+    modal.classList.remove('hidden');
+}
 
 // Update stats for filtered reports
 function updateFilterStats(reports) {
@@ -352,6 +381,7 @@ function updateFilterStats(reports) {
         `;
     }
 }
+
 
 // Authentication functions
 async function checkAuthStatus() {
@@ -1091,3 +1121,4 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
+
