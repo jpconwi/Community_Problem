@@ -1129,6 +1129,8 @@ async function loadNotificationsCount() {
 async function handleReportSubmit(e) {
     e.preventDefault();
     
+    console.log('Report form submitted'); // Debug log
+    
     if (!currentUser) {
         showSnackbar('Please login first!', 'error');
         return;
@@ -1139,12 +1141,20 @@ async function handleReportSubmit(e) {
     const issue = document.getElementById('issue').value;
     const priority = document.getElementById('priority').value;
     
+    console.log('Form data:', { problemType, location, issue, priority }); // Debug log
+    
     if (!problemType || !location || !issue) {
         showSnackbar('Please fill in all required fields!', 'error');
         return;
     }
     
     try {
+        // Show loading state
+        const submitBtn = document.getElementById('submit-report-btn');
+        const originalText = submitBtn.innerHTML;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Submitting...';
+        submitBtn.disabled = true;
+        
         const response = await fetch('/api/submit_report', {
             method: 'POST',
             headers: {
@@ -1160,17 +1170,26 @@ async function handleReportSubmit(e) {
         });
         
         const data = await response.json();
+        console.log('Submit response:', data); // Debug log
         
         if (data.success) {
             showSnackbar('Report submitted successfully!');
             document.getElementById('report-form').reset();
             removePhoto();
-            await loadStats();
+            await loadStats(); // Refresh stats
         } else {
-            showSnackbar(data.message, 'error');
+            showSnackbar(data.message || 'Failed to submit report', 'error');
         }
     } catch (error) {
+        console.error('Report submission error:', error);
         showSnackbar('Failed to submit report. Please try again.', 'error');
+    } finally {
+        // Reset button state
+        const submitBtn = document.getElementById('submit-report-btn');
+        if (submitBtn) {
+            submitBtn.innerHTML = '<i class="fas fa-paper-plane"></i> Submit Report';
+            submitBtn.disabled = false;
+        }
     }
 }
 
@@ -1683,4 +1702,5 @@ function showMyReports() {
     showScreen('my-reports-screen');
     loadMyReports();
 }
+
 
