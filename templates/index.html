@@ -4,9 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>CommunityCare - Report System</title>
-    <!-- Add to head section of index.html -->
-<link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-<meta name="theme-color" content="#2563eb">
+    <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
+    <meta name="theme-color" content="#2563eb">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
@@ -108,109 +107,109 @@
         </div>
 
         <!-- User Dashboard -->
-<div id="user-dashboard" class="screen">
-    <div class="dashboard-container">
-        <div class="header">
-            <div class="user-info">
-                <h2 id="user-name">User</h2>
-                <p>Welcome back!</p>
-            </div>
-            <button class="icon-btn" onclick="showNotifications()">
-                <i class="fas fa-bell"></i>
-                <span id="notification-badge" class="badge hidden">0</span>
-            </button>
-        </div>
-
-        <div class="stats-card">
-            <div class="stat-item">
-                <i class="fas fa-file-alt" style="color: #2563eb;"></i>
-                <span class="stat-label">My Reports</span>
-                <span class="stat-value" id="user-reports-count">0</span>
-            </div>
-            <div class="stat-divider"></div>
-            <div class="stat-item">
-                <i class="fas fa-clock" style="color: #f59e0b;"></i>
-                <span class="stat-label">Pending</span>
-                <span class="stat-value" id="user-pending-count">0</span>
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Submit New Report</h3>
-            <form id="report-form">
-                <div class="form-group">
-                    <i class="fas fa-tag"></i>
-                    <select id="problem-type" required>
-                        <option value="">Select Problem Type</option>
-                        <option value="Pothole">Pothole</option>
-                        <option value="Garbage Collection">Garbage Collection</option>
-                        <option value="Street Light">Street Light</option>
-                        <option value="Water Leak">Water Leak</option>
-                        <option value="Noise Complaint">Noise Complaint</option>
-                        <option value="Other">Other</option>
-                    </select>
-                </div>
-
-                <div class="form-group">
-                    <i class="fas fa-location-dot"></i>
-                    <input type="text" id="location" placeholder="Location" required>
-                </div>
-
-                <div class="form-group">
-                    <i class="fas fa-file-lines"></i>
-                    <textarea id="issue" placeholder="Describe the issue..." rows="3" required></textarea>
-                </div>
-
-                <div class="form-group">
-                    <i class="fas fa-flag"></i>
-                    <select id="priority">
-                        <option value="Low">Low Priority</option>
-                        <option value="Medium" selected>Medium Priority</option>
-                        <option value="High">High Priority</option>
-                        <option value="Urgent">Urgent</option>
-                    </select>
-                </div>
-
-                <div class="photo-upload-section">
-                    <div class="photo-actions">
-                        <button type="button" class="btn btn-outline" onclick="openCamera()">
-                            <i class="fas fa-camera"></i>
-                            Take Photo
-                        </button>
-                        <button type="button" class="btn btn-outline" onclick="document.getElementById('file-upload').click()">
-                            <i class="fas fa-upload"></i>
-                            Upload Photo
-                        </button>
-                        <input type="file" id="file-upload" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files[0])">
+        <div id="user-dashboard" class="screen">
+            <div class="dashboard-container">
+                <div class="header">
+                    <div class="user-info">
+                        <h2 id="user-name">User</h2>
+                        <p>Welcome back!</p>
                     </div>
+                    <button class="icon-btn" onclick="showNotifications()">
+                        <i class="fas fa-bell"></i>
+                        <span id="notification-badge" class="badge hidden">0</span>
+                    </button>
+                </div>
 
-                    <div id="photo-preview" class="photo-preview hidden">
-                        <img id="preview-image" src="" alt="Preview">
-                        <button type="button" class="remove-photo" onclick="removePhoto()">
-                            <i class="fas fa-times"></i>
-                        </button>
+                <div class="stats-card">
+                    <div class="stat-item">
+                        <i class="fas fa-file-alt" style="color: #2563eb;"></i>
+                        <span class="stat-label">My Reports</span>
+                        <span class="stat-value" id="user-reports-count">0</span>
+                    </div>
+                    <div class="stat-divider"></div>
+                    <div class="stat-item">
+                        <i class="fas fa-clock" style="color: #f59e0b;"></i>
+                        <span class="stat-label">Pending</span>
+                        <span class="stat-value" id="user-pending-count">0</span>
                     </div>
                 </div>
 
-                <button type="submit" class="btn btn-primary" id="submit-report-btn">
-                    <i class="fas fa-paper-plane"></i>
-                    Submit Report
-                </button>
-            </form>
-        </div>
+                <div class="card">
+                    <h3>Submit New Report</h3>
+                    <form id="report-form">
+                        <div class="form-group">
+                            <i class="fas fa-tag"></i>
+                            <select id="problem-type" required>
+                                <option value="">Select Problem Type</option>
+                                <option value="Pothole">Pothole</option>
+                                <option value="Garbage Collection">Garbage Collection</option>
+                                <option value="Street Light">Street Light</option>
+                                <option value="Water Leak">Water Leak</option>
+                                <option value="Noise Complaint">Noise Complaint</option>
+                                <option value="Other">Other</option>
+                            </select>
+                        </div>
 
-        <div class="action-buttons">
-            <button class="btn btn-outline" onclick="showMyReports()">
-                <i class="fas fa-list"></i>
-                My Reports
-            </button>
-            <button class="btn btn-outline" onclick="logout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Logout
-            </button>
+                        <div class="form-group">
+                            <i class="fas fa-location-dot"></i>
+                            <input type="text" id="location" placeholder="Location" required>
+                        </div>
+
+                        <div class="form-group">
+                            <i class="fas fa-file-lines"></i>
+                            <textarea id="issue" placeholder="Describe the issue..." rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <i class="fas fa-flag"></i>
+                            <select id="priority">
+                                <option value="Low">Low Priority</option>
+                                <option value="Medium" selected>Medium Priority</option>
+                                <option value="High">High Priority</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div class="photo-upload-section">
+                            <div class="photo-actions">
+                                <button type="button" class="btn btn-outline" onclick="openCamera()">
+                                    <i class="fas fa-camera"></i>
+                                    Take Photo
+                                </button>
+                                <button type="button" class="btn btn-outline" onclick="document.getElementById('file-upload').click()">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Photo
+                                </button>
+                                <input type="file" id="file-upload" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files[0])">
+                            </div>
+
+                            <div id="photo-preview" class="photo-preview hidden">
+                                <img id="preview-image" src="" alt="Preview">
+                                <button type="button" class="remove-photo" onclick="removePhoto()">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+
+                        <button type="submit" class="btn btn-primary" id="submit-report-btn">
+                            <i class="fas fa-paper-plane"></i>
+                            Submit Report
+                        </button>
+                    </form>
+                </div>
+
+                <div class="action-buttons">
+                    <button class="btn btn-outline" onclick="showMyReports()">
+                        <i class="fas fa-list"></i>
+                        My Reports
+                    </button>
+                    <button class="btn btn-outline" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
         </div>
-    </div>
-</div>
 
         <!-- My Reports Screen -->
         <div id="my-reports-screen" class="screen">
@@ -570,6 +569,3 @@
     </style>
 </body>
 </html>
-
-
-
