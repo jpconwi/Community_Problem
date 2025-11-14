@@ -33,10 +33,13 @@ function setupEventListeners() {
         registerForm.addEventListener('submit', handleRegister);
     }
     
-    // Report form
+    // Report form - FIXED: Add proper event listener
     const reportForm = document.getElementById('report-form');
     if (reportForm) {
-        reportForm.addEventListener('submit', handleReportSubmit);
+        reportForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            handleReportSubmit(e);
+        });
     }
 }
 
@@ -1680,3 +1683,4 @@ function showMyReports() {
     showScreen('my-reports-screen');
     loadMyReports();
 }
+
