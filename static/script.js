@@ -1600,3 +1600,83 @@ function togglePassword(inputId) {
         icon.className = 'fas fa-eye';
     }
 }
+
+// Dropdown functionality
+function toggleDropdown() {
+    const dropdown = document.getElementById('account-dropdown');
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+    
+    // Close all other dropdowns
+    document.querySelectorAll('.dropdown-menu').forEach(menu => {
+        if (menu !== dropdown) {
+            menu.classList.add('hidden');
+        }
+    });
+    
+    // Toggle current dropdown
+    dropdown.classList.toggle('hidden');
+    dropdownBtn.classList.toggle('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdowns = document.querySelectorAll('.dropdown-menu');
+    const dropdownBtns = document.querySelectorAll('.dropdown-btn');
+    
+    let isClickInsideDropdown = false;
+    
+    dropdowns.forEach(dropdown => {
+        if (dropdown.contains(event.target)) {
+            isClickInsideDropdown = true;
+        }
+    });
+    
+    dropdownBtns.forEach(btn => {
+        if (btn.contains(event.target)) {
+            isClickInsideDropdown = true;
+        }
+    });
+    
+    if (!isClickInsideDropdown) {
+        dropdowns.forEach(dropdown => {
+            dropdown.classList.add('hidden');
+        });
+        dropdownBtns.forEach(btn => {
+            btn.classList.remove('active');
+        });
+    }
+});
+
+// Close dropdown when a menu item is clicked
+function closeDropdown() {
+    const dropdown = document.getElementById('account-dropdown');
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+    
+    dropdown.classList.add('hidden');
+    dropdownBtn.classList.remove('active');
+}
+
+// Update the logout function to close dropdown
+async function logout() {
+    try {
+        const response = await fetch('/api/logout');
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = null;
+            photoData = null;
+            closeDropdown(); // Close dropdown before navigating
+            showScreen('login-screen');
+            showSnackbar('Logged out successfully!');
+        }
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
+}
+
+// Update showMyReports to close dropdown
+function showMyReports() {
+    closeDropdown(); // Close dropdown before navigating
+    showScreen('my-reports-screen');
+    loadMyReports();
+}
