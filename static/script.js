@@ -1703,4 +1703,30 @@ function showMyReports() {
     loadMyReports();
 }
 
+// Form validation
+function validateReportForm() {
+    const problemType = document.getElementById('problem-type').value;
+    const location = document.getElementById('location').value;
+    const issue = document.getElementById('issue').value;
+    
+    if (!problemType) {
+        showSnackbar('Please select a problem type', 'error');
+        document.getElementById('problem-type').focus();
+        return false;
+    }
+    
+    if (!location.trim()) {
+        showSnackbar('Please enter a location', 'error');
+        document.getElementById('location').focus();
+        return false;
+    }
+    
+    if (!issue.trim()) {
+        showSnackbar('Please describe the issue', 'error');
+        document.getElementById('issue').focus();
+        return false;
+    }
+    
+    return true;
+}
 
