@@ -199,18 +199,32 @@
                     </form>
                 </div>
 
-                <div class="action-buttons">
-                    <button class="btn btn-outline" onclick="showMyReports()">
-                        <i class="fas fa-list"></i>
-                        My Reports
-                    </button>
-                    <button class="btn btn-outline" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
-                    </button>
-                </div>
-            </div>
+               <!-- Replace the existing action-buttons div with this -->
+<div class="action-buttons">
+    <button class="btn btn-outline" onclick="showMyReports()">
+        <i class="fas fa-list"></i>
+        View Reports
+    </button>
+    
+    <!-- Combined Logout/Reports Button -->
+    <div class="dropdown-container">
+        <button class="btn btn-outline dropdown-btn" onclick="toggleDropdown()">
+            <i class="fas fa-user-circle"></i>
+            Account
+            <i class="fas fa-chevron-down dropdown-arrow"></i>
+        </button>
+        <div id="account-dropdown" class="dropdown-menu hidden">
+            <button class="dropdown-item" onclick="showMyReports()">
+                <i class="fas fa-list"></i>
+                View Reports
+            </button>
+            <button class="dropdown-item" onclick="logout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
         </div>
+    </div>
+</div>
 
         <!-- My Reports Screen -->
         <div id="my-reports-screen" class="screen">
@@ -570,4 +584,5 @@
     </style>
 </body>
 </html>
+
 
