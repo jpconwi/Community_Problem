@@ -972,3 +972,29 @@ input, select, textarea, button {
         overflow-y: auto;
     }
 }
+/* Custom logo styling */
+.app-logo {
+    width: 80px;
+    height: 80px;
+    border-radius: 50%;
+    object-fit: cover;
+    margin-bottom: 15px;
+    border: 3px solid var(--primary-color);
+    box-shadow: var(--shadow-md);
+}
+
+/* Responsive logo sizing */
+@media (max-width: 480px) {
+    .app-logo {
+        width: 60px;
+        height: 60px;
+    }
+}
+
+@media (min-width: 768px) {
+    .app-logo {
+        width: 100px;
+        height: 100px;
+    }
+}
+
