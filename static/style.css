@@ -1005,3 +1005,95 @@ input, select, textarea, button {
         height: 180px;
     }
 }
+/* Dropdown Styles */
+.dropdown-container {
+    position: relative;
+    display: inline-block;
+}
+
+.dropdown-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 14px;
+    min-width: 100px;
+    font-size: 14px;
+}
+
+.dropdown-arrow {
+    font-size: 10px;
+    transition: transform 0.3s ease;
+}
+
+.dropdown-btn.active .dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--border-radius-sm);
+    box-shadow: var(--shadow-md);
+    z-index: 100;
+    margin-top: 4px;
+    min-width: 150px;
+    overflow: hidden;
+}
+
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    transition: all 0.2s ease;
+    font-size: 14px;
+    font-family: inherit;
+    text-align: left;
+}
+
+.dropdown-item:hover {
+    background: var(--background-color);
+    color: var(--primary-color);
+}
+
+.dropdown-item i {
+    width: 16px;
+    text-align: center;
+}
+
+.header-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Ensure dropdown works well on mobile */
+@media (max-width: 480px) {
+    .dropdown-menu {
+        position: fixed;
+        left: 20px;
+        right: 20px;
+        top: auto;
+        bottom: 20px;
+        max-height: 200px;
+        overflow-y: auto;
+    }
+    
+    .header-actions {
+        gap: 8px;
+    }
+    
+    .dropdown-btn {
+        min-width: 80px;
+        padding: 8px 12px;
+    }
+}
