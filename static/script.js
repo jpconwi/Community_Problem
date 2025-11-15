@@ -1630,3 +1630,57 @@ function updateFilterStats(reports) {
         `;
     }
 }
+
+// Dropdown functions
+function toggleDropdown() {
+    const dropdown = document.getElementById('user-dropdown');
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+    
+    dropdown.classList.toggle('hidden');
+    dropdownBtn.classList.toggle('active');
+}
+
+// Close dropdown when clicking outside
+document.addEventListener('click', function(event) {
+    const dropdown = document.getElementById('user-dropdown');
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+    
+    if (!event.target.closest('.dropdown-container') && !dropdown.classList.contains('hidden')) {
+        dropdown.classList.add('hidden');
+        dropdownBtn.classList.remove('active');
+    }
+});
+
+// Close dropdown when an option is selected
+function closeDropdown() {
+    const dropdown = document.getElementById('user-dropdown');
+    const dropdownBtn = document.querySelector('.dropdown-btn');
+    
+    dropdown.classList.add('hidden');
+    dropdownBtn.classList.remove('active');
+}
+
+// Update the existing functions to close dropdown
+function showMyReports() {
+    closeDropdown();
+    showScreen('my-reports-screen');
+    loadMyReports();
+}
+
+async function logout() {
+    closeDropdown();
+    try {
+        const response = await fetch('/api/logout');
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = null;
+            photoData = null;
+            showScreen('login-screen');
+            showSnackbar('Logged out successfully!');
+        }
+    } catch (error) {
+        console.error('Logout failed:', error);
+    }
+}
+
