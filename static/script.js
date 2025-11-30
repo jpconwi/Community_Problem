@@ -1708,6 +1708,12 @@ async function logout() {
 function toggleAdminDropdown() {
         const dropdown = document.getElementById('admin-dropdown');
         dropdown.classList.toggle('hidden');
+        
+        // Close user dropdown if open
+        const userDropdown = document.getElementById('user-dropdown');
+        if (userDropdown && !userDropdown.classList.contains('hidden')) {
+            userDropdown.classList.add('hidden');
+        }
     }
 
     function refreshAdminDashboard() {
@@ -1721,6 +1727,8 @@ function toggleAdminDropdown() {
         setTimeout(() => {
             showSnackbar('Dashboard refreshed!', 'success');
             // In a real app, you would reload data from the server here
+            loadAdminStats();
+            loadAllReports();
         }, 1000);
     }
 
@@ -1737,23 +1745,22 @@ function toggleAdminDropdown() {
         // In a real app, you would filter the reports list here
     }
 
-    // FIXED: Close dropdown when clicking outside
+    // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
+        // Handle admin dropdown
         const adminDropdown = document.getElementById('admin-dropdown');
-        const adminDropdownBtn = document.querySelector('.admin-container .dropdown-btn');
+        const adminDropdownBtn = document.querySelector('#admin-dashboard .dropdown-btn');
         
-        // Check if admin dropdown exists and is visible
         if (adminDropdown && !adminDropdown.classList.contains('hidden')) {
-            // Check if click is outside both dropdown and its button
             if (!adminDropdown.contains(event.target) && 
                 (!adminDropdownBtn || !adminDropdownBtn.contains(event.target))) {
                 adminDropdown.classList.add('hidden');
             }
         }
 
-        // Also handle user dropdown
+        // Handle user dropdown
         const userDropdown = document.getElementById('user-dropdown');
-        const userDropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
+        const userDropdownBtn = document.querySelector('#user-dashboard .dropdown-btn');
         
         if (userDropdown && !userDropdown.classList.contains('hidden')) {
             if (!userDropdown.contains(event.target) && 
@@ -1763,6 +1770,14 @@ function toggleAdminDropdown() {
         }
     });
 
-
-
-
+    // Also add this function for the user dropdown
+    function toggleDropdown() {
+        const dropdown = document.getElementById('user-dropdown');
+        dropdown.classList.toggle('hidden');
+        
+        // Close admin dropdown if open
+        const adminDropdown = document.getElementById('admin-dropdown');
+        if (adminDropdown && !adminDropdown.classList.contains('hidden')) {
+            adminDropdown.classList.add('hidden');
+        }
+    }
