@@ -1189,3 +1189,48 @@ input, select, textarea {
 @-ms-viewport {
     width: device-width;
 }
+
+/* Add this to your CSS to ensure dropdowns work properly */
+.dropdown-container {
+    position: relative;
+    z-index: 1000;
+}
+
+.dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: 1001; /* Increased z-index */
+    margin-top: var(--space-xs);
+    min-width: 160px;
+    overflow: hidden;
+}
+
+/* Ensure dropdown items are clickable */
+.dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    padding: var(--space-md);
+    border: none;
+    background: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-family: inherit;
+    text-align: left;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+}
+
+.dropdown-item:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
