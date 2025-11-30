@@ -480,8 +480,8 @@
     function toggleAdminDropdown(event) {
         if (event) event.stopPropagation();
         
-        const dropdown = document.getElementById('admin-dropdown');
-        const button = document.querySelector('.admin-container .dropdown-btn');
+        const dropdown = document.getElementById('admin-dropdown-menu');
+        const button = document.querySelector('.admin-dropdown-btn');
         
         // Toggle dropdown visibility
         dropdown.classList.toggle('hidden');
@@ -516,8 +516,8 @@
     }
 
     function closeAdminDropdown() {
-        const dropdown = document.getElementById('admin-dropdown');
-        const button = document.querySelector('.admin-container .dropdown-btn');
+        const dropdown = document.getElementById('admin-dropdown-menu');
+        const button = document.querySelector('.admin-dropdown-btn');
         if (dropdown) dropdown.classList.add('hidden');
         if (button) button.classList.remove('active');
     }
@@ -525,8 +525,8 @@
     // Close dropdowns when clicking anywhere else on the page
     document.addEventListener('click', function() {
         // Close admin dropdown if open
-        const adminDropdown = document.getElementById('admin-dropdown');
-        const adminButton = document.querySelector('.admin-container .dropdown-btn');
+        const adminDropdown = document.getElementById('admin-dropdown-menu');
+        const adminButton = document.querySelector('.admin-dropdown-btn');
         if (adminDropdown && !adminDropdown.classList.contains('hidden')) {
             adminDropdown.classList.add('hidden');
             adminButton.classList.remove('active');
@@ -541,5 +541,6 @@
 </script>
 </body>
 </html>
+
 
 
