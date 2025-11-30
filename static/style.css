@@ -1434,3 +1434,135 @@ input, select, textarea {
     visibility: visible !important;
     opacity: 1 !important;
 }
+/* Admin Dropdown Styles */
+.admin-dropdown-container {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.admin-dropdown-btn {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
+    padding: 10px 16px;
+    background: var(--surface-color);
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-weight: 500;
+    transition: all 0.2s ease;
+    min-height: 44px;
+    min-width: 100px;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+}
+
+.admin-dropdown-btn:hover {
+    border-color: var(--primary-color);
+}
+
+.admin-dropdown-btn.active {
+    border-color: var(--primary-color);
+    background: var(--primary-light);
+}
+
+.admin-dropdown-arrow {
+    transition: transform 0.2s ease;
+    font-size: 12px;
+}
+
+.admin-dropdown-btn.active .admin-dropdown-arrow {
+    transform: rotate(180deg);
+}
+
+.admin-dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: 1002;
+    margin-top: 8px;
+    min-width: 160px;
+    overflow: hidden;
+}
+
+.admin-dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-family: inherit;
+    text-align: left;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    white-space: nowrap;
+}
+
+.admin-dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.admin-dropdown-item:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.admin-dropdown-item i {
+    width: 16px;
+    text-align: center;
+    font-size: var(--text-base);
+    color: var(--text-muted);
+    flex-shrink: 0;
+}
+
+.admin-dropdown-item:hover i {
+    color: var(--primary-color);
+}
+
+/* Ensure admin dropdown appears above other content */
+.admin-dropdown-menu {
+    z-index: 1002 !important;
+}
+
+/* Make sure the admin dropdown is visible when not hidden */
+.admin-dropdown-menu:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Mobile adjustments for admin dropdown */
+@media (max-width: 360px) {
+    .admin-dropdown-btn {
+        min-width: 80px;
+        font-size: var(--text-xs);
+        padding: var(--space-xs) var(--space-sm);
+    }
+}
+
+/* Desktop hover effects for admin dropdown */
+@media (min-width: 768px) and (hover: hover) {
+    .admin-dropdown-btn:hover {
+        border-color: var(--primary-color);
+    }
+    
+    .admin-dropdown-item:hover {
+        background: var(--primary-light);
+        color: var(--primary-color);
+    }
+}
