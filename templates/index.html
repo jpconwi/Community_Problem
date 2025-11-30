@@ -114,24 +114,23 @@
                             <i class="fas fa-bell"></i>
                             <span id="notification-badge" class="badge hidden">0</span>
                         </button>
-                        <!-- In the User Dashboard section, update the dropdown button -->
-<div class="dropdown-container">
-    <button class="btn btn-outline dropdown-btn" onclick="toggleDropdown(event)">
-        <i class="fas fa-ellipsis-v"></i>
-        MENU
-        <i class="fas fa-chevron-down dropdown-arrow"></i>
-    </button>
-    <div id="user-dropdown" class="dropdown-menu hidden">
-        <button class="dropdown-item" onclick="showMyReports()">
-            <i class="fas fa-list"></i>
-            My Reports
-        </button>
-        <button class="dropdown-item" onclick="logout()">
-            <i class="fas fa-sign-out-alt"></i>
-            Logout
-        </button>
-    </div>
-</div>
+                        <div class="dropdown-container">
+                            <button class="btn btn-outline dropdown-btn" onclick="toggleDropdown(event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                                MENU
+                                <i class="fas fa-chevron-down dropdown-arrow"></i>
+                            </button>
+                            <div id="user-dropdown" class="dropdown-menu hidden">
+                                <button class="dropdown-item" onclick="showMyReports()">
+                                    <i class="fas fa-list"></i>
+                                    My Reports
+                                </button>
+                                <button class="dropdown-item" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
 
@@ -254,7 +253,7 @@
                 <p>Manage community reports</p>
             </div>
             <div class="header-actions">
-                <button class="icon-btn" onclick="showNotifications()">
+                <button class="icon-btn" onclick="showAdminNotifications()">
                     <i class="fas fa-bell"></i>
                     <span id="admin-notification-badge" class="badge hidden">0</span>
                 </button>
@@ -267,7 +266,7 @@
                     <div id="admin-dropdown" class="dropdown-menu hidden">
                         <button class="dropdown-item" onclick="refreshAdminDashboard()">
                             <i class="fas fa-sync-alt"></i>
-                            Refresh
+                            Refresh Dashboard
                         </button>
                         <button class="dropdown-item" onclick="adminLogout()">
                             <i class="fas fa-sign-out-alt"></i>
@@ -519,7 +518,7 @@
         // Show loading message
         showSnackbar('Refreshing dashboard...', 'success');
         
-        // Refresh data (you can replace this with actual API calls)
+        // Refresh data
         setTimeout(() => {
             showSnackbar('Dashboard refreshed!', 'success');
             // Add your refresh logic here
@@ -594,7 +593,3 @@
 </script>
 </body>
 </html>
-
-
-
-
