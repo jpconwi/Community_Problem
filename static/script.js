@@ -1706,40 +1706,4 @@ async function logout() {
 }
 
 
-    // Simple admin menu functions
-    function toggleAdminMenu() {
-        const menu = document.getElementById('admin-menu');
-        menu.classList.toggle('hidden');
-    }
-
-    function refreshAdminDashboard() {
-        // Close menu
-        document.getElementById('admin-menu').classList.add('hidden');
-        
-        // Show loading and refresh
-        showSnackbar('Refreshing dashboard...', 'success');
-        
-        // Actual refresh logic
-        setTimeout(() => {
-            showSnackbar('Dashboard refreshed!', 'success');
-            loadAdminStats();
-            loadAllReports();
-        }, 1000);
-    }
-
-    function adminLogout() {
-        document.getElementById('admin-menu').classList.add('hidden');
-        logout();
-    }
-
-    // Close menu when clicking outside
-    document.addEventListener('click', function(event) {
-        const menu = document.getElementById('admin-menu');
-        const menuBtn = document.querySelector('#admin-dashboard .dropdown-btn');
-        
-        if (menu && !menu.classList.contains('hidden')) {
-            if (!menu.contains(event.target) && !menuBtn.contains(event.target)) {
-                menu.classList.add('hidden');
-            }
-        }
-    });
+ 
