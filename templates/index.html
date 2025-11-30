@@ -244,8 +244,6 @@
             </div>
         </div>
 
-       <!-- Admin Dashboard -->
-<!-- Admin Dashboard -->
 <div id="admin-dashboard" class="screen">
     <div class="admin-container">
         <div class="header">
@@ -258,18 +256,18 @@
                     <i class="fas fa-bell"></i>
                     <span id="admin-notification-badge" class="badge hidden">0</span>
                 </button>
-                <div class="dropdown-container">
-                    <button class="btn btn-outline dropdown-btn" onclick="toggleAdminDropdown(event)">
+                <div class="admin-dropdown-container">
+                    <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown(event)">
                         <i class="fas fa-ellipsis-v"></i>
                         MENU
-                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
                     </button>
-                    <div id="admin-dropdown" class="dropdown-menu hidden">
-                        <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                    <div id="admin-dropdown-menu" class="admin-dropdown-menu hidden">
+                        <button class="admin-dropdown-item" onclick="refreshAdminDashboard()">
                             <i class="fas fa-sync-alt"></i>
                             Refresh Dashboard
                         </button>
-                        <button class="dropdown-item" onclick="adminLogout()">
+                        <button class="admin-dropdown-item" onclick="adminLogout()">
                             <i class="fas fa-sign-out-alt"></i>
                             Logout
                         </button>
@@ -543,4 +541,5 @@
 </script>
 </body>
 </html>
+
 
