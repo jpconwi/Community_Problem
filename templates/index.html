@@ -244,73 +244,73 @@
             </div>
         </div>
 
-        <!-- Admin Dashboard -->
-        <div id="admin-dashboard" class="screen">
-            <div class="admin-container">
-                <div class="header">
-                    <div class="user-info">
-                        <h2 id="admin-name">Admin Dashboard</h2>
-                        <p>Manage community reports</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="icon-btn" onclick="showNotifications()">
-                            <i class="fas fa-bell"></i>
-                            <span id="admin-notification-badge" class="badge hidden">0</span>
+       <!-- Admin Dashboard -->
+<div id="admin-dashboard" class="screen">
+    <div class="admin-container">
+        <div class="header">
+            <div class="user-info">
+                <h2 id="admin-name">Admin Dashboard</h2>
+                <p>Manage community reports</p>
+            </div>
+            <div class="header-actions">
+                <button class="icon-btn" onclick="showNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span id="admin-notification-badge" class="badge hidden">0</span>
+                </button>
+                <div class="dropdown-container">
+                    <button class="btn btn-outline dropdown-btn" onclick="toggleAdminDropdown(event)">
+                        <i class="fas fa-ellipsis-v"></i>
+                        MENU
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </button>
+                    <div id="admin-dropdown" class="dropdown-menu hidden">
+                        <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
                         </button>
-                        <div class="dropdown-container">
-                            <button class="btn btn-outline dropdown-btn" onclick="toggleAdminDropdown()">
-                                <i class="fas fa-ellipsis-v"></i>
-                                MENU
-                                <i class="fas fa-chevron-down dropdown-arrow"></i>
-                            </button>
-                            <div id="admin-dropdown" class="dropdown-menu hidden">
-                                <button class="dropdown-item" onclick="refreshAdminDashboard()">
-                                    <i class="fas fa-sync-alt"></i>
-                                    Refresh
-                                </button>
-                                <button class="dropdown-item" onclick="adminLogout()">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Logout
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Rest of your admin dashboard content remains the same -->
-                <div class="admin-stats">
-                    <div class="admin-stat-card">
-                        <span class="admin-stat-value" id="total-reports">0</span>
-                        <span class="admin-stat-label">Total Reports</span>
-                    </div>
-                    <div class="admin-stat-card">
-                        <span class="admin-stat-value" id="pending-reports">0</span>
-                        <span class="admin-stat-label">Pending</span>
-                    </div>
-                    <div class="admin-stat-card">
-                        <span class="admin-stat-value" id="resolved-reports">0</span>
-                        <span class="admin-stat-label">Resolved</span>
-                    </div>
-                    <div class="admin-stat-card">
-                        <span class="admin-stat-value" id="urgent-reports">0</span>
-                        <span class="admin-stat-label">Urgent</span>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <h3>All Reports</h3>
-                    <div class="filter-controls">
-                        <button class="filter-btn active" onclick="filterReports('all')">All</button>
-                        <button class="filter-btn" onclick="filterReports('pending')">Pending</button>
-                        <button class="filter-btn" onclick="filterReports('resolved')">Resolved</button>
-                        <button class="filter-btn" onclick="filterReports('urgent')">Urgent</button>
-                    </div>
-                    <div id="admin-reports-list" class="admin-reports-list">
-                        <!-- Reports will be loaded here -->
+                        <button class="dropdown-item" onclick="adminLogout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
                     </div>
                 </div>
             </div>
         </div>
+
+        <!-- Rest of your admin dashboard content -->
+        <div class="admin-stats">
+            <div class="admin-stat-card">
+                <span class="admin-stat-value" id="total-reports">0</span>
+                <span class="admin-stat-label">Total Reports</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="admin-stat-value" id="pending-reports">0</span>
+                <span class="admin-stat-label">Pending</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="admin-stat-value" id="resolved-reports">0</span>
+                <span class="admin-stat-label">Resolved</span>
+            </div>
+            <div class="admin-stat-card">
+                <span class="admin-stat-value" id="urgent-reports">0</span>
+                <span class="admin-stat-label">Urgent</span>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3>All Reports</h3>
+            <div class="filter-controls">
+                <button class="filter-btn active" onclick="filterReports('all')">All</button>
+                <button class="filter-btn" onclick="filterReports('pending')">Pending</button>
+                <button class="filter-btn" onclick="filterReports('resolved')">Resolved</button>
+                <button class="filter-btn" onclick="filterReports('urgent')">Urgent</button>
+            </div>
+            <div id="admin-reports-list" class="admin-reports-list">
+                <!-- Reports will be loaded here -->
+            </div>
+        </div>
+    </div>
+</div>
 
         <!-- Camera Modal -->
         <div id="camera-modal" class="modal hidden">
@@ -461,135 +461,89 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 <script>
-    // Admin dropdown functions
+    // Simple Admin Dropdown Functions
     function toggleAdminDropdown(event) {
-        console.log('Admin dropdown clicked');
-        event.stopPropagation(); // Prevent event from bubbling up
+        // Prevent the click from immediately closing the dropdown
+        if (event) event.stopPropagation();
         
         const dropdown = document.getElementById('admin-dropdown');
-        const dropdownBtn = document.querySelector('.admin-container .dropdown-btn');
+        const button = document.querySelector('.admin-container .dropdown-btn');
         
-        if (dropdown && dropdownBtn) {
-            const isHidden = dropdown.classList.contains('hidden');
-            
-            // Close all other dropdowns first
-            closeAllDropdowns();
-            
-            // Toggle this dropdown
-            if (isHidden) {
-                dropdown.classList.remove('hidden');
-                dropdownBtn.classList.add('active');
-            } else {
-                dropdown.classList.add('hidden');
-                dropdownBtn.classList.remove('active');
-            }
-            
-            console.log('Admin dropdown visible:', !isHidden);
-        } else {
-            console.error('Admin dropdown elements not found');
-        }
+        // Toggle dropdown visibility
+        dropdown.classList.toggle('hidden');
+        button.classList.toggle('active');
     }
 
     function refreshAdminDashboard() {
-        console.log('Refresh clicked');
-        closeAdminDropdown();
+        // Close dropdown first
+        toggleAdminDropdown();
+        
+        // Show loading message
         showSnackbar('Refreshing dashboard...', 'success');
         
+        // Refresh data (you can replace this with actual API calls)
         setTimeout(() => {
             showSnackbar('Dashboard refreshed!', 'success');
-            // Reload data
+            // Add your refresh logic here
             if (typeof loadAdminStats === 'function') loadAdminStats();
             if (typeof loadAllReports === 'function') loadAllReports();
         }, 1000);
     }
 
     function adminLogout() {
-        console.log('Admin logout clicked');
-        closeAdminDropdown();
+        // Close dropdown first
+        toggleAdminDropdown();
         
+        // Show confirmation
         if (confirm('Are you sure you want to logout?')) {
+            // Perform logout
             showScreen('login-screen');
             showSnackbar('Logged out successfully', 'success');
         }
     }
 
-    function closeAdminDropdown() {
+    function filterReports(filter) {
+        // Update active filter button
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.classList.remove('active');
+        });
+        event.target.classList.add('active');
+        
+        // Show filter message
+        showSnackbar(`Showing ${filter} reports...`, 'success');
+        
+        // Add your filter logic here
+        // For now, just reload all reports
+        if (typeof loadAllReports === 'function') loadAllReports();
+    }
+
+    // Close dropdown when clicking anywhere else on the page
+    document.addEventListener('click', function() {
         const dropdown = document.getElementById('admin-dropdown');
-        const dropdownBtn = document.querySelector('.admin-container .dropdown-btn');
+        const button = document.querySelector('.admin-container .dropdown-btn');
         
-        if (dropdown) dropdown.classList.add('hidden');
-        if (dropdownBtn) dropdownBtn.classList.remove('active');
-    }
-
-    function closeAllDropdowns() {
-        // Close admin dropdown
-        closeAdminDropdown();
-        
-        // Close user dropdown
-        const userDropdown = document.getElementById('user-dropdown');
-        const userDropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
-        if (userDropdown) userDropdown.classList.add('hidden');
-        if (userDropdownBtn) userDropdownBtn.classList.remove('active');
-    }
-
-    // Close dropdowns when clicking outside
-    document.addEventListener('click', function(event) {
-        const adminDropdown = document.getElementById('admin-dropdown');
-        const adminDropdownBtn = document.querySelector('.admin-container .dropdown-btn');
-        
-        // Check if click is outside admin dropdown
-        if (adminDropdown && adminDropdownBtn && 
-            !adminDropdown.contains(event.target) && 
-            !adminDropdownBtn.contains(event.target)) {
-            closeAdminDropdown();
+        if (dropdown && !dropdown.classList.contains('hidden')) {
+            dropdown.classList.add('hidden');
+            button.classList.remove('active');
         }
         
-        // Check if click is outside user dropdown
+        // Also close user dropdown if open
         const userDropdown = document.getElementById('user-dropdown');
-        const userDropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
-        if (userDropdown && userDropdownBtn && 
-            !userDropdown.contains(event.target) && 
-            !userDropdownBtn.contains(event.target)) {
+        const userButton = document.querySelector('.dashboard-container .dropdown-btn');
+        if (userDropdown && !userDropdown.classList.contains('hidden')) {
             userDropdown.classList.add('hidden');
-            userDropdownBtn.classList.remove('active');
+            userButton.classList.remove('active');
         }
     });
 
-    // User dropdown function
-    function toggleDropdown(event) {
-        console.log('User dropdown clicked');
-        event.stopPropagation();
-        
-        const dropdown = document.getElementById('user-dropdown');
-        const dropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
-        
-        if (dropdown && dropdownBtn) {
-            const isHidden = dropdown.classList.contains('hidden');
-            
-            // Close all other dropdowns first
-            closeAllDropdowns();
-            
-            // Toggle this dropdown
-            if (isHidden) {
-                dropdown.classList.remove('hidden');
-                dropdownBtn.classList.add('active');
-            } else {
-                dropdown.classList.add('hidden');
-                dropdownBtn.classList.remove('active');
-            }
-        }
-    }
-
-    // Make functions globally available
+    // Make functions available globally
     window.toggleAdminDropdown = toggleAdminDropdown;
     window.refreshAdminDashboard = refreshAdminDashboard;
     window.adminLogout = adminLogout;
-    window.toggleDropdown = toggleDropdown;
-    window.closeAdminDropdown = closeAdminDropdown;
-
-    console.log('Admin dropdown functions loaded successfully');
+    window.filterReports = filterReports;
 </script>
 </body>
 </html>
+
 
 
