@@ -1320,6 +1320,27 @@ function showNewReportsNotification(count) {
     }, 10000);
 }
 
+// Snowflake animation
+function createSnowflakes() {
+    const snowflakesContainer = document.createElement('div');
+    snowflakesContainer.className = 'snowflakes';
+    
+    // Create 20 snowflakes
+    for (let i = 0; i < 20; i++) {
+        const snowflake = document.createElement('div');
+        snowflake.className = 'snowflake';
+        snowflake.innerHTML = '❄';
+        snowflakesContainer.appendChild(snowflake);
+    }
+    
+    document.body.appendChild(snowflakesContainer);
+}
+
+// Initialize snowflakes when the page loads
+document.addEventListener('DOMContentLoaded', function() {
+    createSnowflakes();
+});
+
 // Load admin notifications count for the bell
 async function loadAdminNotificationsCount() {
     if (!currentUser || currentUser.role !== 'admin') return;
@@ -1683,4 +1704,5 @@ async function logout() {
         console.error('Logout failed:', error);
     }
 }
+
 
