@@ -114,23 +114,24 @@
                             <i class="fas fa-bell"></i>
                             <span id="notification-badge" class="badge hidden">0</span>
                         </button>
-                        <div class="dropdown-container">
-                            <button class="btn btn-outline dropdown-btn" onclick="toggleDropdown()">
-                                <i class="fas fa-ellipsis-v"></i>
-                                MENU
-                                <i class="fas fa-chevron-down dropdown-arrow"></i>
-                            </button>
-                            <div id="user-dropdown" class="dropdown-menu hidden">
-                                <button class="dropdown-item" onclick="showMyReports()">
-                                    <i class="fas fa-list"></i>
-                                    My Reports
-                                </button>
-                                <button class="dropdown-item" onclick="logout()">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Logout
-                                </button>
-                            </div>
-                        </div>
+                        <!-- In the User Dashboard section, update the dropdown button -->
+<div class="dropdown-container">
+    <button class="btn btn-outline dropdown-btn" onclick="toggleDropdown(event)">
+        <i class="fas fa-ellipsis-v"></i>
+        MENU
+        <i class="fas fa-chevron-down dropdown-arrow"></i>
+    </button>
+    <div id="user-dropdown" class="dropdown-menu hidden">
+        <button class="dropdown-item" onclick="showMyReports()">
+            <i class="fas fa-list"></i>
+            My Reports
+        </button>
+        <button class="dropdown-item" onclick="logout()">
+            <i class="fas fa-sign-out-alt"></i>
+            Logout
+        </button>
+    </div>
+</div>
                     </div>
                 </div>
 
@@ -461,9 +462,46 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 <script>
-    // Simple Admin Dropdown Functions
+    // User Dropdown Functions
+    function toggleDropdown(event) {
+        if (event) event.stopPropagation();
+        
+        const dropdown = document.getElementById('user-dropdown');
+        const button = document.querySelector('.dashboard-container .dropdown-btn');
+        
+        // Toggle dropdown visibility
+        dropdown.classList.toggle('hidden');
+        button.classList.toggle('active');
+    }
+
+    function showMyReports() {
+        // Close dropdown first
+        closeUserDropdown();
+        showScreen('my-reports-screen');
+        if (typeof loadMyReports === 'function') loadMyReports();
+    }
+
+    function logout() {
+        // Close dropdown first
+        closeUserDropdown();
+        
+        // Show confirmation
+        if (confirm('Are you sure you want to logout?')) {
+            // Perform logout
+            showScreen('login-screen');
+            showSnackbar('Logged out successfully', 'success');
+        }
+    }
+
+    function closeUserDropdown() {
+        const dropdown = document.getElementById('user-dropdown');
+        const button = document.querySelector('.dashboard-container .dropdown-btn');
+        if (dropdown) dropdown.classList.add('hidden');
+        if (button) button.classList.remove('active');
+    }
+
+    // Admin Dropdown Functions
     function toggleAdminDropdown(event) {
-        // Prevent the click from immediately closing the dropdown
         if (event) event.stopPropagation();
         
         const dropdown = document.getElementById('admin-dropdown');
@@ -476,7 +514,7 @@
 
     function refreshAdminDashboard() {
         // Close dropdown first
-        toggleAdminDropdown();
+        closeAdminDropdown();
         
         // Show loading message
         showSnackbar('Refreshing dashboard...', 'success');
@@ -492,7 +530,7 @@
 
     function adminLogout() {
         // Close dropdown first
-        toggleAdminDropdown();
+        closeAdminDropdown();
         
         // Show confirmation
         if (confirm('Are you sure you want to logout?')) {
@@ -500,6 +538,13 @@
             showScreen('login-screen');
             showSnackbar('Logged out successfully', 'success');
         }
+    }
+
+    function closeAdminDropdown() {
+        const dropdown = document.getElementById('admin-dropdown');
+        const button = document.querySelector('.admin-container .dropdown-btn');
+        if (dropdown) dropdown.classList.add('hidden');
+        if (button) button.classList.remove('active');
     }
 
     function filterReports(filter) {
@@ -517,33 +562,39 @@
         if (typeof loadAllReports === 'function') loadAllReports();
     }
 
-    // Close dropdown when clicking anywhere else on the page
+    // Close dropdowns when clicking anywhere else on the page
     document.addEventListener('click', function() {
-        const dropdown = document.getElementById('admin-dropdown');
-        const button = document.querySelector('.admin-container .dropdown-btn');
-        
-        if (dropdown && !dropdown.classList.contains('hidden')) {
-            dropdown.classList.add('hidden');
-            button.classList.remove('active');
-        }
-        
-        // Also close user dropdown if open
+        // Close user dropdown if open
         const userDropdown = document.getElementById('user-dropdown');
         const userButton = document.querySelector('.dashboard-container .dropdown-btn');
         if (userDropdown && !userDropdown.classList.contains('hidden')) {
             userDropdown.classList.add('hidden');
             userButton.classList.remove('active');
         }
+        
+        // Close admin dropdown if open
+        const adminDropdown = document.getElementById('admin-dropdown');
+        const adminButton = document.querySelector('.admin-container .dropdown-btn');
+        if (adminDropdown && !adminDropdown.classList.contains('hidden')) {
+            adminDropdown.classList.add('hidden');
+            adminButton.classList.remove('active');
+        }
     });
 
     // Make functions available globally
+    window.toggleDropdown = toggleDropdown;
+    window.showMyReports = showMyReports;
+    window.logout = logout;
     window.toggleAdminDropdown = toggleAdminDropdown;
     window.refreshAdminDashboard = refreshAdminDashboard;
     window.adminLogout = adminLogout;
     window.filterReports = filterReports;
+    window.closeUserDropdown = closeUserDropdown;
+    window.closeAdminDropdown = closeAdminDropdown;
 </script>
 </body>
 </html>
+
 
 
 
