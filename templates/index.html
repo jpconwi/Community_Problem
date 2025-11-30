@@ -246,6 +246,7 @@
 
         <!-- Admin Dashboard -->
 <!-- Admin Dashboard -->
+<!-- Admin Dashboard -->
 <div id="admin-dashboard" class="screen">
     <div class="admin-container">
         <div class="header">
@@ -259,25 +260,26 @@
                     <span id="admin-notification-badge" class="badge hidden">0</span>
                 </button>
                 <div class="dropdown-container">
-                    <button class="btn btn-outline dropdown-btn" onclick="toggleAdminDropdown()">
+                    <button class="btn btn-outline dropdown-btn" onclick="toggleAdminMenu()">
                         <i class="fas fa-ellipsis-v"></i>
                         MENU
-                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        <i class="fas fa-chevron-down"></i>
                     </button>
-                    <div id="admin-dropdown" class="dropdown-menu hidden">
-                        <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                    <div id="admin-menu" class="dropdown-menu hidden">
+                        <a href="javascript:void(0)" class="dropdown-item" onclick="refreshAdminDashboard()">
                             <i class="fas fa-sync-alt"></i>
                             Refresh
-                        </button>
-                        <button class="dropdown-item" onclick="logout()">
+                        </a>
+                        <a href="javascript:void(0)" class="dropdown-item" onclick="adminLogout()">
                             <i class="fas fa-sign-out-alt"></i>
                             Logout
-                        </button>
+                        </a>
                     </div>
                 </div>
             </div>
         </div>
 
+        <!-- Rest of your admin dashboard content remains the same -->
         <div class="admin-stats">
             <div class="admin-stat-card">
                 <span class="admin-stat-value" id="total-reports">0</span>
@@ -506,6 +508,7 @@
     </script>
 </body>
 </html>
+
 
 
 
