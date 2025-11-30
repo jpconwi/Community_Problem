@@ -461,88 +461,92 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 <script>
-    // Admin-specific functions
-    function toggleAdminDropdown() {
-        console.log('Toggle admin dropdown clicked');
+    // Admin dropdown functions
+    function toggleAdminDropdown(event) {
+        console.log('Admin dropdown clicked');
+        event.stopPropagation(); // Prevent event from bubbling up
+        
         const dropdown = document.getElementById('admin-dropdown');
         const dropdownBtn = document.querySelector('.admin-container .dropdown-btn');
         
-        dropdown.classList.toggle('hidden');
-        dropdownBtn.classList.toggle('active');
-        
-        // Close user dropdown if open
-        const userDropdown = document.getElementById('user-dropdown');
-        const userDropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
-        if (userDropdown && !userDropdown.classList.contains('hidden')) {
-            userDropdown.classList.add('hidden');
-            userDropdownBtn.classList.remove('active');
+        if (dropdown && dropdownBtn) {
+            const isHidden = dropdown.classList.contains('hidden');
+            
+            // Close all other dropdowns first
+            closeAllDropdowns();
+            
+            // Toggle this dropdown
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                dropdownBtn.classList.add('active');
+            } else {
+                dropdown.classList.add('hidden');
+                dropdownBtn.classList.remove('active');
+            }
+            
+            console.log('Admin dropdown visible:', !isHidden);
+        } else {
+            console.error('Admin dropdown elements not found');
         }
     }
 
     function refreshAdminDashboard() {
-        console.log('Refresh admin dashboard clicked');
-        // Close dropdown
-        document.getElementById('admin-dropdown').classList.add('hidden');
-        document.querySelector('.admin-container .dropdown-btn').classList.remove('active');
-        
-        // Show loading state
+        console.log('Refresh clicked');
+        closeAdminDropdown();
         showSnackbar('Refreshing dashboard...', 'success');
         
-        // Simulate refresh (replace with actual API call)
         setTimeout(() => {
             showSnackbar('Dashboard refreshed!', 'success');
-            // In a real app, you would reload data from the server here
-            loadAdminStats();
-            loadAllReports();
+            // Reload data
+            if (typeof loadAdminStats === 'function') loadAdminStats();
+            if (typeof loadAllReports === 'function') loadAllReports();
         }, 1000);
     }
 
     function adminLogout() {
         console.log('Admin logout clicked');
-        // Close dropdown
-        document.getElementById('admin-dropdown').classList.add('hidden');
-        document.querySelector('.admin-container .dropdown-btn').classList.remove('active');
+        closeAdminDropdown();
         
-        // Show logout confirmation
         if (confirm('Are you sure you want to logout?')) {
-            // Perform logout logic here
             showScreen('login-screen');
             showSnackbar('Logged out successfully', 'success');
         }
     }
 
-    function filterReports(filter) {
-        console.log('Filter reports:', filter);
-        // Update active filter button
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
+    function closeAdminDropdown() {
+        const dropdown = document.getElementById('admin-dropdown');
+        const dropdownBtn = document.querySelector('.admin-container .dropdown-btn');
         
-        // Show loading state
-        showSnackbar(`Filtering ${filter} reports...`, 'success');
+        if (dropdown) dropdown.classList.add('hidden');
+        if (dropdownBtn) dropdownBtn.classList.remove('active');
+    }
+
+    function closeAllDropdowns() {
+        // Close admin dropdown
+        closeAdminDropdown();
         
-        // In a real app, you would filter the reports list here
-        // For now, just reload all reports
-        loadAllReports();
+        // Close user dropdown
+        const userDropdown = document.getElementById('user-dropdown');
+        const userDropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
+        if (userDropdown) userDropdown.classList.add('hidden');
+        if (userDropdownBtn) userDropdownBtn.classList.remove('active');
     }
 
     // Close dropdowns when clicking outside
     document.addEventListener('click', function(event) {
         const adminDropdown = document.getElementById('admin-dropdown');
         const adminDropdownBtn = document.querySelector('.admin-container .dropdown-btn');
-        const userDropdown = document.getElementById('user-dropdown');
-        const userDropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
         
-        // Close admin dropdown if clicking outside
+        // Check if click is outside admin dropdown
         if (adminDropdown && adminDropdownBtn && 
             !adminDropdown.contains(event.target) && 
             !adminDropdownBtn.contains(event.target)) {
-            adminDropdown.classList.add('hidden');
-            adminDropdownBtn.classList.remove('active');
+            closeAdminDropdown();
         }
         
-        // Close user dropdown if clicking outside
+        // Check if click is outside user dropdown
+        const userDropdown = document.getElementById('user-dropdown');
+        const userDropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
         if (userDropdown && userDropdownBtn && 
             !userDropdown.contains(event.target) && 
             !userDropdownBtn.contains(event.target)) {
@@ -551,31 +555,41 @@
         }
     });
 
-    // User dropdown functions
-    function toggleDropdown() {
-        console.log('Toggle user dropdown clicked');
+    // User dropdown function
+    function toggleDropdown(event) {
+        console.log('User dropdown clicked');
+        event.stopPropagation();
+        
         const dropdown = document.getElementById('user-dropdown');
         const dropdownBtn = document.querySelector('.dashboard-container .dropdown-btn');
         
-        dropdown.classList.toggle('hidden');
-        dropdownBtn.classList.toggle('active');
-        
-        // Close admin dropdown if open
-        const adminDropdown = document.getElementById('admin-dropdown');
-        const adminDropdownBtn = document.querySelector('.admin-container .dropdown-btn');
-        if (adminDropdown && !adminDropdown.classList.contains('hidden')) {
-            adminDropdown.classList.add('hidden');
-            adminDropdownBtn.classList.remove('active');
+        if (dropdown && dropdownBtn) {
+            const isHidden = dropdown.classList.contains('hidden');
+            
+            // Close all other dropdowns first
+            closeAllDropdowns();
+            
+            // Toggle this dropdown
+            if (isHidden) {
+                dropdown.classList.remove('hidden');
+                dropdownBtn.classList.add('active');
+            } else {
+                dropdown.classList.add('hidden');
+                dropdownBtn.classList.remove('active');
+            }
         }
     }
 
-    // Ensure functions are available globally
+    // Make functions globally available
     window.toggleAdminDropdown = toggleAdminDropdown;
     window.refreshAdminDashboard = refreshAdminDashboard;
     window.adminLogout = adminLogout;
-    window.filterReports = filterReports;
     window.toggleDropdown = toggleDropdown;
+    window.closeAdminDropdown = closeAdminDropdown;
+
+    console.log('Admin dropdown functions loaded successfully');
 </script>
 </body>
 </html>
+
 
