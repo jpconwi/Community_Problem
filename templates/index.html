@@ -245,6 +245,7 @@
         </div>
 
        <!-- Admin Dashboard -->
+<!-- Admin Dashboard -->
 <div id="admin-dashboard" class="screen">
     <div class="admin-container">
         <div class="header">
@@ -288,23 +289,39 @@
                 <span class="admin-stat-label">Pending</span>
             </div>
             <div class="admin-stat-card">
+                <span class="admin-stat-value" id="in-progress-reports">0</span>
+                <span class="admin-stat-label">In Progress</span>
+            </div>
+            <div class="admin-stat-card">
                 <span class="admin-stat-value" id="resolved-reports">0</span>
                 <span class="admin-stat-label">Resolved</span>
             </div>
-            <div class="admin-stat-card">
-                <span class="admin-stat-value" id="urgent-reports">0</span>
-                <span class="admin-stat-label">Urgent</span>
+        </div>
+
+        <!-- Filter Controls -->
+        <div class="card">
+            <h3>Filter Reports</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-day"></i> Today
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-week"></i> This Week
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-alt"></i> This Month
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar"></i> All Time
+                </button>
+            </div>
+            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
+                Showing: All Time
             </div>
         </div>
 
         <div class="card">
-            <h3>All Reports</h3>
-            <div class="filter-controls">
-                <button class="filter-btn active" onclick="filterReports('all')">All</button>
-                <button class="filter-btn" onclick="filterReports('pending')">Pending</button>
-                <button class="filter-btn" onclick="filterReports('resolved')">Resolved</button>
-                <button class="filter-btn" onclick="filterReports('urgent')">Urgent</button>
-            </div>
+            <h3>Reports</h3>
             <div id="admin-reports-list" class="admin-reports-list">
                 <!-- Reports will be loaded here -->
             </div>
@@ -461,44 +478,6 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
 <script>
-    // User Dropdown Functions
-    function toggleDropdown(event) {
-        if (event) event.stopPropagation();
-        
-        const dropdown = document.getElementById('user-dropdown');
-        const button = document.querySelector('.dashboard-container .dropdown-btn');
-        
-        // Toggle dropdown visibility
-        dropdown.classList.toggle('hidden');
-        button.classList.toggle('active');
-    }
-
-    function showMyReports() {
-        // Close dropdown first
-        closeUserDropdown();
-        showScreen('my-reports-screen');
-        if (typeof loadMyReports === 'function') loadMyReports();
-    }
-
-    function logout() {
-        // Close dropdown first
-        closeUserDropdown();
-        
-        // Show confirmation
-        if (confirm('Are you sure you want to logout?')) {
-            // Perform logout
-            showScreen('login-screen');
-            showSnackbar('Logged out successfully', 'success');
-        }
-    }
-
-    function closeUserDropdown() {
-        const dropdown = document.getElementById('user-dropdown');
-        const button = document.querySelector('.dashboard-container .dropdown-btn');
-        if (dropdown) dropdown.classList.add('hidden');
-        if (button) button.classList.remove('active');
-    }
-
     // Admin Dropdown Functions
     function toggleAdminDropdown(event) {
         if (event) event.stopPropagation();
@@ -518,24 +497,23 @@
         // Show loading message
         showSnackbar('Refreshing dashboard...', 'success');
         
-        // Refresh data
+        // Refresh data using existing functions from script.js
+        if (typeof loadAdminStats === 'function') loadAdminStats();
+        if (typeof loadAllReports === 'function') loadAllReports();
+        if (typeof loadAdminNotificationsCount === 'function') loadAdminNotificationsCount();
+        
         setTimeout(() => {
             showSnackbar('Dashboard refreshed!', 'success');
-            // Add your refresh logic here
-            if (typeof loadAdminStats === 'function') loadAdminStats();
-            if (typeof loadAllReports === 'function') loadAllReports();
-        }, 1000);
+        }, 500);
     }
 
     function adminLogout() {
         // Close dropdown first
         closeAdminDropdown();
         
-        // Show confirmation
-        if (confirm('Are you sure you want to logout?')) {
-            // Perform logout
-            showScreen('login-screen');
-            showSnackbar('Logged out successfully', 'success');
+        // Use the existing logout function from script.js
+        if (typeof logout === 'function') {
+            logout();
         }
     }
 
@@ -546,31 +524,8 @@
         if (button) button.classList.remove('active');
     }
 
-    function filterReports(filter) {
-        // Update active filter button
-        document.querySelectorAll('.filter-btn').forEach(btn => {
-            btn.classList.remove('active');
-        });
-        event.target.classList.add('active');
-        
-        // Show filter message
-        showSnackbar(`Showing ${filter} reports...`, 'success');
-        
-        // Add your filter logic here
-        // For now, just reload all reports
-        if (typeof loadAllReports === 'function') loadAllReports();
-    }
-
     // Close dropdowns when clicking anywhere else on the page
     document.addEventListener('click', function() {
-        // Close user dropdown if open
-        const userDropdown = document.getElementById('user-dropdown');
-        const userButton = document.querySelector('.dashboard-container .dropdown-btn');
-        if (userDropdown && !userDropdown.classList.contains('hidden')) {
-            userDropdown.classList.add('hidden');
-            userButton.classList.remove('active');
-        }
-        
         // Close admin dropdown if open
         const adminDropdown = document.getElementById('admin-dropdown');
         const adminButton = document.querySelector('.admin-container .dropdown-btn');
@@ -581,15 +536,11 @@
     });
 
     // Make functions available globally
-    window.toggleDropdown = toggleDropdown;
-    window.showMyReports = showMyReports;
-    window.logout = logout;
     window.toggleAdminDropdown = toggleAdminDropdown;
     window.refreshAdminDashboard = refreshAdminDashboard;
     window.adminLogout = adminLogout;
-    window.filterReports = filterReports;
-    window.closeUserDropdown = closeUserDropdown;
     window.closeAdminDropdown = closeAdminDropdown;
 </script>
 </body>
 </html>
+
