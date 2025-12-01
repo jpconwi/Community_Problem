@@ -932,11 +932,13 @@ async function loadMyReports() {
     }
 }
 
+// Show notifications screen with improved UI/UX
 function showNotifications() {
     showScreen('notifications-screen');
     loadNotifications();
 }
 
+// Load notifications with improved design
 async function loadNotifications() {
     try {
         const response = await fetch('/api/notifications');
@@ -945,27 +947,129 @@ async function loadNotifications() {
         const notificationsList = document.getElementById('notifications-list');
         
         if (data.success && data.notifications.length > 0) {
-            notificationsList.innerHTML = data.notifications.map(notification => `
-                <div class="notification-card">
-                    <div class="notification-message">${notification.message}</div>
-                    <div class="notification-time">${notification.created_at}</div>
+            notificationsList.innerHTML = `
+                <div class="notifications-header">
+                    <div class="notifications-stats">
+                        <div class="stat-badge">
+                            <i class="fas fa-bell"></i>
+                            <span>${data.notifications.length} Notifications</span>
+                        </div>
+                        <button class="btn btn-sm btn-outline" onclick="markAllAsRead()" style="padding: 4px 12px;">
+                            <i class="fas fa-check-double"></i>
+                            Mark All Read
+                        </button>
+                    </div>
                 </div>
-            `).join('');
+                <div class="notifications-container">
+                    ${data.notifications.map((notification, index) => `
+                        <div class="notification-item ${index === 0 ? 'new-notification' : ''}" onclick="handleNotificationClick(${index})">
+                            <div class="notification-icon">
+                                <i class="fas ${getNotificationIcon(notification.message)}"></i>
+                            </div>
+                            <div class="notification-content">
+                                <div class="notification-message">${notification.message}</div>
+                                <div class="notification-time">
+                                    <i class="fas fa-clock"></i>
+                                    ${formatTimeAgo(notification.created_at)}
+                                </div>
+                            </div>
+                            <div class="notification-actions">
+                                <button class="icon-btn-small" onclick="event.stopPropagation(); deleteNotification(${index})">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    `).join('')}
+                </div>
+            `;
         } else {
             notificationsList.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-                    <i class="fas fa-bell-slash" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                    <p>No notifications</p>
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-bell-slash"></i>
+                    </div>
+                    <h3>No Notifications</h3>
+                    <p>You're all caught up! We'll notify you when there are updates.</p>
+                    <button class="btn btn-primary" onclick="showScreen('user-dashboard')">
+                        <i class="fas fa-home"></i>
+                        Back to Dashboard
+                    </button>
                 </div>
             `;
         }
         
-        // Update badge
+        // Update badge count
         await loadNotificationsCount();
     } catch (error) {
         console.error('Failed to load notifications:', error);
-        showSnackbar('Failed to load notifications', 'error');
+        const notificationsList = document.getElementById('notifications-list');
+        notificationsList.innerHTML = `
+            <div class="error-state">
+                <div class="error-icon">
+                    <i class="fas fa-exclamation-triangle"></i>
+                </div>
+                <h3>Unable to Load Notifications</h3>
+                <p>Please check your connection and try again.</p>
+                <button class="btn btn-primary" onclick="loadNotifications()">
+                    <i class="fas fa-redo"></i>
+                    Try Again
+                </button>
+            </div>
+        `;
     }
+}
+
+// Helper functions for notifications
+function getNotificationIcon(message) {
+    if (message.includes('resolved') || message.includes('Resolved')) {
+        return 'fa-check-circle text-success';
+    } else if (message.includes('submitted') || message.includes('Submitted')) {
+        return 'fa-plus-circle text-primary';
+    } else if (message.includes('status') || message.includes('Status')) {
+        return 'fa-sync-alt text-warning';
+    } else if (message.includes('deleted') || message.includes('Deleted')) {
+        return 'fa-trash text-danger';
+    }
+    return 'fa-info-circle text-info';
+}
+
+function formatTimeAgo(timestamp) {
+    const now = new Date();
+    const time = new Date(timestamp);
+    const diffInMinutes = Math.floor((now - time) / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return time.toLocaleDateString();
+}
+
+function handleNotificationClick(index) {
+    // Mark as read and navigate if needed
+    const notificationItems = document.querySelectorAll('.notification-item');
+    notificationItems[index].classList.remove('new-notification');
+    
+    // You can add specific navigation logic based on notification content
+    showSnackbar('Notification marked as read', 'success');
+}
+
+function markAllAsRead() {
+    const notificationItems = document.querySelectorAll('.notification-item');
+    notificationItems.forEach(item => item.classList.remove('new-notification'));
+    showSnackbar('All notifications marked as read', 'success');
+}
+
+function deleteNotification(index) {
+    // In a real app, you would call an API to delete the notification
+    const notificationItems = document.querySelectorAll('.notification-item');
+    notificationItems[index].style.opacity = '0';
+    setTimeout(() => {
+        notificationItems[index].remove();
+        showSnackbar('Notification deleted', 'success');
+    }, 300);
 }
 
 async function loadAdminDashboard() {
@@ -1715,4 +1819,5 @@ async function logout() {
 
 
  
+
 
