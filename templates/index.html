@@ -252,28 +252,28 @@
                 <p>Manage community reports</p>
             </div>
             <div class="header-actions">
-                <button class="icon-btn" onclick="showAdminNotifications()">
-                    <i class="fas fa-bell"></i>
-                    <span id="admin-notification-badge" class="badge hidden">0</span>
-                </button>
-                <div class="admin-dropdown-container">
-                    <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown(event)">
-                        <i class="fas fa-ellipsis-v"></i>
-                        MENU
-                        <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
-                    </button>
-                    <div id="admin-dropdown-menu" class="admin-dropdown-menu hidden">
-                        <button class="admin-dropdown-item" onclick="refreshAdminDashboard()">
-                            <i class="fas fa-sync-alt"></i>
-                            Refresh Dashboard
-                        </button>
-                        <button class="admin-dropdown-item" onclick="adminLogout()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Logout
-                        </button>
-                    </div>
-                </div>
-            </div>
+    <button class="icon-btn" onclick="showAdminNotifications()">
+        <i class="fas fa-bell"></i>
+        <span id="admin-notification-badge" class="badge hidden">0</span>
+    </button>
+    <div class="admin-dropdown-container">
+        <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown(event)">
+            <i class="fas fa-ellipsis-v"></i>
+            OPTIONS
+            <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
+        </button>
+        <div id="admin-dropdown-menu" class="admin-dropdown-menu hidden">
+            <button class="admin-dropdown-item" onclick="refreshAdminDashboard()">
+                <i class="fas fa-sync-alt"></i>
+                Refresh
+            </button>
+            <button class="admin-dropdown-item" onclick="adminLogout()">
+                <i class="fas fa-sign-out-alt"></i>
+                Logout
+            </button>
+        </div>
+    </div>
+</div>
         </div>
 
         <!-- Rest of your admin dashboard content -->
@@ -541,6 +541,7 @@
 </script>
 </body>
 </html>
+
 
 
 
