@@ -968,7 +968,6 @@ async function loadNotifications() {
     }
 }
 
-// Admin functions
 async function loadAdminDashboard() {
     if (!currentUser || currentUser.role !== 'admin') return;
     
@@ -981,14 +980,23 @@ async function loadAdminDashboard() {
                     <i class="fas fa-bell"></i>
                     <span id="admin-notification-badge" class="badge hidden">0</span>
                 </button>
-                <button class="btn btn-outline" onclick="checkNewReportsNotification()" title="Check for new reports">
-                    <i class="fas fa-sync-alt"></i>
-                    Refresh
-                </button>
-                <button class="btn btn-danger" onclick="logout()">
-                    <i class="fas fa-sign-out-alt"></i>
-                    Logout
-                </button>
+                <div class="admin-dropdown-container">
+                    <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown(event)">
+                        <i class="fas fa-ellipsis-v"></i>
+                        OPTIONS
+                        <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
+                    </button>
+                    <div id="admin-dropdown-menu" class="admin-dropdown-menu hidden">
+                        <button class="admin-dropdown-item" onclick="refreshAdminDashboard()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                        <button class="admin-dropdown-item" onclick="adminLogout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
             </div>
         </div>
         
@@ -1707,3 +1715,4 @@ async function logout() {
 
 
  
+
