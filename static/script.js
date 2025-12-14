@@ -41,6 +41,45 @@ function setupEventListeners() {
             handleReportSubmit(e);
         });
     }
+    
+    // Setup dropdown click handlers
+    setupDropdownHandlers();
+}
+
+// Setup dropdown handlers
+function setupDropdownHandlers() {
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        // User dropdown
+        const userDropdown = document.getElementById('user-dropdown');
+        const userMenuBtn = document.querySelector('.dashboard-container .three-dot-menu');
+        
+        if (userDropdown && userMenuBtn) {
+            const isClickInsideDropdown = userDropdown.contains(event.target);
+            const isClickOnMenuBtn = userMenuBtn.contains(event.target);
+            
+            if (!isClickInsideDropdown && !isClickOnMenuBtn && !userDropdown.classList.contains('hidden')) {
+                userDropdown.classList.add('hidden');
+                const icon = userMenuBtn.querySelector('i');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+        
+        // Admin dropdown
+        const adminDropdown = document.getElementById('admin-dropdown-menu');
+        const adminMenuBtn = document.querySelector('.admin-container .three-dot-menu');
+        
+        if (adminDropdown && adminMenuBtn) {
+            const isClickInsideAdminDropdown = adminDropdown.contains(event.target);
+            const isClickOnAdminMenuBtn = adminMenuBtn.contains(event.target);
+            
+            if (!isClickInsideAdminDropdown && !isClickOnAdminMenuBtn && !adminDropdown.classList.contains('hidden')) {
+                adminDropdown.classList.add('hidden');
+                const icon = adminMenuBtn.querySelector('i');
+                icon.style.transform = 'rotate(0deg)';
+            }
+        }
+    });
 }
 
 // Enhanced Report functions
@@ -681,19 +720,69 @@ async function handleRegister(e) {
     }
 }
 
+// FIXED: Enhanced logout function
 async function logout() {
     try {
+        console.log('🔄 Attempting logout...');
+        
+        // Show loading state
+        showSnackbar('Logging out...');
+        
         const response = await fetch('/api/logout');
         const data = await response.json();
         
         if (data.success) {
+            console.log('✅ Logout successful');
             currentUser = null;
             photoData = null;
+            stream = null;
+            
+            // Clear any stored data
+            localStorage.removeItem('userReports');
+            localStorage.removeItem('lastUpdateCheck');
+            localStorage.removeItem('lastAdminUpdateCheck');
+            localStorage.removeItem('lastNewReportCount');
+            
+            // Reset any UI elements
+            document.getElementById('login-form')?.reset();
+            document.getElementById('register-form')?.reset();
+            document.getElementById('report-form')?.reset();
+            
+            // Close any open dropdowns
+            const userDropdown = document.getElementById('user-dropdown');
+            const adminDropdown = document.getElementById('admin-dropdown-menu');
+            if (userDropdown) userDropdown.classList.add('hidden');
+            if (adminDropdown) adminDropdown.classList.add('hidden');
+            
+            // Reset dropdown icons
+            const userMenuIcon = document.querySelector('.dashboard-container .three-dot-menu i');
+            const adminMenuIcon = document.querySelector('.admin-container .three-dot-menu i');
+            if (userMenuIcon) userMenuIcon.style.transform = 'rotate(0deg)';
+            if (adminMenuIcon) adminMenuIcon.style.transform = 'rotate(0deg)';
+            
+            // Close any open modals
+            document.getElementById('camera-modal')?.classList.add('hidden');
+            document.getElementById('resolution-modal')?.classList.add('hidden');
+            
+            // Stop camera stream if active
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+                stream = null;
+            }
+            
+            // Show login screen
             showScreen('login-screen');
             showSnackbar('Logged out successfully!');
+            
+            // Clear photo preview
+            removePhoto();
+        } else {
+            console.error('❌ Logout failed:', data.message);
+            showSnackbar('Logout failed. Please try again.', 'error');
         }
     } catch (error) {
-        console.error('Logout failed:', error);
+        console.error('💥 Logout error:', error);
+        showSnackbar('Failed to logout. Please check your connection.', 'error');
     }
 }
 
@@ -840,6 +929,14 @@ function showScreen(screenId) {
 }
 
 function showMyReports() {
+    // Close dropdown before switching
+    const userDropdown = document.getElementById('user-dropdown');
+    if (userDropdown) {
+        userDropdown.classList.add('hidden');
+        const userMenuIcon = document.querySelector('.dashboard-container .three-dot-menu i');
+        if (userMenuIcon) userMenuIcon.style.transform = 'rotate(0deg)';
+    }
+    
     showScreen('my-reports-screen');
     loadMyReports();
 }
@@ -1072,6 +1169,37 @@ function deleteNotification(index) {
     }, 300);
 }
 
+// FIXED: Enhanced dropdown functions
+function toggleDropdown() {
+    const dropdown = document.getElementById('user-dropdown');
+    const menuBtn = document.querySelector('.dashboard-container .three-dot-menu');
+    
+    dropdown.classList.toggle('hidden');
+    
+    // Add rotation animation to the ellipsis icon
+    const icon = menuBtn.querySelector('i');
+    if (dropdown.classList.contains('hidden')) {
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        icon.style.transform = 'rotate(90deg)';
+    }
+}
+
+function toggleAdminDropdown() {
+    const dropdown = document.getElementById('admin-dropdown-menu');
+    const menuBtn = document.querySelector('.admin-container .three-dot-menu');
+    
+    dropdown.classList.toggle('hidden');
+    
+    // Add rotation animation to the ellipsis icon
+    const icon = menuBtn.querySelector('i');
+    if (dropdown.classList.contains('hidden')) {
+        icon.style.transform = 'rotate(0deg)';
+    } else {
+        icon.style.transform = 'rotate(90deg)';
+    }
+}
+
 async function loadAdminDashboard() {
     if (!currentUser || currentUser.role !== 'admin') return;
     
@@ -1085,7 +1213,7 @@ async function loadAdminDashboard() {
                     <span id="admin-notification-badge" class="badge hidden">0</span>
                 </button>
                 <div class="admin-dropdown-container">
-                    <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown(event)">
+                    <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown()">
                         <i class="fas fa-ellipsis-v"></i>
                         OPTIONS
                         <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
@@ -1095,7 +1223,7 @@ async function loadAdminDashboard() {
                             <i class="fas fa-sync-alt"></i>
                             Refresh
                         </button>
-                        <button class="admin-dropdown-item" onclick="adminLogout()">
+                        <button class="admin-dropdown-item" onclick="logout()">
                             <i class="fas fa-sign-out-alt"></i>
                             Logout
                         </button>
@@ -1764,60 +1892,27 @@ function updateFilterStats(reports) {
     }
 }
 
-// Dropdown functions
-function toggleDropdown() {
-    const dropdown = document.getElementById('user-dropdown');
-    const dropdownBtn = document.querySelector('.dropdown-btn');
-    
-    dropdown.classList.toggle('hidden');
-    dropdownBtn.classList.toggle('active');
-}
-
-// Close dropdown when clicking outside
-document.addEventListener('click', function(event) {
-    const dropdown = document.getElementById('user-dropdown');
-    const dropdownBtn = document.querySelector('.dropdown-btn');
-    
-    if (!event.target.closest('.dropdown-container') && !dropdown.classList.contains('hidden')) {
-        dropdown.classList.add('hidden');
-        dropdownBtn.classList.remove('active');
-    }
-});
-
-// Close dropdown when an option is selected
-function closeDropdown() {
-    const dropdown = document.getElementById('user-dropdown');
-    const dropdownBtn = document.querySelector('.dropdown-btn');
-    
-    dropdown.classList.add('hidden');
-    dropdownBtn.classList.remove('active');
-}
-
-// Update the existing functions to close dropdown
-function showMyReports() {
-    closeDropdown();
-    showScreen('my-reports-screen');
-    loadMyReports();
-}
-
-async function logout() {
-    closeDropdown();
+// FIXED: Enhanced refresh admin dashboard function
+async function refreshAdminDashboard() {
     try {
-        const response = await fetch('/api/logout');
-        const data = await response.json();
+        showSnackbar('Refreshing dashboard...', 'info');
         
-        if (data.success) {
-            currentUser = null;
-            photoData = null;
-            showScreen('login-screen');
-            showSnackbar('Logged out successfully!');
+        // Hide any open dropdowns
+        const adminDropdown = document.getElementById('admin-dropdown-menu');
+        if (adminDropdown && !adminDropdown.classList.contains('hidden')) {
+            adminDropdown.classList.add('hidden');
+            const menuBtn = document.querySelector('.admin-container .three-dot-menu');
+            const icon = menuBtn?.querySelector('i');
+            if (icon) icon.style.transform = 'rotate(0deg)';
         }
+        
+        await loadAdminStats();
+        await loadAllReports();
+        await loadAdminNotificationsCount();
+        
+        showSnackbar('Dashboard refreshed successfully!', 'success');
     } catch (error) {
-        console.error('Logout failed:', error);
+        console.error('Failed to refresh admin dashboard:', error);
+        showSnackbar('Failed to refresh dashboard', 'error');
     }
 }
-
-
- 
-
-
