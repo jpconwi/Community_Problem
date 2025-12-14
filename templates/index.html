@@ -3,12 +3,48 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>CommunityCare - Report System</title>
+    <title>BAYAN - Barangay Action for Youth and Neighborhoods</title>
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
     <meta name="theme-color" content="#2563eb">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Additional styles for camera modal and 3-dot menu */
+        #camera-modal .modal-content {
+            max-width: 95vw;
+            max-height: 90vh;
+        }
+        
+        #camera-view {
+            width: 100%;
+            height: 60vh;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .three-dot-menu {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        .three-dot-menu:hover {
+            background: var(--background-color);
+            color: var(--primary-color);
+        }
+    </style>
 </head>
 <body>
     <div id="app">
@@ -18,8 +54,11 @@
                 <div class="auth-card">
                     <div class="auth-header">
                         <img src="{{ url_for('static', filename='582018167_1560503148706009_8007918624155557268_n.jpg') }}" 
-         alt="CommunityCare Logo" class="app-logo">
-                        <h1>CommunityCare</h1>
+                             alt="BAYAN Logo" class="app-logo">
+                        <h1>BAYAN</h1>
+                        <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">
+                            Barangay Action for Youth and Neighborhoods
+                        </p>
                     </div>
                     
                     <form id="login-form">
@@ -43,7 +82,7 @@
                     </form>
                     
                     <div class="auth-footer">
-                        <p>Don't have an account? <a href="#" onclick="showScreen('register-screen')">Sign In</a></p>
+                        <p>Don't have an account? <a href="#" onclick="showScreen('register-screen')">Sign Up</a></p>
                     </div>
                 </div>
             </div>
@@ -58,6 +97,9 @@
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <h1>Create Account</h1>
+                        <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">
+                            Join BAYAN Community
+                        </p>
                     </div>
                     
                     <form id="register-form">
@@ -107,7 +149,7 @@
                 <div class="header">
                     <div class="user-info">
                         <h2 id="user-name">User</h2>
-                        <p>Welcome back!</p>
+                        <p>Welcome to BAYAN!</p>
                     </div>
                     <div class="header-actions">
                         <button class="icon-btn" onclick="showNotifications()">
@@ -115,10 +157,8 @@
                             <span id="notification-badge" class="badge hidden">0</span>
                         </button>
                         <div class="dropdown-container">
-                            <button class="btn btn-outline dropdown-btn" onclick="toggleDropdown(event)">
+                            <button class="three-dot-menu" onclick="toggleDropdown(event)">
                                 <i class="fas fa-ellipsis-v"></i>
-                                MENU
-                                <i class="fas fa-chevron-down dropdown-arrow"></i>
                             </button>
                             <div id="user-dropdown" class="dropdown-menu hidden">
                                 <button class="dropdown-item" onclick="showMyReports()">
@@ -229,7 +269,7 @@
             </div>
         </div>
 
-     <!-- Notifications Screen -->
+        <!-- Notifications Screen -->
         <div id="notifications-screen" class="screen">
             <div class="screen-header">
                 <button class="back-btn" onclick="showScreen('user-dashboard')">
@@ -244,103 +284,108 @@
             </div>
         </div>
 
-<div id="admin-dashboard" class="screen">
-    <div class="admin-container">
-        <div class="header">
-            <div class="user-info">
-                <h2 id="admin-name">Admin Dashboard</h2>
-                <p>Manage community reports</p>
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="screen">
+            <div class="admin-container">
+                <div class="header">
+                    <div class="user-info">
+                        <h2 id="admin-name">BAYAN Admin Dashboard</h2>
+                        <p>Manage community reports</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-btn" onclick="showAdminNotifications()">
+                            <i class="fas fa-bell"></i>
+                            <span id="admin-notification-badge" class="badge hidden">0</span>
+                        </button>
+                        <div class="dropdown-container">
+                            <button class="three-dot-menu" onclick="toggleAdminDropdown(event)">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div id="admin-dropdown-menu" class="dropdown-menu hidden">
+                                <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Refresh
+                                </button>
+                                <button class="dropdown-item" onclick="adminLogout()">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Rest of your admin dashboard content -->
+                <div class="admin-stats">
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-value" id="total-reports">0</span>
+                        <span class="admin-stat-label">Total Reports</span>
+                    </div>
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-value" id="pending-reports">0</span>
+                        <span class="admin-stat-label">Pending</span>
+                    </div>
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-value" id="in-progress-reports">0</span>
+                        <span class="admin-stat-label">In Progress</span>
+                    </div>
+                    <div class="admin-stat-card">
+                        <span class="admin-stat-value" id="resolved-reports">0</span>
+                        <span class="admin-stat-label">Resolved</span>
+                    </div>
+                </div>
+
+                <!-- Filter Controls -->
+                <div class="card">
+                    <h3>Filter Reports</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
+                            <i class="fas fa-calendar-day"></i> Today
+                        </button>
+                        <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
+                            <i class="fas fa-calendar-week"></i> This Week
+                        </button>
+                        <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
+                            <i class="fas fa-calendar-alt"></i> This Month
+                        </button>
+                        <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
+                            <i class="fas fa-calendar"></i> All Time
+                        </button>
+                    </div>
+                    <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
+                        Showing: All Time
+                    </div>
+                </div>
+
+                <div class="card">
+                    <h3>Reports</h3>
+                    <div id="admin-reports-list" class="admin-reports-list">
+                        <!-- Reports will be loaded here -->
+                    </div>
+                </div>
             </div>
-            <div class="header-actions">
-    <button class="icon-btn" onclick="showAdminNotifications()">
-        <i class="fas fa-bell"></i>
-        <span id="admin-notification-badge" class="badge hidden">0</span>
-    </button>
-    <div class="admin-dropdown-container">
-        <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown(event)">
-            <i class="fas fa-ellipsis-v"></i>
-            MENU
-            <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
-        </button>
-        <div id="admin-dropdown-menu" class="admin-dropdown-menu hidden">
-            <button class="admin-dropdown-item" onclick="refreshAdminDashboard()">
-                <i class="fas fa-sync-alt"></i>
-                Refresh
-            </button>
-            <button class="admin-dropdown-item" onclick="adminLogout()">
-                <i class="fas fa-sign-out-alt"></i>
-                Logout
-            </button>
-        </div>
-    </div>
-</div>
         </div>
 
-        <!-- Rest of your admin dashboard content -->
-        <div class="admin-stats">
-            <div class="admin-stat-card">
-                <span class="admin-stat-value" id="total-reports">0</span>
-                <span class="admin-stat-label">Total Reports</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="admin-stat-value" id="pending-reports">0</span>
-                <span class="admin-stat-label">Pending</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="admin-stat-value" id="in-progress-reports">0</span>
-                <span class="admin-stat-label">In Progress</span>
-            </div>
-            <div class="admin-stat-card">
-                <span class="admin-stat-value" id="resolved-reports">0</span>
-                <span class="admin-stat-label">Resolved</span>
-            </div>
-        </div>
-
-        <!-- Filter Controls -->
-        <div class="card">
-            <h3>Filter Reports</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-day"></i> Today
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-week"></i> This Week
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-alt"></i> This Month
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar"></i> All Time
-                </button>
-            </div>
-            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
-                Showing: All Time
-            </div>
-        </div>
-
-        <div class="card">
-            <h3>Reports</h3>
-            <div id="admin-reports-list" class="admin-reports-list">
-                <!-- Reports will be loaded here -->
-            </div>
-        </div>
-    </div>
-</div>
-
-        <!-- Camera Modal -->
+        <!-- Camera Modal - Moved to bottom of body to ensure proper rendering -->
         <div id="camera-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Take Photo</h3>
                     <button class="close-btn" onclick="closeCamera()">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <video id="camera-view" autoplay playsinline></video>
-                    <canvas id="camera-canvas" style="display: none;"></canvas>
+                <div class="modal-body" style="padding: 0;">
+                    <div style="width: 100%; height: 400px; background: #000; position: relative; overflow: hidden;">
+                        <video id="camera-view" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <canvas id="camera-canvas" style="display: none;"></canvas>
+                    </div>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-outline" onclick="closeCamera()">Cancel</button>
-                    <button type="button" class="btn btn-primary" onclick="capturePhoto()">Capture</button>
+                    <button type="button" class="btn btn-outline" onclick="closeCamera()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="capturePhoto()">
+                        <i class="fas fa-camera"></i> Capture Photo
+                    </button>
                 </div>
             </div>
         </div>
@@ -445,8 +490,25 @@
             </div>
         </div>
 
-        <!-- New Reports Notification Container -->
-        <!-- This will be dynamically created by JavaScript -->
+        <!-- Admin Notifications Modal -->
+        <div id="admin-notifications-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Admin Notifications</h3>
+                    <button class="close-btn" onclick="document.getElementById('admin-notifications-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="admin-notifications-list" class="notifications-list">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('admin-notifications-modal').classList.add('hidden')">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
         
     </div>
 
@@ -475,74 +537,188 @@
     </div>
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
-<script>
-    // Admin Dropdown Functions
-    function toggleAdminDropdown(event) {
-        if (event) event.stopPropagation();
+    <script>
+        // Enhanced camera functions
+        let stream = null;
+        let photoData = null;
         
-        const dropdown = document.getElementById('admin-dropdown-menu');
-        const button = document.querySelector('.admin-dropdown-btn');
-        
-        // Toggle dropdown visibility
-        dropdown.classList.toggle('hidden');
-        button.classList.toggle('active');
-    }
-
-    function refreshAdminDashboard() {
-        // Close dropdown first
-        closeAdminDropdown();
-        
-        // Show loading message
-        showSnackbar('Refreshing dashboard...', 'success');
-        
-        // Refresh data using existing functions from script.js
-        if (typeof loadAdminStats === 'function') loadAdminStats();
-        if (typeof loadAllReports === 'function') loadAllReports();
-        if (typeof loadAdminNotificationsCount === 'function') loadAdminNotificationsCount();
-        
-        setTimeout(() => {
-            showSnackbar('Dashboard refreshed!', 'success');
-        }, 500);
-    }
-
-    function adminLogout() {
-        // Close dropdown first
-        closeAdminDropdown();
-        
-        // Use the existing logout function from script.js
-        if (typeof logout === 'function') {
-            logout();
+        function openCamera() {
+            console.log('Opening camera...');
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-view');
+            
+            modal.classList.remove('hidden');
+            
+            // Request camera access
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            })
+            .then(function(mediaStream) {
+                console.log('Camera access granted');
+                stream = mediaStream;
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function(error) {
+                console.error('Camera error:', error);
+                showSnackbar('Failed to access camera. Please check permissions.', 'error');
+                closeCamera();
+            });
         }
-    }
-
-    function closeAdminDropdown() {
-        const dropdown = document.getElementById('admin-dropdown-menu');
-        const button = document.querySelector('.admin-dropdown-btn');
-        if (dropdown) dropdown.classList.add('hidden');
-        if (button) button.classList.remove('active');
-    }
-
-    // Close dropdowns when clicking anywhere else on the page
-    document.addEventListener('click', function() {
-        // Close admin dropdown if open
-        const adminDropdown = document.getElementById('admin-dropdown-menu');
-        const adminButton = document.querySelector('.admin-dropdown-btn');
-        if (adminDropdown && !adminDropdown.classList.contains('hidden')) {
-            adminDropdown.classList.add('hidden');
-            adminButton.classList.remove('active');
+        
+        function closeCamera() {
+            console.log('Closing camera...');
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-view');
+            
+            modal.classList.add('hidden');
+            
+            // Stop all video tracks
+            if (stream) {
+                stream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                stream = null;
+            }
+            
+            video.srcObject = null;
         }
-    });
-
-    // Make functions available globally
-    window.toggleAdminDropdown = toggleAdminDropdown;
-    window.refreshAdminDashboard = refreshAdminDashboard;
-    window.adminLogout = adminLogout;
-    window.closeAdminDropdown = closeAdminDropdown;
-</script>
+        
+        function capturePhoto() {
+            console.log('Capturing photo...');
+            const video = document.getElementById('camera-view');
+            const canvas = document.getElementById('camera-canvas');
+            
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            
+            // Draw video frame to canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
+            
+            // Convert to data URL
+            photoData = canvas.toDataURL('image/jpeg', 0.7);
+            
+            // Show preview
+            const preview = document.getElementById('photo-preview');
+            const previewImage = document.getElementById('preview-image');
+            
+            previewImage.src = photoData;
+            preview.classList.remove('hidden');
+            
+            closeCamera();
+            showSnackbar('Photo captured successfully!', 'success');
+        }
+        
+        function handleFileUpload(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showSnackbar('Please select a valid image file (JPEG, PNG, etc.)', 'error');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showSnackbar('Image size should be less than 5MB', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoData = e.target.result;
+                
+                // Show preview
+                const preview = document.getElementById('photo-preview');
+                const previewImage = document.getElementById('preview-image');
+                
+                previewImage.src = photoData;
+                preview.classList.remove('hidden');
+                
+                showSnackbar('Photo uploaded successfully!', 'success');
+            };
+            reader.readAsDataURL(file);
+        }
+        
+        function removePhoto() {
+            photoData = null;
+            document.getElementById('photo-preview').classList.add('hidden');
+        }
+        
+        // Menu dropdown functions
+        function toggleDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('user-dropdown');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        function toggleAdminDropdown(event) {
+            event.stopPropagation();
+            const dropdown = document.getElementById('admin-dropdown-menu');
+            dropdown.classList.toggle('hidden');
+        }
+        
+        // Close dropdowns when clicking outside
+        document.addEventListener('click', function(event) {
+            // User dropdown
+            const userDropdown = document.getElementById('user-dropdown');
+            const userMenuBtn = document.querySelector('.three-dot-menu');
+            if (userDropdown && !userDropdown.contains(event.target) && !userMenuBtn.contains(event.target)) {
+                userDropdown.classList.add('hidden');
+            }
+            
+            // Admin dropdown
+            const adminDropdown = document.getElementById('admin-dropdown-menu');
+            const adminMenuBtn = document.querySelector('.admin-container .three-dot-menu');
+            if (adminDropdown && !adminDropdown.contains(event.target) && !adminMenuBtn.contains(event.target)) {
+                adminDropdown.classList.add('hidden');
+            }
+        });
+        
+        // Dashboard refresh function
+        function refreshAdminDashboard() {
+            showSnackbar('Refreshing dashboard...', 'info');
+            setTimeout(() => {
+                if (typeof loadAdminStats === 'function') loadAdminStats();
+                if (typeof loadAllReports === 'function') loadAllReports();
+                if (typeof loadAdminNotificationsCount === 'function') loadAdminNotificationsCount();
+                showSnackbar('Dashboard refreshed!', 'success');
+            }, 500);
+        }
+        
+        // Admin notifications function
+        function showAdminNotifications() {
+            const modal = document.getElementById('admin-notifications-modal');
+            modal.classList.remove('hidden');
+            loadAdminNotifications();
+        }
+        
+        function loadAdminNotifications() {
+            // This would typically fetch from an API
+            const notificationsList = document.getElementById('admin-notifications-list');
+            notificationsList.innerHTML = `
+                <div style="padding: 20px; text-align: center;">
+                    <i class="fas fa-bell" style="font-size: 48px; color: #667eea; margin-bottom: 15px;"></i>
+                    <h4>Admin Notifications</h4>
+                    <p style="color: #64748b; margin: 10px 0;">No new notifications</p>
+                    <small style="color: #94a3b8;">You'll be notified when there are new reports or updates.</small>
+                </div>
+            `;
+        }
+        
+        // Make functions globally available
+        window.openCamera = openCamera;
+        window.closeCamera = closeCamera;
+        window.capturePhoto = capturePhoto;
+        window.handleFileUpload = handleFileUpload;
+        window.removePhoto = removePhoto;
+        window.toggleDropdown = toggleDropdown;
+        window.toggleAdminDropdown = toggleAdminDropdown;
+        window.refreshAdminDashboard = refreshAdminDashboard;
+        window.showAdminNotifications = showAdminNotifications;
+        window.loadAdminNotifications = loadAdminNotifications;
+    </script>
 </body>
 </html>
-
-
-
-
-
