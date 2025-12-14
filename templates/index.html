@@ -157,7 +157,8 @@
                             <span id="notification-badge" class="badge hidden">0</span>
                         </button>
                         <div class="dropdown-container">
-                            <button class="three-dot-menu" onclick="toggleDropdown(event)">
+                            <!-- FIXED: Added logout function directly to dropdown items -->
+                            <button class="three-dot-menu" onclick="toggleDropdown()">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div id="user-dropdown" class="dropdown-menu hidden">
@@ -298,7 +299,8 @@
                             <span id="admin-notification-badge" class="badge hidden">0</span>
                         </button>
                         <div class="dropdown-container">
-                            <button class="three-dot-menu" onclick="toggleAdminDropdown(event)">
+                            <!-- FIXED: Added proper logout function -->
+                            <button class="three-dot-menu" onclick="toggleAdminDropdown()">
                                 <i class="fas fa-ellipsis-v"></i>
                             </button>
                             <div id="admin-dropdown-menu" class="dropdown-menu hidden">
@@ -306,7 +308,7 @@
                                     <i class="fas fa-sync-alt"></i>
                                     Refresh
                                 </button>
-                                <button class="dropdown-item" onclick="adminLogout()">
+                                <button class="dropdown-item" onclick="logout()">
                                     <i class="fas fa-sign-out-alt"></i>
                                     Logout
                                 </button>
@@ -538,7 +540,7 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script>
-        // Enhanced camera functions
+        // Camera functions
         let stream = null;
         let photoData = null;
         
@@ -647,78 +649,12 @@
             document.getElementById('photo-preview').classList.add('hidden');
         }
         
-        // Menu dropdown functions
-        function toggleDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('user-dropdown');
-            dropdown.classList.toggle('hidden');
-        }
-        
-        function toggleAdminDropdown(event) {
-            event.stopPropagation();
-            const dropdown = document.getElementById('admin-dropdown-menu');
-            dropdown.classList.toggle('hidden');
-        }
-        
-        // Close dropdowns when clicking outside
-        document.addEventListener('click', function(event) {
-            // User dropdown
-            const userDropdown = document.getElementById('user-dropdown');
-            const userMenuBtn = document.querySelector('.three-dot-menu');
-            if (userDropdown && !userDropdown.contains(event.target) && !userMenuBtn.contains(event.target)) {
-                userDropdown.classList.add('hidden');
-            }
-            
-            // Admin dropdown
-            const adminDropdown = document.getElementById('admin-dropdown-menu');
-            const adminMenuBtn = document.querySelector('.admin-container .three-dot-menu');
-            if (adminDropdown && !adminDropdown.contains(event.target) && !adminMenuBtn.contains(event.target)) {
-                adminDropdown.classList.add('hidden');
-            }
-        });
-        
-        // Dashboard refresh function
-        function refreshAdminDashboard() {
-            showSnackbar('Refreshing dashboard...', 'info');
-            setTimeout(() => {
-                if (typeof loadAdminStats === 'function') loadAdminStats();
-                if (typeof loadAllReports === 'function') loadAllReports();
-                if (typeof loadAdminNotificationsCount === 'function') loadAdminNotificationsCount();
-                showSnackbar('Dashboard refreshed!', 'success');
-            }, 500);
-        }
-        
-        // Admin notifications function
-        function showAdminNotifications() {
-            const modal = document.getElementById('admin-notifications-modal');
-            modal.classList.remove('hidden');
-            loadAdminNotifications();
-        }
-        
-        function loadAdminNotifications() {
-            // This would typically fetch from an API
-            const notificationsList = document.getElementById('admin-notifications-list');
-            notificationsList.innerHTML = `
-                <div style="padding: 20px; text-align: center;">
-                    <i class="fas fa-bell" style="font-size: 48px; color: #667eea; margin-bottom: 15px;"></i>
-                    <h4>Admin Notifications</h4>
-                    <p style="color: #64748b; margin: 10px 0;">No new notifications</p>
-                    <small style="color: #94a3b8;">You'll be notified when there are new reports or updates.</small>
-                </div>
-            `;
-        }
-        
         // Make functions globally available
         window.openCamera = openCamera;
         window.closeCamera = closeCamera;
         window.capturePhoto = capturePhoto;
         window.handleFileUpload = handleFileUpload;
         window.removePhoto = removePhoto;
-        window.toggleDropdown = toggleDropdown;
-        window.toggleAdminDropdown = toggleAdminDropdown;
-        window.refreshAdminDashboard = refreshAdminDashboard;
-        window.showAdminNotifications = showAdminNotifications;
-        window.loadAdminNotifications = loadAdminNotifications;
     </script>
 </body>
 </html>
