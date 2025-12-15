@@ -5,116 +5,137 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>BAYAN - Barangay Action for Youth and Neighborhoods</title>
     <link rel="manifest" href="{{ url_for('static', filename='manifest.json') }}">
-    <meta name="theme-color" content="#4f46e5">
+    <meta name="theme-color" content="#2563eb">
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <style>
+        /* Additional styles for camera modal and 3-dot menu */
+        #camera-modal .modal-content {
+            max-width: 95vw;
+            max-height: 90vh;
+        }
+        
+        #camera-view {
+            width: 100%;
+            height: 60vh;
+            max-height: 500px;
+            object-fit: cover;
+            border-radius: 8px;
+            background: #000;
+        }
+        
+        .three-dot-menu {
+            background: none;
+            border: none;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 8px;
+            border-radius: 50%;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-width: 44px;
+            min-height: 44px;
+        }
+        
+        .three-dot-menu:hover {
+            background: var(--background-color);
+            color: var(--primary-color);
+        }
+    </style>
 </head>
 <body>
-    <!-- Loading Screen -->
-    <div id="loading-screen">
+    <body>
+    <!-- ADD THIS LOADING SCREEN -->
+    <div id="loading-screen" class="loading-screen">
         <div class="loading-container">
-            <img src="{{ url_for('static', filename='582018167_1560503148706009_8007918624155557268_n.jpg') }}" 
-                 alt="BAYAN Logo" class="loading-logo">
             <div class="loading-spinner"></div>
             <h3>Loading BAYAN</h3>
             <p>Barangay Action for Youth and Neighborhoods</p>
         </div>
     </div>
     
-    <!-- Onboarding/Help Modal -->
-    <div id="help-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3>Welcome to BAYAN! 👋</h3>
-                <button class="modal-close" onclick="closeHelpModal()">&times;</button>
-            </div>
-            <div class="modal-body">
-                <div class="onboarding-steps">
-                    <div class="step flex items-center gap-4 mb-4">
-                        <div class="step-icon bg-primary-100 text-primary-600 w-10 h-10 rounded-full flex items-center justify-center">
-                            <i class="fas fa-flag"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold">Submit Reports</h4>
-                            <p class="text-muted">Report community issues with photos and location details</p>
-                        </div>
+    <!-- Rest of your existing code... -->
+
+
+    <!-- Add before closing body tag -->
+<div id="help-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Welcome to BAYAN</h3>
+            <button class="close-btn" onclick="closeHelpModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="onboarding-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Submit Reports</h4>
+                        <p>Report community issues with photos and location details</p>
                     </div>
-                    <div class="step flex items-center gap-4 mb-4">
-                        <div class="step-icon bg-primary-100 text-primary-600 w-10 h-10 rounded-full flex items-center justify-center">
-                            <i class="fas fa-chart-line"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold">Track Progress</h4>
-                            <p class="text-muted">Monitor your report status from pending to resolved</p>
-                        </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Track Progress</h4>
+                        <p>Monitor your report status from pending to resolved</p>
                     </div>
-                    <div class="step flex items-center gap-4">
-                        <div class="step-icon bg-primary-100 text-primary-600 w-10 h-10 rounded-full flex items-center justify-center">
-                            <i class="fas fa-bell"></i>
-                        </div>
-                        <div>
-                            <h4 class="font-semibold">Get Notified</h4>
-                            <p class="text-muted">Receive updates when your reports are addressed</p>
-                        </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Get Notified</h4>
+                        <p>Receive updates when your reports are addressed</p>
                     </div>
                 </div>
             </div>
-            <div class="modal-actions">
-                <button class="btn btn-secondary" onclick="skipOnboarding()">
-                    Skip
-                </button>
-                <button class="btn btn-primary" onclick="closeHelpModal()">
-                    Get Started
-                </button>
-            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="closeHelpModal()">
+                Get Started
+            </button>
         </div>
     </div>
+</div>
     
-    <!-- Main App Container -->
     <div id="app">
         <!-- Login Screen -->
-        <div id="login-screen" class="screen">
+        <div id="login-screen" class="screen active">
             <div class="auth-container">
                 <div class="auth-card">
                     <div class="auth-header">
                         <img src="{{ url_for('static', filename='582018167_1560503148706009_8007918624155557268_n.jpg') }}" 
                              alt="BAYAN Logo" class="app-logo">
                         <h1>BAYAN</h1>
-                        <p>Barangay Action for Youth and Neighborhoods</p>
+                        <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">
+                            Barangay Action for Youth and Neighborhoods
+                        </p>
                     </div>
                     
                     <form id="login-form">
                         <div class="form-group">
-                            <label class="form-label" for="login-email">Email Address</label>
-                            <div class="input-container">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" id="login-email" class="form-input" placeholder="you@example.com" required>
-                            </div>
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="login-email" placeholder="Enter your email" required>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" for="login-password">Password</label>
-                            <div class="input-container">
-                                <i class="fas fa-lock"></i>
-                                <input type="password" id="login-password" class="form-input" placeholder="Enter your password" required>
-                                <button type="button" class="toggle-password" onclick="togglePassword('login-password')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <span class="form-hint">Must be at least 6 characters</span>
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="login-password" placeholder="Enter your password" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('login-password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary w-full">
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-sign-in-alt"></i>
                             Sign In
                         </button>
                     </form>
                     
-                    <div class="text-center mt-4">
-                        <p class="text-muted">Don't have an account? 
-                            <a href="#" onclick="showScreen('register-screen')" class="text-primary-600 font-semibold">Sign Up</a>
-                        </p>
+                    <div class="auth-footer">
+                        <p>Don't have an account? <a href="#" onclick="showScreen('register-screen')">Sign Up</a></p>
                     </div>
                 </div>
             </div>
@@ -125,62 +146,48 @@
             <div class="auth-container">
                 <div class="auth-card">
                     <div class="auth-header">
-                        <button class="btn btn-icon" onclick="showScreen('login-screen')">
+                        <button class="back-btn" onclick="showScreen('login-screen')">
                             <i class="fas fa-arrow-left"></i>
                         </button>
                         <h1>Create Account</h1>
-                        <p>Join BAYAN Community</p>
+                        <p style="color: var(--text-muted); font-size: 14px; margin-top: 5px;">
+                            Join BAYAN Community
+                        </p>
                     </div>
                     
                     <form id="register-form">
                         <div class="form-group">
-                            <label class="form-label" for="register-username">Full Name</label>
-                            <div class="input-container">
-                                <i class="fas fa-user"></i>
-                                <input type="text" id="register-username" class="form-input" placeholder="John Doe" required>
-                            </div>
+                            <i class="fas fa-user"></i>
+                            <input type="text" id="register-username" placeholder="Full Name" required>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" for="register-email">Email Address</label>
-                            <div class="input-container">
-                                <i class="fas fa-envelope"></i>
-                                <input type="email" id="register-email" class="form-input" placeholder="you@example.com" required>
-                            </div>
+                            <i class="fas fa-envelope"></i>
+                            <input type="email" id="register-email" placeholder="Email" required>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" for="register-phone">Phone Number (Optional)</label>
-                            <div class="input-container">
-                                <i class="fas fa-phone"></i>
-                                <input type="tel" id="register-phone" class="form-input" placeholder="+63 912 345 6789">
-                            </div>
+                            <i class="fas fa-phone"></i>
+                            <input type="tel" id="register-phone" placeholder="Phone (optional)">
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" for="register-password">Password</label>
-                            <div class="input-container">
-                                <i class="fas fa-lock"></i>
-                                <input type="password" id="register-password" class="form-input" placeholder="Create a password" required>
-                                <button type="button" class="toggle-password" onclick="togglePassword('register-password')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
-                            <span class="form-hint">Must be at least 6 characters</span>
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="register-password" placeholder="Password" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('register-password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                         
                         <div class="form-group">
-                            <label class="form-label" for="register-confirm-password">Confirm Password</label>
-                            <div class="input-container">
-                                <i class="fas fa-lock"></i>
-                                <input type="password" id="register-confirm-password" class="form-input" placeholder="Confirm your password" required>
-                                <button type="button" class="toggle-password" onclick="togglePassword('register-confirm-password')">
-                                    <i class="fas fa-eye"></i>
-                                </button>
-                            </div>
+                            <i class="fas fa-lock"></i>
+                            <input type="password" id="register-confirm-password" placeholder="Confirm Password" required>
+                            <button type="button" class="toggle-password" onclick="togglePassword('register-confirm-password')">
+                                <i class="fas fa-eye"></i>
+                            </button>
                         </div>
                         
-                        <button type="submit" class="btn btn-primary w-full">
+                        <button type="submit" class="btn btn-primary">
                             <i class="fas fa-user-plus"></i>
                             Create Account
                         </button>
@@ -192,175 +199,114 @@
         <!-- User Dashboard -->
         <div id="user-dashboard" class="screen">
             <div class="dashboard-container">
-                <!-- Header -->
-                <div class="dashboard-header">
-                    <div class="user-info">
-                        <h2 id="user-name">Welcome, User!</h2>
-                        <p>Submit and track community reports</p>
+               <div class="header">
+    <div class="user-info">
+        <h2 id="user-name">User</h2>
+        <p>Welcome to BAYAN!</p>
+    </div>
+    <div class="header-actions">
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+            <i class="fas fa-moon"></i>
+            <i class="fas fa-sun"></i>
+        </button>
+        <button class="icon-btn" onclick="showNotifications()">
+            <i class="fas fa-bell"></i>
+            <span id="notification-badge" class="badge hidden">0</span>
+        </button>
+        <div class="dropdown-container">
+            <button class="three-dot-menu" onclick="toggleDropdown()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div id="user-dropdown" class="dropdown-menu hidden">
+                <button class="dropdown-item" onclick="showMyReports()">
+                    <i class="fas fa-list"></i>
+                    My Reports
+                </button>
+                <button class="dropdown-item" onclick="toggleDarkMode()">
+                    <i class="fas fa-moon"></i>
+                    Toggle Dark Mode
+                </button>
+                <button class="dropdown-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+                <div class="stats-card">
+                    <div class="stat-item">
+                        <i class="fas fa-file-alt" style="color: #2563eb;"></i>
+                        <span class="stat-label">My Reports</span>
+                        <span class="stat-value" id="user-reports-count">0</span>
                     </div>
-                    <div class="header-actions">
-                        <button class="dark-mode-toggle" onclick="toggleDarkMode()">
-                            <div class="toggle-slider">
-                                <i class="fas fa-moon"></i>
-                            </div>
-                        </button>
-                        <button class="notification-btn" onclick="showNotifications()">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-badge hidden">0</span>
-                        </button>
-                        <div class="user-menu">
-                            <div class="user-avatar" onclick="toggleUserMenu()">
-                                <span id="user-avatar-text">U</span>
-                            </div>
-                            <div class="dropdown-menu" id="user-dropdown">
-                                <a class="dropdown-item" onclick="showMyReports()">
-                                    <i class="fas fa-list"></i>
-                                    My Reports
-                                </a>
-                                <a class="dropdown-item" onclick="showScreen('settings-screen')">
-                                    <i class="fas fa-cog"></i>
-                                    Settings
-                                </a>
-                                <a class="dropdown-item" onclick="showHelpModal()">
-                                    <i class="fas fa-question-circle"></i>
-                                    Help & Support
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" onclick="logout()">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </div>
+                  
+                    <div class="stat-item">
+                        <i class="fas fa-clock" style="color: #f59e0b;"></i>
+                        <span class="stat-label">Pending</span>
+                        <span class="stat-value" id="user-pending-count">0</span>
                     </div>
                 </div>
 
-                <!-- Stats Cards -->
-                <div class="stats-grid">
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-file-alt"></i>
-                        </div>
-                        <div class="stat-value" id="user-reports-count">0</div>
-                        <div class="stat-label">My Reports</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-clock"></i>
-                        </div>
-                        <div class="stat-value" id="user-pending-count">0</div>
-                        <div class="stat-label">Pending</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-check-circle"></i>
-                        </div>
-                        <div class="stat-value" id="user-resolved-count">0</div>
-                        <div class="stat-label">Resolved</div>
-                    </div>
-                    <div class="stat-card">
-                        <div class="stat-icon">
-                            <i class="fas fa-star"></i>
-                        </div>
-                        <div class="stat-value" id="user-rating">4.8</div>
-                        <div class="stat-label">Community Rating</div>
-                    </div>
-                </div>
-
-                <!-- Report Form -->
-                <div class="report-form-card">
-                    <div class="form-header">
-                        <div class="form-header-icon">
-                            <i class="fas fa-plus"></i>
-                        </div>
-                        <h3>Submit New Report</h3>
-                    </div>
-                    
+                <div class="card">
+                    <h3>Submit New Report</h3>
                     <form id="report-form">
                         <div class="form-group">
-                            <label class="form-label" for="problem-type">Problem Type</label>
-                            <div class="input-container">
-                                <i class="fas fa-tag"></i>
-                                <select id="problem-type" class="form-select" required>
-                                    <option value="">Select Problem Type</option>
-                                    <option value="Pothole">🚧 Pothole</option>
-                                    <option value="Garbage Collection">🗑️ Garbage Collection</option>
-                                    <option value="Street Light">💡 Street Light</option>
-                                    <option value="Water Leak">💧 Water Leak</option>
-                                    <option value="Noise Complaint">🔊 Noise Complaint</option>
-                                    <option value="Other">📝 Other</option>
-                                </select>
-                            </div>
+                            <i class="fas fa-tag"></i>
+                            <select id="problem-type" required>
+                                <option value="">Select Problem Type</option>
+                                <option value="Pothole">Pothole</option>
+                                <option value="Garbage Collection">Garbage Collection</option>
+                                <option value="Street Light">Street Light</option>
+                                <option value="Water Leak">Water Leak</option>
+                                <option value="Noise Complaint">Noise Complaint</option>
+                                <option value="Other">Other</option>
+                            </select>
                         </div>
 
                         <div class="form-group">
-                            <label class="form-label" for="location">Location</label>
-                            <div class="input-container">
-                                <i class="fas fa-location-dot"></i>
-                                <input type="text" id="location" class="form-input" placeholder="Enter location or use current location" required>
-                                <button type="button" class="btn btn-icon" onclick="getCurrentLocation()" title="Use current location">
-                                    <i class="fas fa-map-marker-alt"></i>
+                            <i class="fas fa-location-dot"></i>
+                            <input type="text" id="location" placeholder="Location" required>
+                        </div>
+
+                        <div class="form-group">
+                            <i class="fas fa-file-lines"></i>
+                            <textarea id="issue" placeholder="Describe the issue..." rows="3" required></textarea>
+                        </div>
+
+                        <div class="form-group">
+                            <i class="fas fa-flag"></i>
+                            <select id="priority">
+                                <option value="Low">Low Priority</option>
+                                <option value="Medium" selected>Medium Priority</option>
+                                <option value="High">High Priority</option>
+                                <option value="Urgent">Urgent</option>
+                            </select>
+                        </div>
+
+                        <div class="photo-upload-section">
+                            <div class="photo-actions">
+                                <button type="button" class="btn btn-outline" onclick="openCamera()">
+                                    <i class="fas fa-camera"></i>
+                                    Take Photo
                                 </button>
+                                <button type="button" class="btn btn-outline" onclick="document.getElementById('file-upload').click()">
+                                    <i class="fas fa-upload"></i>
+                                    Upload Photo
+                                </button>
+                                <input type="file" id="file-upload" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files[0])">
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label class="form-label" for="issue">Description</label>
-                            <div class="input-container">
-                                <i class="fas fa-file-lines"></i>
-                                <textarea id="issue" class="form-textarea" placeholder="Describe the issue in detail..." required></textarea>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="form-label" for="priority">Priority Level</label>
-                            <div class="input-container">
-                                <i class="fas fa-flag"></i>
-                                <select id="priority" class="form-select">
-                                    <option value="Low">🟢 Low Priority</option>
-                                    <option value="Medium" selected>🟡 Medium Priority</option>
-                                    <option value="High">🟠 High Priority</option>
-                                    <option value="Urgent">🔴 Urgent</option>
-                                </select>
-                            </div>
-                        </div>
-
-                        <!-- Photo Upload -->
-                        <div class="form-group">
-                            <label class="form-label">Add Photo (Optional)</label>
-                            <div class="photo-upload-container" onclick="document.getElementById('file-upload').click()">
-                                <div class="photo-upload-content">
-                                    <div class="photo-upload-icon">
-                                        <i class="fas fa-camera"></i>
-                                    </div>
-                                    <div class="photo-upload-text">
-                                        <h4>Add a Photo</h4>
-                                        <p>Click to take a photo or upload from gallery</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <input type="file" id="file-upload" accept="image/*" class="hidden" onchange="handleFileUpload(this.files[0])">
-                            
                             <div id="photo-preview" class="photo-preview hidden">
                                 <img id="preview-image" src="" alt="Preview">
                                 <button type="button" class="remove-photo" onclick="removePhoto()">
                                     <i class="fas fa-times"></i>
                                 </button>
                             </div>
-                            
-                            <div class="flex gap-2 mt-2">
-                                <button type="button" class="btn btn-outline flex-1" onclick="openCamera()">
-                                    <i class="fas fa-camera"></i>
-                                    Take Photo
-                                </button>
-                                <button type="button" class="btn btn-outline flex-1" onclick="document.getElementById('file-upload').click()">
-                                    <i class="fas fa-upload"></i>
-                                    Upload Photo
-                                </button>
-                            </div>
                         </div>
 
-                        <button type="submit" class="btn btn-primary w-full">
+                        <button type="submit" class="btn btn-primary" id="submit-report-btn">
                             <i class="fas fa-paper-plane"></i>
                             Submit Report
                         </button>
@@ -371,112 +317,30 @@
 
         <!-- My Reports Screen -->
         <div id="my-reports-screen" class="screen">
-            <div class="dashboard-container">
-                <div class="dashboard-header">
-                    <button class="btn btn-icon" onclick="showScreen('user-dashboard')">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <h2>My Reports</h2>
-                    <div></div> <!-- Spacer for flex alignment -->
-                </div>
-                
-                <div class="filter-controls">
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterMyReports('all')">All</button>
-                        <button class="filter-btn" onclick="filterMyReports('pending')">Pending</button>
-                        <button class="filter-btn" onclick="filterMyReports('in-progress')">In Progress</button>
-                        <button class="filter-btn" onclick="filterMyReports('resolved')">Resolved</button>
-                    </div>
-                </div>
-                
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('user-dashboard')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2>My Reports</h2>
+            </div>
+            <div class="screen-content">
                 <div id="reports-list" class="reports-list">
-                    <!-- Reports will be loaded here -->
+                    <!-- Reports will be loaded here with audit information -->
                 </div>
             </div>
         </div>
 
         <!-- Notifications Screen -->
         <div id="notifications-screen" class="screen">
-            <div class="dashboard-container">
-                <div class="dashboard-header">
-                    <button class="btn btn-icon" onclick="showScreen('user-dashboard')">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <h2>Notifications</h2>
-                    <button class="btn btn-outline" onclick="markAllAsRead()">
-                        <i class="fas fa-check-double"></i>
-                        Mark All Read
-                    </button>
-                </div>
-                
-                <div id="notifications-list" class="reports-list">
-                    <!-- Notifications will be loaded here -->
-                </div>
+            <div class="screen-header">
+                <button class="back-btn" onclick="showScreen('user-dashboard')">
+                    <i class="fas fa-arrow-left"></i>
+                </button>
+                <h2>Notifications</h2>
             </div>
-        </div>
-
-        <!-- Settings Screen -->
-        <div id="settings-screen" class="screen">
-            <div class="dashboard-container">
-                <div class="dashboard-header">
-                    <button class="btn btn-icon" onclick="showScreen('user-dashboard')">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <h2>Settings</h2>
-                    <div></div>
-                </div>
-                
-                <div class="report-form-card">
-                    <div class="form-header">
-                        <div class="form-header-icon">
-                            <i class="fas fa-user-cog"></i>
-                        </div>
-                        <h3>Account Settings</h3>
-                    </div>
-                    
-                    <div class="settings-list">
-                        <div class="setting-item flex justify-between items-center p-4 border-b border-gray-200">
-                            <div>
-                                <h4 class="font-semibold">Dark Mode</h4>
-                                <p class="text-sm text-muted">Toggle dark/light theme</p>
-                            </div>
-                            <button class="dark-mode-toggle" onclick="toggleDarkMode()">
-                                <div class="toggle-slider">
-                                    <i class="fas fa-moon"></i>
-                                </div>
-                            </button>
-                        </div>
-                        
-                        <div class="setting-item flex justify-between items-center p-4 border-b border-gray-200">
-                            <div>
-                                <h4 class="font-semibold">Push Notifications</h4>
-                                <p class="text-sm text-muted">Receive updates about your reports</p>
-                            </div>
-                            <label class="switch">
-                                <input type="checkbox" checked>
-                                <span class="slider"></span>
-                            </label>
-                        </div>
-                        
-                        <div class="setting-item flex justify-between items-center p-4">
-                            <div>
-                                <h4 class="font-semibold">App Version</h4>
-                                <p class="text-sm text-muted">BAYAN v1.2.0</p>
-                            </div>
-                            <span class="text-primary-600 font-semibold">Up to date</span>
-                        </div>
-                    </div>
-                    
-                    <div class="mt-6">
-                        <button class="btn btn-outline w-full" onclick="showHelpModal()">
-                            <i class="fas fa-question-circle"></i>
-                            Help & Support
-                        </button>
-                        <button class="btn btn-danger w-full mt-3" onclick="logout()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Logout
-                        </button>
-                    </div>
+            <div class="screen-content">
+                <div id="notifications-list" class="notifications-list">
+                    <!-- Notifications will be loaded here -->
                 </div>
             </div>
         </div>
@@ -484,171 +348,131 @@
         <!-- Admin Dashboard -->
         <div id="admin-dashboard" class="screen">
             <div class="admin-container">
-                <!-- Header -->
-                <div class="dashboard-header">
-                    <div class="user-info">
-                        <h2>BAYAN Admin Dashboard</h2>
-                        <p>Manage community reports and users</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="dark-mode-toggle" onclick="toggleDarkMode()">
-                            <div class="toggle-slider">
-                                <i class="fas fa-moon"></i>
-                            </div>
-                        </button>
-                        <button class="notification-btn" onclick="showAdminNotifications()">
-                            <i class="fas fa-bell"></i>
-                            <span class="notification-badge hidden">0</span>
-                        </button>
-                        <div class="user-menu">
-                            <div class="user-avatar bg-warning" onclick="toggleAdminMenu()">
-                                <span>A</span>
-                            </div>
-                            <div class="dropdown-menu" id="admin-dropdown">
-                                <a class="dropdown-item" onclick="refreshAdminDashboard()">
-                                    <i class="fas fa-sync-alt"></i>
-                                    Refresh Dashboard
-                                </a>
-                                <a class="dropdown-item" onclick="showAnalytics()">
-                                    <i class="fas fa-chart-bar"></i>
-                                    Analytics
-                                </a>
-                                <a class="dropdown-item" onclick="showScreen('admin-settings-screen')">
-                                    <i class="fas fa-cog"></i>
-                                    Admin Settings
-                                </a>
-                                <div class="dropdown-divider"></div>
-                                <a class="dropdown-item text-danger" onclick="logout()">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Logout
-                                </a>
-                            </div>
-                        </div>
-                    </div>
+    <div class="header">
+        <div class="user-info">
+            <h2 id="admin-name">BAYAN Admin Dashboard</h2>
+            <p>Manage community reports</p>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="showAdminNotifications()">
+                <i class="fas fa-bell"></i>
+                <span id="admin-notification-badge" class="badge hidden">0</span>
+            </button>
+            <div class="dropdown-container">
+                <button class="three-dot-menu" onclick="toggleAdminDropdown()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div id="admin-dropdown-menu" class="dropdown-menu hidden">
+                    <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <button class="dropdown-item" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
                 </div>
+            </div>
+        </div>
+    </div>
 
-                <!-- Admin Stats -->
-                <div class="admin-stats-grid">
+                <!-- Rest of your admin dashboard content -->
+                <div class="admin-stats">
                     <div class="admin-stat-card">
-                        <div class="admin-stat-value" id="total-reports">0</div>
-                        <div class="admin-stat-label">Total Reports</div>
+                        <span class="admin-stat-value" id="total-reports">0</span>
+                        <span class="admin-stat-label">Total Reports</span>
                     </div>
                     <div class="admin-stat-card">
-                        <div class="admin-stat-value" id="pending-reports">0</div>
-                        <div class="admin-stat-label">Pending</div>
+                        <span class="admin-stat-value" id="pending-reports">0</span>
+                        <span class="admin-stat-label">Pending</span>
                     </div>
                     <div class="admin-stat-card">
-                        <div class="admin-stat-value" id="in-progress-reports">0</div>
-                        <div class="admin-stat-label">In Progress</div>
+                        <span class="admin-stat-value" id="in-progress-reports">0</span>
+                        <span class="admin-stat-label">In Progress</span>
                     </div>
                     <div class="admin-stat-card">
-                        <div class="admin-stat-value" id="resolved-reports">0</div>
-                        <div class="admin-stat-label">Resolved</div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="admin-stat-value" id="today-reports">0</div>
-                        <div class="admin-stat-label">Today</div>
-                    </div>
-                    <div class="admin-stat-card">
-                        <div class="admin-stat-value" id="response-time">24h</div>
-                        <div class="admin-stat-label">Avg Response Time</div>
+                        <span class="admin-stat-value" id="resolved-reports">0</span>
+                        <span class="admin-stat-label">Resolved</span>
                     </div>
                 </div>
 
                 <!-- Filter Controls -->
-                <div class="filter-controls">
-                    <h4 class="filter-header">Filter Reports</h4>
-                    <div class="filter-buttons">
-                        <button class="filter-btn active" onclick="filterReports('today')">
+                <div class="card">
+                    <h3>Filter Reports</h3>
+                    <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                        <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
                             <i class="fas fa-calendar-day"></i> Today
                         </button>
-                        <button class="filter-btn" onclick="filterReports('week')">
+                        <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
                             <i class="fas fa-calendar-week"></i> This Week
                         </button>
-                        <button class="filter-btn" onclick="filterReports('month')">
+                        <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
                             <i class="fas fa-calendar-alt"></i> This Month
                         </button>
-                        <button class="filter-btn" onclick="filterReports('all')">
+                        <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
                             <i class="fas fa-calendar"></i> All Time
                         </button>
                     </div>
-                    <div class="flex gap-2 mt-3">
-                        <select class="form-select" onchange="filterByStatus(this.value)">
-                            <option value="">All Status</option>
-                            <option value="pending">Pending</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="resolved">Resolved</option>
-                        </select>
-                        <select class="form-select" onchange="filterByPriority(this.value)">
-                            <option value="">All Priority</option>
-                            <option value="low">Low</option>
-                            <option value="medium">Medium</option>
-                            <option value="high">High</option>
-                            <option value="urgent">Urgent</option>
-                        </select>
+                    <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
+                        Showing: All Time
                     </div>
                 </div>
 
-                <!-- Reports List -->
-                <div class="reports-list" id="admin-reports-list">
-                    <!-- Reports will be loaded here -->
+                <div class="card">
+                    <h3>Reports</h3>
+                    <div id="admin-reports-list" class="admin-reports-list">
+                        <!-- Reports will be loaded here -->
+                    </div>
                 </div>
             </div>
         </div>
 
-        <!-- Camera Modal -->
-        <div id="camera-modal" class="modal">
+        <!-- Camera Modal - Moved to bottom of body to ensure proper rendering -->
+        <div id="camera-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Take Photo</h3>
-                    <button class="modal-close" onclick="closeCamera()">&times;</button>
+                    <button class="close-btn" onclick="closeCamera()">&times;</button>
                 </div>
-                <div class="modal-body">
-                    <div class="camera-preview">
-                        <video id="camera-view" autoplay playsinline></video>
+                <div class="modal-body" style="padding: 0;">
+                    <div style="width: 100%; height: 400px; background: #000; position: relative; overflow: hidden;">
+                        <video id="camera-view" autoplay playsinline style="width: 100%; height: 100%; object-fit: cover;"></video>
+                        <canvas id="camera-canvas" style="display: none;"></canvas>
                     </div>
-                    <div class="camera-controls">
-                        <button class="btn btn-outline" onclick="closeCamera()">
-                            <i class="fas fa-times"></i> Cancel
-                        </button>
-                        <div class="capture-btn" onclick="capturePhoto()">
-                            <i class="fas fa-camera"></i>
-                        </div>
-                        <button class="btn btn-outline" onclick="switchCamera()">
-                            <i class="fas fa-sync-alt"></i> Switch
-                        </button>
-                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="closeCamera()">
+                        <i class="fas fa-times"></i> Cancel
+                    </button>
+                    <button type="button" class="btn btn-primary" onclick="capturePhoto()">
+                        <i class="fas fa-camera"></i> Capture Photo
+                    </button>
                 </div>
             </div>
         </div>
 
         <!-- Resolution Modal -->
-        <div id="resolution-modal" class="modal">
+        <div id="resolution-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
                     <h3>Resolution Details</h3>
-                    <button class="modal-close" onclick="cancelResolution()">&times;</button>
+                    <button class="close-btn" onclick="cancelResolution()">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <p class="mb-4">Please provide details on how this issue was resolved:</p>
+                    <p>Please provide details on how this issue was resolved:</p>
                     
                     <div class="form-group">
-                        <label class="form-label" for="auditor-name">Your Name (Auditor)</label>
-                        <div class="input-container">
-                            <i class="fas fa-user-check"></i>
-                            <input type="text" id="auditor-name" class="form-input" placeholder="Enter your name" required>
-                        </div>
+                        <i class="fas fa-user-check"></i>
+                        <input type="text" id="auditor-name" placeholder="Enter your name (auditor)" required>
                     </div>
                     
                     <div class="form-group">
-                        <label class="form-label" for="resolution-notes">Resolution Details</label>
-                        <textarea id="resolution-notes" class="form-textarea" 
-                                  placeholder="Describe the resolution steps, materials used, or any other relevant details..." 
-                                  rows="4" required></textarea>
+                        <i class="fas fa-file-lines"></i>
+                        <textarea id="resolution-notes" placeholder="Describe the resolution steps, materials used, or any other relevant details..." rows="4" style="width: 100%; padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; resize: vertical;" required></textarea>
                     </div>
                 </div>
                 <div class="modal-actions">
-                    <button type="button" class="btn btn-secondary" onclick="cancelResolution()">
+                    <button type="button" class="btn btn-outline" onclick="cancelResolution()">
                         Cancel
                     </button>
                     <button type="button" class="btn btn-primary" id="confirm-resolution-btn">
@@ -658,1520 +482,285 @@
             </div>
         </div>
 
-        <!-- Analytics Modal -->
-        <div id="analytics-modal" class="modal">
+        <!-- Delete Confirmation Modal -->
+        <div id="delete-confirmation-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h3>Analytics Dashboard</h3>
-                    <button class="modal-close" onclick="closeAnalytics()">&times;</button>
+                    <h3>Delete Report</h3>
+                    <button class="close-btn" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">&times;</button>
                 </div>
                 <div class="modal-body">
-                    <div class="stats-grid">
-                        <div class="stat-card">
-                            <div class="stat-value">85%</div>
-                            <div class="stat-label">Resolution Rate</div>
-                        </div>
-                        <div class="stat-card">
-                            <div class="stat-value">24h</div>
-                            <div class="stat-label">Avg Response Time</div>
-                        </div>
-                    </div>
-                    <div class="mt-4">
-                        <h4 class="font-semibold mb-2">Reports by Category</h4>
-                        <div class="space-y-2">
-                            <div class="flex justify-between items-center">
-                                <span>Potholes</span>
-                                <div class="w-32 bg-gray-200 rounded-full h-2">
-                                    <div class="bg-primary-600 h-2 rounded-full" style="width: 30%"></div>
-                                </div>
-                                <span class="text-sm">30%</span>
-                            </div>
-                            <div class="flex justify-between items-center">
-                                <span>Garbage Collection</span>
-                                <div class="w-32 bg-gray-200 rounded-full h-2">
-                                    <div class="bg-primary-600 h-2 rounded-full" style="width: 25%"></div>
-                                </div>
-                                <span class="text-sm">25%</span>
-                            </div>
-                        </div>
-                    </div>
+                    <p>Are you sure you want to delete this report?</p>
+                    <p style="color: #ef4444; font-size: 14px; margin-top: 10px;">This action cannot be undone.</p>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-outline" onclick="document.getElementById('delete-confirmation-modal').classList.add('hidden')">
+                        Cancel
+                    </button>
+                    <button type="button" class="btn btn-danger" id="confirm-delete-btn">
+                        Delete Report
+                    </button>
                 </div>
             </div>
         </div>
+
+        <!-- Audit Info Modal -->
+        <div id="audit-info-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Report Audit Information</h3>
+                    <button class="close-btn" onclick="document.getElementById('audit-info-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div class="audit-info">
+                        <div class="audit-item">
+                            <strong>Report ID:</strong>
+                            <span id="audit-report-id">-</span>
+                        </div>
+                        <div class="audit-item">
+                            <strong>Submitted By:</strong>
+                            <span id="audit-submitter">-</span>
+                        </div>
+                        <div class="audit-item">
+                            <strong>Submitted On:</strong>
+                            <span id="audit-submitted-date">-</span>
+                        </div>
+                        <div class="audit-item">
+                            <strong>Resolved By:</strong>
+                            <span id="audit-resolver">-</span>
+                        </div>
+                        <div class="audit-item">
+                            <strong>Audited By:</strong>
+                            <span id="audit-auditor">-</span>
+                        </div>
+                        <div class="audit-item">
+                            <strong>Resolved On:</strong>
+                            <span id="audit-resolved-date">-</span>
+                        </div>
+                        <div class="audit-item full-width">
+                            <strong>Resolution Notes:</strong>
+                            <p id="audit-resolution-notes" class="audit-notes">-</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('audit-info-modal').classList.add('hidden')">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Admin Notifications Modal -->
+        <div id="admin-notifications-modal" class="modal hidden">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h3>Admin Notifications</h3>
+                    <button class="close-btn" onclick="document.getElementById('admin-notifications-modal').classList.add('hidden')">&times;</button>
+                </div>
+                <div class="modal-body">
+                    <div id="admin-notifications-list" class="notifications-list">
+                        <!-- Notifications will be loaded here -->
+                    </div>
+                </div>
+                <div class="modal-actions">
+                    <button type="button" class="btn btn-primary" onclick="document.getElementById('admin-notifications-modal').classList.add('hidden')">
+                        Close
+                    </button>
+                </div>
+            </div>
+        </div>
+        
     </div>
 
-    <!-- Snackbar -->
-    <div id="snackbar" class="snackbar">
-        <i class="snackbar-icon"></i>
-        <span class="snackbar-message"></span>
+    <!-- Snowflakes Container -->
+    <div class="snowflakes">
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
+        <div class="snowflake">❄</div>
     </div>
-<script src="{{ url_for('static', filename='script.js') }}"></script>
 
-    <style>
-        /* ==================== IMPROVED VARIABLES ==================== */
-        :root {
-            /* Primary Colors */
-            --primary-50: #f5f3ff;
-            --primary-100: #ede9fe;
-            --primary-200: #ddd6fe;
-            --primary-300: #c4b5fd;
-            --primary-400: #a78bfa;
-            --primary-500: #8b5cf6;
-            --primary-600: #7c3aed;
-            --primary-700: #6d28d9;
-            --primary-800: #5b21b6;
-            --primary-900: #4c1d95;
+    <script src="{{ url_for('static', filename='script.js') }}"></script>
+    <script>
+        // Camera functions
+        let stream = null;
+        let photoData = null;
+        
+        function openCamera() {
+            console.log('Opening camera...');
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-view');
             
-            /* Neutral Colors */
-            --gray-50: #f9fafb;
-            --gray-100: #f3f4f6;
-            --gray-200: #e5e7eb;
-            --gray-300: #d1d5db;
-            --gray-400: #9ca3af;
-            --gray-500: #6b7280;
-            --gray-600: #4b5563;
-            --gray-700: #374151;
-            --gray-800: #1f2937;
-            --gray-900: #111827;
+            modal.classList.remove('hidden');
             
-            /* Semantic Colors */
-            --success: #10b981;
-            --warning: #f59e0b;
-            --danger: #ef4444;
-            --info: #3b82f6;
+            // Request camera access
+            navigator.mediaDevices.getUserMedia({ 
+                video: { 
+                    facingMode: 'environment',
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                } 
+            })
+            .then(function(mediaStream) {
+                console.log('Camera access granted');
+                stream = mediaStream;
+                video.srcObject = stream;
+                video.play();
+            })
+            .catch(function(error) {
+                console.error('Camera error:', error);
+                showSnackbar('Failed to access camera. Please check permissions.', 'error');
+                closeCamera();
+            });
+        }
+        
+        function closeCamera() {
+            console.log('Closing camera...');
+            const modal = document.getElementById('camera-modal');
+            const video = document.getElementById('camera-view');
             
-            /* Shadows */
-            --shadow-sm: 0 1px 2px 0 rgba(0, 0, 0, 0.05);
-            --shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.1), 0 1px 2px 0 rgba(0, 0, 0, 0.06);
-            --shadow-md: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
-            --shadow-lg: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
-            --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+            modal.classList.add('hidden');
             
-            /* Border Radius */
-            --radius-sm: 0.375rem;
-            --radius: 0.5rem;
-            --radius-md: 0.75rem;
-            --radius-lg: 1rem;
-            --radius-full: 9999px;
-            
-            /* Spacing */
-            --space-xs: 0.5rem;
-            --space-sm: 0.75rem;
-            --space-md: 1rem;
-            --space-lg: 1.5rem;
-            --space-xl: 2rem;
-            --space-2xl: 3rem;
-            
-            /* Typography */
-            --font-xs: 0.75rem;
-            --font-sm: 0.875rem;
-            --font-base: 1rem;
-            --font-lg: 1.125rem;
-            --font-xl: 1.25rem;
-            --font-2xl: 1.5rem;
-            --font-3xl: 1.875rem;
-            --font-4xl: 2.25rem;
-            
-            /* Transitions */
-            --transition-fast: 150ms ease;
-            --transition: 250ms ease;
-            --transition-slow: 350ms ease;
-        }
-        
-        /* ==================== DARK THEME ==================== */
-        .dark-mode {
-            --primary-50: #1e1b4b;
-            --primary-100: #312e81;
-            --primary-200: #3730a3;
-            --primary-300: #4338ca;
-            --primary-400: #4f46e5;
-            --primary-500: #6366f1;
-            --primary-600: #818cf8;
-            --primary-700: #a5b4fc;
-            --primary-800: #c7d2fe;
-            --primary-900: #e0e7ff;
-            
-            --gray-50: #111827;
-            --gray-100: #1f2937;
-            --gray-200: #374151;
-            --gray-300: #4b5563;
-            --gray-400: #6b7280;
-            --gray-500: #9ca3af;
-            --gray-600: #d1d5db;
-            --gray-700: #e5e7eb;
-            --gray-800: #f3f4f6;
-            --gray-900: #f9fafb;
-            
-            background-color: var(--gray-50);
-            color: var(--gray-800);
-        }
-        
-        /* ==================== BASE STYLES ==================== */
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        html {
-            font-size: 16px;
-            scroll-behavior: smooth;
-        }
-        
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-            background: linear-gradient(135deg, var(--primary-50) 0%, #ffffff 100%);
-            color: var(--gray-800);
-            line-height: 1.5;
-            min-height: 100vh;
-            transition: background-color var(--transition), color var(--transition);
-        }
-        
-        body.dark-mode {
-            background: linear-gradient(135deg, var(--gray-50) 0%, var(--gray-100) 100%);
-        }
-        
-        /* ==================== LOADING SCREEN ==================== */
-        #loading-screen {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: linear-gradient(135deg, var(--primary-600) 0%, var(--primary-800) 100%);
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            z-index: 9999;
-            transition: opacity 0.5s ease, visibility 0.5s ease;
-        }
-        
-        #loading-screen.hidden {
-            opacity: 0;
-            visibility: hidden;
-        }
-        
-        .loading-container {
-            text-align: center;
-            color: white;
-            padding: var(--space-xl);
-            max-width: 500px;
-        }
-        
-        .loading-logo {
-            width: 120px;
-            height: 120px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin-bottom: var(--space-lg);
-            border: 4px solid rgba(255, 255, 255, 0.2);
-            box-shadow: var(--shadow-xl);
-            animation: pulse 2s infinite;
-        }
-        
-        @keyframes pulse {
-            0%, 100% { transform: scale(1); }
-            50% { transform: scale(1.05); }
-        }
-        
-        .loading-spinner {
-            width: 60px;
-            height: 60px;
-            border: 4px solid rgba(255, 255, 255, 0.3);
-            border-top-color: white;
-            border-radius: 50%;
-            margin: var(--space-xl) auto;
-            animation: spin 1s linear infinite;
-        }
-        
-        @keyframes spin {
-            to { transform: rotate(360deg); }
-        }
-        
-        .loading-container h3 {
-            font-size: var(--font-2xl);
-            font-weight: 700;
-            margin-bottom: var(--space-sm);
-            letter-spacing: -0.025em;
-        }
-        
-        .loading-container p {
-            font-size: var(--font-lg);
-            opacity: 0.9;
-            max-width: 300px;
-            margin: 0 auto;
-        }
-        
-        /* ==================== SCREEN MANAGEMENT ==================== */
-        .screen {
-            display: none;
-            min-height: 100vh;
-            padding: var(--space-md);
-            animation: fadeIn 0.5s ease;
-        }
-        
-        .screen.active {
-            display: block;
-        }
-        
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(10px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-        
-        /* ==================== AUTH SCREENS ==================== */
-        .auth-container {
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-height: 100vh;
-            padding: var(--space-md);
-            background: linear-gradient(135deg, var(--primary-50) 0%, transparent 100%);
-        }
-        
-        body.dark-mode .auth-container {
-            background: linear-gradient(135deg, var(--gray-50) 0%, transparent 100%);
-        }
-        
-        .auth-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: var(--space-xl);
-            width: 100%;
-            max-width: 440px;
-            box-shadow: var(--shadow-xl);
-            border: 1px solid var(--gray-200);
-            transition: transform var(--transition), box-shadow var(--transition);
-        }
-        
-        body.dark-mode .auth-card {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .auth-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-xl);
-        }
-        
-        .auth-header {
-            text-align: center;
-            margin-bottom: var(--space-xl);
-        }
-        
-        .app-logo {
-            width: 80px;
-            height: 80px;
-            border-radius: 50%;
-            object-fit: cover;
-            margin: 0 auto var(--space-md);
-            border: 3px solid var(--primary-100);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .auth-header h1 {
-            font-size: var(--font-3xl);
-            font-weight: 800;
-            background: linear-gradient(135deg, var(--primary-600), var(--primary-800));
-            -webkit-background-clip: text;
-            background-clip: text;
-            color: transparent;
-            margin-bottom: var(--space-xs);
-            letter-spacing: -0.025em;
-        }
-        
-        .auth-header p {
-            color: var(--gray-600);
-            font-size: var(--font-sm);
-            line-height: 1.4;
-        }
-        
-        body.dark-mode .auth-header p {
-            color: var(--gray-400);
-        }
-        
-        /* ==================== IMPROVED FORM STYLES ==================== */
-        .form-group {
-            margin-bottom: var(--space-lg);
-            position: relative;
-        }
-        
-        .form-label {
-            display: block;
-            font-size: var(--font-sm);
-            font-weight: 500;
-            color: var(--gray-700);
-            margin-bottom: var(--space-xs);
-            transition: color var(--transition);
-        }
-        
-        body.dark-mode .form-label {
-            color: var(--gray-300);
-        }
-        
-        .input-container {
-            position: relative;
-            display: flex;
-            align-items: center;
-        }
-        
-        .input-container i {
-            position: absolute;
-            left: var(--space-md);
-            color: var(--gray-400);
-            font-size: var(--font-lg);
-            pointer-events: none;
-            transition: color var(--transition);
-            z-index: 1;
-        }
-        
-        .form-input,
-        .form-select,
-        .form-textarea {
-            width: 100%;
-            padding: var(--space-md) var(--space-md) var(--space-md) 3rem;
-            border: 2px solid var(--gray-300);
-            border-radius: var(--radius);
-            font-size: var(--font-base);
-            font-family: inherit;
-            background: white;
-            color: var(--gray-800);
-            transition: all var(--transition);
-            outline: none;
-        }
-        
-        body.dark-mode .form-input,
-        body.dark-mode .form-select,
-        body.dark-mode .form-textarea {
-            background: var(--gray-200);
-            border-color: var(--gray-300);
-            color: var(--gray-800);
-        }
-        
-        .form-input:focus,
-        .form-select:focus,
-        .form-textarea:focus {
-            border-color: var(--primary-500);
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.1);
-        }
-        
-        body.dark-mode .form-input:focus,
-        body.dark-mode .form-select:focus,
-        body.dark-mode .form-textarea:focus {
-            box-shadow: 0 0 0 3px rgba(139, 92, 246, 0.2);
-        }
-        
-        .form-textarea {
-            min-height: 120px;
-            resize: vertical;
-            line-height: 1.5;
-        }
-        
-        .form-select {
-            appearance: none;
-            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 24 24' stroke='%236b7280'%3E%3Cpath stroke-linecap='round' stroke-linejoin='round' stroke-width='2' d='M19 9l-7 7-7-7'%3E%3C/path%3E%3C/svg%3E");
-            background-repeat: no-repeat;
-            background-position: right var(--space-md) center;
-            background-size: 1.25rem;
-            padding-right: 3rem;
-        }
-        
-        .toggle-password {
-            position: absolute;
-            right: var(--space-md);
-            background: none;
-            border: none;
-            color: var(--gray-500);
-            cursor: pointer;
-            padding: var(--space-xs);
-            border-radius: var(--radius-sm);
-            transition: color var(--transition);
-        }
-        
-        .toggle-password:hover {
-            color: var(--primary-600);
-        }
-        
-        .form-hint {
-            display: block;
-            font-size: var(--font-xs);
-            color: var(--gray-500);
-            margin-top: var(--space-xs);
-        }
-        
-        /* ==================== IMPROVED BUTTONS ==================== */
-        .btn {
-            display: inline-flex;
-            align-items: center;
-            justify-content: center;
-            gap: var(--space-sm);
-            padding: var(--space-md) var(--space-xl);
-            border: none;
-            border-radius: var(--radius);
-            font-size: var(--font-base);
-            font-weight: 600;
-            font-family: inherit;
-            cursor: pointer;
-            transition: all var(--transition);
-            text-decoration: none;
-            outline: none;
-            position: relative;
-            overflow: hidden;
-        }
-        
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-        }
-        
-        .btn-primary {
-            background: linear-gradient(135deg, var(--primary-600), var(--primary-700));
-            color: white;
-            box-shadow: var(--shadow-md);
-        }
-        
-        .btn-primary:hover:not(:disabled) {
-            background: linear-gradient(135deg, var(--primary-700), var(--primary-800));
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .btn-primary:active:not(:disabled) {
-            transform: translateY(0);
-        }
-        
-        .btn-outline {
-            background: transparent;
-            border: 2px solid var(--primary-500);
-            color: var(--primary-600);
-        }
-        
-        .btn-outline:hover:not(:disabled) {
-            background: var(--primary-50);
-            transform: translateY(-2px);
-        }
-        
-        body.dark-mode .btn-outline {
-            border-color: var(--primary-400);
-            color: var(--primary-400);
-        }
-        
-        body.dark-mode .btn-outline:hover:not(:disabled) {
-            background: var(--primary-900);
-        }
-        
-        .btn-secondary {
-            background: var(--gray-100);
-            color: var(--gray-700);
-        }
-        
-        .btn-secondary:hover:not(:disabled) {
-            background: var(--gray-200);
-        }
-        
-        .btn-danger {
-            background: linear-gradient(135deg, #ef4444, #dc2626);
-            color: white;
-        }
-        
-        .btn-danger:hover:not(:disabled) {
-            background: linear-gradient(135deg, #dc2626, #b91c1c);
-        }
-        
-        .btn-success {
-            background: linear-gradient(135deg, #10b981, #059669);
-            color: white;
-        }
-        
-        .btn-icon {
-            padding: var(--space-sm);
-            border-radius: var(--radius-full);
-            min-width: 44px;
-            min-height: 44px;
-        }
-        
-        /* ==================== DASHBOARD HEADER ==================== */
-        .dashboard-header {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-            margin-bottom: var(--space-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-200);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            flex-wrap: wrap;
-            gap: var(--space-md);
-        }
-        
-        body.dark-mode .dashboard-header {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .user-info h2 {
-            font-size: var(--font-xl);
-            font-weight: 700;
-            color: var(--gray-800);
-            margin-bottom: var(--space-xs);
-            letter-spacing: -0.025em;
-        }
-        
-        body.dark-mode .user-info h2 {
-            color: var(--gray-800);
-        }
-        
-        .user-info p {
-            color: var(--gray-600);
-            font-size: var(--font-sm);
-        }
-        
-        body.dark-mode .user-info p {
-            color: var(--gray-400);
-        }
-        
-        .header-actions {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-        }
-        
-        /* ==================== DARK MODE TOGGLE ==================== */
-        .dark-mode-toggle {
-            width: 60px;
-            height: 32px;
-            background: var(--gray-300);
-            border-radius: var(--radius-full);
-            border: none;
-            position: relative;
-            cursor: pointer;
-            transition: background var(--transition);
-            padding: 2px;
-        }
-        
-        .dark-mode-toggle.active {
-            background: var(--primary-600);
-        }
-        
-        .toggle-slider {
-            width: 28px;
-            height: 28px;
-            background: white;
-            border-radius: var(--radius-full);
-            position: absolute;
-            left: 2px;
-            top: 2px;
-            transition: transform var(--transition);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: var(--shadow-sm);
-        }
-        
-        .dark-mode-toggle.active .toggle-slider {
-            transform: translateX(28px);
-        }
-        
-        .toggle-slider i {
-            font-size: var(--font-sm);
-            color: var(--gray-700);
-        }
-        
-        .dark-mode-toggle.active .toggle-slider i {
-            color: var(--primary-600);
-        }
-        
-        /* ==================== NOTIFICATION BELL ==================== */
-        .notification-btn {
-            position: relative;
-            background: none;
-            border: none;
-            font-size: var(--font-xl);
-            color: var(--gray-600);
-            cursor: pointer;
-            padding: var(--space-sm);
-            border-radius: var(--radius-full);
-            transition: all var(--transition);
-        }
-        
-        .notification-btn:hover {
-            background: var(--gray-100);
-            color: var(--primary-600);
-        }
-        
-        body.dark-mode .notification-btn {
-            color: var(--gray-400);
-        }
-        
-        body.dark-mode .notification-btn:hover {
-            background: var(--gray-200);
-            color: var(--primary-400);
-        }
-        
-        .notification-badge {
-            position: absolute;
-            top: 2px;
-            right: 2px;
-            background: var(--danger);
-            color: white;
-            font-size: var(--font-xs);
-            font-weight: 600;
-            width: 20px;
-            height: 20px;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: 2px solid white;
-        }
-        
-        body.dark-mode .notification-badge {
-            border-color: var(--gray-100);
-        }
-        
-        /* ==================== USER MENU ==================== */
-        .user-menu {
-            position: relative;
-        }
-        
-        .user-avatar {
-            width: 44px;
-            height: 44px;
-            border-radius: var(--radius-full);
-            background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: 600;
-            cursor: pointer;
-            transition: transform var(--transition);
-            border: 2px solid var(--primary-200);
-        }
-        
-        .user-avatar:hover {
-            transform: scale(1.05);
-        }
-        
-        .dropdown-menu {
-            position: absolute;
-            top: calc(100% + var(--space-sm));
-            right: 0;
-            background: white;
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-lg);
-            min-width: 200px;
-            z-index: 100;
-            overflow: hidden;
-            border: 1px solid var(--gray-200);
-            opacity: 0;
-            visibility: hidden;
-            transform: translateY(-10px);
-            transition: all var(--transition);
-        }
-        
-        body.dark-mode .dropdown-menu {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .dropdown-menu.active {
-            opacity: 1;
-            visibility: visible;
-            transform: translateY(0);
-        }
-        
-        .dropdown-item {
-            display: flex;
-            align-items: center;
-            gap: var(--space-sm);
-            padding: var(--space-md) var(--space-lg);
-            color: var(--gray-700);
-            text-decoration: none;
-            transition: all var(--transition);
-            border-bottom: 1px solid var(--gray-100);
-        }
-        
-        body.dark-mode .dropdown-item {
-            color: var(--gray-300);
-            border-color: var(--gray-200);
-        }
-        
-        .dropdown-item:last-child {
-            border-bottom: none;
-        }
-        
-        .dropdown-item:hover {
-            background: var(--primary-50);
-            color: var(--primary-700);
-        }
-        
-        body.dark-mode .dropdown-item:hover {
-            background: var(--primary-900);
-            color: var(--primary-300);
-        }
-        
-        .dropdown-item i {
-            width: 20px;
-            text-align: center;
-        }
-        
-        /* ==================== STATS CARDS ==================== */
-        .stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-            gap: var(--space-md);
-            margin-bottom: var(--space-xl);
-        }
-        
-        .stat-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: var(--space-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-200);
-            transition: transform var(--transition), box-shadow var(--transition);
-            position: relative;
-            overflow: hidden;
-        }
-        
-        body.dark-mode .stat-card {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .stat-card:hover {
-            transform: translateY(-4px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .stat-card::before {
-            content: '';
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 4px;
-            height: 100%;
-            background: linear-gradient(to bottom, var(--primary-500), var(--primary-700));
-        }
-        
-        .stat-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: var(--radius);
-            background: var(--primary-50);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin-bottom: var(--space-md);
-            font-size: var(--font-xl);
-            color: var(--primary-600);
-        }
-        
-        body.dark-mode .stat-icon {
-            background: var(--primary-900);
-            color: var(--primary-400);
-        }
-        
-        .stat-value {
-            font-size: var(--font-3xl);
-            font-weight: 800;
-            color: var(--gray-800);
-            line-height: 1;
-            margin-bottom: var(--space-xs);
-        }
-        
-        body.dark-mode .stat-value {
-            color: var(--gray-800);
-        }
-        
-        .stat-label {
-            font-size: var(--font-sm);
-            color: var(--gray-600);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        body.dark-mode .stat-label {
-            color: var(--gray-400);
-        }
-        
-        /* ==================== REPORT FORM ==================== */
-        .report-form-card {
-            background: white;
-            border-radius: var(--radius-lg);
-            padding: var(--space-xl);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-200);
-            margin-bottom: var(--space-xl);
-        }
-        
-        body.dark-mode .report-form-card {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .form-header {
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            margin-bottom: var(--space-xl);
-        }
-        
-        .form-header-icon {
-            width: 48px;
-            height: 48px;
-            border-radius: var(--radius);
-            background: linear-gradient(135deg, var(--primary-500), var(--primary-700));
-            color: white;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-xl);
-        }
-        
-        .form-header h3 {
-            font-size: var(--font-xl);
-            font-weight: 700;
-            color: var(--gray-800);
-        }
-        
-        body.dark-mode .form-header h3 {
-            color: var(--gray-800);
-        }
-        
-        .photo-upload-container {
-            border: 2px dashed var(--gray-300);
-            border-radius: var(--radius);
-            padding: var(--space-xl);
-            text-align: center;
-            cursor: pointer;
-            transition: all var(--transition);
-            margin-bottom: var(--space-lg);
-        }
-        
-        body.dark-mode .photo-upload-container {
-            border-color: var(--gray-300);
-        }
-        
-        .photo-upload-container:hover {
-            border-color: var(--primary-500);
-            background: var(--primary-50);
-        }
-        
-        body.dark-mode .photo-upload-container:hover {
-            background: var(--primary-900);
-        }
-        
-        .photo-upload-content {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            gap: var(--space-md);
-        }
-        
-        .photo-upload-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: var(--radius-full);
-            background: var(--primary-100);
-            color: var(--primary-600);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-2xl);
-        }
-        
-        body.dark-mode .photo-upload-icon {
-            background: var(--primary-900);
-            color: var(--primary-400);
-        }
-        
-        .photo-upload-text h4 {
-            font-size: var(--font-lg);
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: var(--space-xs);
-        }
-        
-        body.dark-mode .photo-upload-text h4 {
-            color: var(--gray-800);
-        }
-        
-        .photo-upload-text p {
-            color: var(--gray-600);
-            font-size: var(--font-sm);
-        }
-        
-        body.dark-mode .photo-upload-text p {
-            color: var(--gray-400);
-        }
-        
-        .photo-preview {
-            position: relative;
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-bottom: var(--space-lg);
-            box-shadow: var(--shadow);
-        }
-        
-        .photo-preview img {
-            width: 100%;
-            height: 200px;
-            object-fit: cover;
-        }
-        
-        .remove-photo {
-            position: absolute;
-            top: var(--space-sm);
-            right: var(--space-sm);
-            background: rgba(239, 68, 68, 0.9);
-            color: white;
-            border: none;
-            width: 36px;
-            height: 36px;
-            border-radius: var(--radius-full);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            cursor: pointer;
-            transition: transform var(--transition);
-        }
-        
-        .remove-photo:hover {
-            transform: scale(1.1);
-        }
-        
-        /* ==================== REPORTS LIST ==================== */
-        .reports-list {
-            display: flex;
-            flex-direction: column;
-            gap: var(--space-md);
-        }
-        
-        .report-card {
-            background: white;
-            border-radius: var(--radius);
-            padding: var(--space-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-200);
-            transition: transform var(--transition), box-shadow var(--transition);
-        }
-        
-        body.dark-mode .report-card {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .report-card:hover {
-            transform: translateY(-2px);
-            box-shadow: var(--shadow-lg);
-        }
-        
-        .report-header {
-            display: flex;
-            justify-content: space-between;
-            align-items: flex-start;
-            margin-bottom: var(--space-md);
-            padding-bottom: var(--space-md);
-            border-bottom: 1px solid var(--gray-200);
-        }
-        
-        body.dark-mode .report-header {
-            border-color: var(--gray-300);
-        }
-        
-        .report-type {
-            font-size: var(--font-lg);
-            font-weight: 600;
-            color: var(--gray-800);
-        }
-        
-        body.dark-mode .report-type {
-            color: var(--gray-800);
-        }
-        
-        .report-status {
-            padding: var(--space-xs) var(--space-sm);
-            border-radius: var(--radius-full);
-            font-size: var(--font-xs);
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        .status-pending {
-            background: #fef3c7;
-            color: #92400e;
-        }
-        
-        .status-in-progress {
-            background: #dbeafe;
-            color: #1e40af;
-        }
-        
-        .status-resolved {
-            background: #d1fae5;
-            color: #065f46;
-        }
-        
-        .report-location {
-            display: flex;
-            align-items: center;
-            gap: var(--space-xs);
-            color: var(--gray-600);
-            font-size: var(--font-sm);
-            margin-bottom: var(--space-sm);
-        }
-        
-        body.dark-mode .report-location {
-            color: var(--gray-400);
-        }
-        
-        .report-issue {
-            color: var(--gray-700);
-            line-height: 1.6;
-            margin-bottom: var(--space-md);
-        }
-        
-        body.dark-mode .report-issue {
-            color: var(--gray-300);
-        }
-        
-        .report-footer {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding-top: var(--space-md);
-            border-top: 1px solid var(--gray-200);
-        }
-        
-        body.dark-mode .report-footer {
-            border-color: var(--gray-300);
-        }
-        
-        .report-date {
-            font-size: var(--font-xs);
-            color: var(--gray-500);
-        }
-        
-        .report-priority {
-            font-size: var(--font-xs);
-            font-weight: 600;
-            padding: var(--space-xs) var(--space-sm);
-            border-radius: var(--radius-full);
-            background: var(--gray-100);
-            color: var(--gray-700);
-        }
-        
-        body.dark-mode .report-priority {
-            background: var(--gray-200);
-            color: var(--gray-600);
-        }
-        
-        /* ==================== ADMIN DASHBOARD ==================== */
-        .admin-container {
-            max-width: 1400px;
-            margin: 0 auto;
-        }
-        
-        .admin-stats-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-            gap: var(--space-md);
-            margin-bottom: var(--space-xl);
-        }
-        
-        .admin-stat-card {
-            background: white;
-            border-radius: var(--radius);
-            padding: var(--space-lg);
-            text-align: center;
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-200);
-            transition: transform var(--transition);
-        }
-        
-        body.dark-mode .admin-stat-card {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .admin-stat-card:hover {
-            transform: translateY(-2px);
-        }
-        
-        .admin-stat-value {
-            font-size: var(--font-3xl);
-            font-weight: 800;
-            color: var(--primary-600);
-            line-height: 1;
-            margin-bottom: var(--space-xs);
-        }
-        
-        .admin-stat-label {
-            font-size: var(--font-sm);
-            color: var(--gray-600);
-            font-weight: 500;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-        }
-        
-        body.dark-mode .admin-stat-label {
-            color: var(--gray-400);
-        }
-        
-        /* ==================== FILTER CONTROLS ==================== */
-        .filter-controls {
-            background: white;
-            border-radius: var(--radius);
-            padding: var(--space-lg);
-            margin-bottom: var(--space-lg);
-            box-shadow: var(--shadow);
-            border: 1px solid var(--gray-200);
-        }
-        
-        body.dark-mode .filter-controls {
-            background: var(--gray-100);
-            border-color: var(--gray-200);
-        }
-        
-        .filter-header {
-            font-size: var(--font-lg);
-            font-weight: 600;
-            color: var(--gray-800);
-            margin-bottom: var(--space-md);
-        }
-        
-        body.dark-mode .filter-header {
-            color: var(--gray-800);
-        }
-        
-        .filter-buttons {
-            display: flex;
-            flex-wrap: wrap;
-            gap: var(--space-sm);
-        }
-        
-        .filter-btn {
-            padding: var(--space-sm) var(--space-md);
-            background: var(--gray-100);
-            border: 1px solid var(--gray-300);
-            border-radius: var(--radius);
-            color: var(--gray-700);
-            font-size: var(--font-sm);
-            font-weight: 500;
-            cursor: pointer;
-            transition: all var(--transition);
-        }
-        
-        .filter-btn:hover,
-        .filter-btn.active {
-            background: var(--primary-500);
-            border-color: var(--primary-500);
-            color: white;
-        }
-        
-        body.dark-mode .filter-btn {
-            background: var(--gray-200);
-            border-color: var(--gray-300);
-            color: var(--gray-600);
-        }
-        
-        /* ==================== MODALS ==================== */
-        .modal {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.5);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-            padding: var(--space-md);
-            backdrop-filter: blur(4px);
-            opacity: 0;
-            visibility: hidden;
-            transition: all var(--transition);
-        }
-        
-        .modal.active {
-            opacity: 1;
-            visibility: visible;
-        }
-        
-        .modal-content {
-            background: white;
-            border-radius: var(--radius-lg);
-            width: 100%;
-            max-width: 500px;
-            max-height: 90vh;
-            overflow-y: auto;
-            box-shadow: var(--shadow-xl);
-            transform: translateY(20px);
-            transition: transform var(--transition);
-        }
-        
-        body.dark-mode .modal-content {
-            background: var(--gray-100);
-        }
-        
-        .modal.active .modal-content {
-            transform: translateY(0);
-        }
-        
-        .modal-header {
-            padding: var(--space-lg);
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            border-bottom: 1px solid var(--gray-200);
-        }
-        
-        body.dark-mode .modal-header {
-            border-color: var(--gray-200);
-        }
-        
-        .modal-header h3 {
-            font-size: var(--font-xl);
-            font-weight: 700;
-            color: var(--gray-800);
-        }
-        
-        body.dark-mode .modal-header h3 {
-            color: var(--gray-800);
-        }
-        
-        .modal-close {
-            background: none;
-            border: none;
-            font-size: var(--font-xl);
-            color: var(--gray-500);
-            cursor: pointer;
-            padding: var(--space-xs);
-            border-radius: var(--radius-sm);
-            transition: color var(--transition);
-        }
-        
-        .modal-close:hover {
-            color: var(--danger);
-        }
-        
-        .modal-body {
-            padding: var(--space-lg);
-        }
-        
-        .modal-actions {
-            padding: var(--space-lg);
-            border-top: 1px solid var(--gray-200);
-            display: flex;
-            gap: var(--space-md);
-            justify-content: flex-end;
-        }
-        
-        body.dark-mode .modal-actions {
-            border-color: var(--gray-200);
-        }
-        
-        /* ==================== CAMERA MODAL ==================== */
-        .camera-preview {
-            width: 100%;
-            height: 400px;
-            background: black;
-            border-radius: var(--radius);
-            overflow: hidden;
-            margin-bottom: var(--space-lg);
-            position: relative;
-        }
-        
-        #camera-view {
-            width: 100%;
-            height: 100%;
-            object-fit: cover;
-            transform: scaleX(-1);
-        }
-        
-        .camera-controls {
-            display: flex;
-            justify-content: center;
-            gap: var(--space-lg);
-            margin-top: var(--space-lg);
-        }
-        
-        .capture-btn {
-            width: 64px;
-            height: 64px;
-            border-radius: var(--radius-full);
-            background: white;
-            border: 4px solid var(--gray-200);
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-size: var(--font-xl);
-            color: var(--primary-600);
-            transition: all var(--transition);
-        }
-        
-        .capture-btn:hover {
-            transform: scale(1.05);
-            border-color: var(--primary-500);
-        }
-        
-        /* ==================== SNACKBAR ==================== */
-        .snackbar {
-            position: fixed;
-            bottom: var(--space-xl);
-            left: 50%;
-            transform: translateX(-50%) translateY(100px);
-            background: var(--gray-800);
-            color: white;
-            padding: var(--space-md) var(--space-lg);
-            border-radius: var(--radius);
-            box-shadow: var(--shadow-xl);
-            z-index: 1001;
-            display: flex;
-            align-items: center;
-            gap: var(--space-md);
-            opacity: 0;
-            transition: all var(--transition);
-        }
-        
-        .snackbar.active {
-            opacity: 1;
-            transform: translateX(-50%) translateY(0);
-        }
-        
-        .snackbar.success {
-            background: var(--success);
-        }
-        
-        .snackbar.error {
-            background: var(--danger);
-        }
-        
-        .snackbar.warning {
-            background: var(--warning);
-        }
-        
-        .snackbar.info {
-            background: var(--info);
-        }
-        
-        .snackbar-icon {
-            font-size: var(--font-lg);
-        }
-        
-        /* ==================== RESPONSIVE DESIGN ==================== */
-        @media (max-width: 768px) {
-            :root {
-                --space-xl: 1.5rem;
-                --space-2xl: 2rem;
+            // Stop all video tracks
+            if (stream) {
+                stream.getTracks().forEach(track => {
+                    track.stop();
+                });
+                stream = null;
             }
             
-            .auth-card {
-                padding: var(--space-lg);
-            }
-            
-            .stats-grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .dashboard-header {
-                flex-direction: column;
-                align-items: flex-start;
-                gap: var(--space-md);
-            }
-            
-            .header-actions {
-                width: 100%;
-                justify-content: space-between;
-            }
-            
-            .admin-stats-grid {
-                grid-template-columns: repeat(2, 1fr);
-            }
-            
-            .modal-content {
-                max-height: 95vh;
-            }
-            
-            .camera-preview {
-                height: 300px;
-            }
-            
-            .camera-controls {
-                gap: var(--space-md);
-            }
+            video.srcObject = null;
         }
         
-        @media (max-width: 480px) {
-            .admin-stats-grid {
-                grid-template-columns: 1fr;
-            }
+        function capturePhoto() {
+            console.log('Capturing photo...');
+            const video = document.getElementById('camera-view');
+            const canvas = document.getElementById('camera-canvas');
             
-            .filter-buttons {
-                flex-direction: column;
-            }
+            // Set canvas dimensions to match video
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
             
-            .filter-btn {
-                width: 100%;
-                text-align: center;
-            }
+            // Draw video frame to canvas
+            const context = canvas.getContext('2d');
+            context.drawImage(video, 0, 0, canvas.width, canvas.height);
             
-            .modal-actions {
-                flex-direction: column;
-            }
+            // Convert to data URL
+            photoData = canvas.toDataURL('image/jpeg', 0.7);
             
-            .modal-actions .btn {
-                width: 100%;
-            }
+            // Show preview
+            const preview = document.getElementById('photo-preview');
+            const previewImage = document.getElementById('preview-image');
+            
+            previewImage.src = photoData;
+            preview.classList.remove('hidden');
+            
+            closeCamera();
+            showSnackbar('Photo captured successfully!', 'success');
         }
         
-        /* ==================== UTILITY CLASSES ==================== */
-        .hidden {
-            display: none !important;
+        function handleFileUpload(file) {
+            if (!file || !file.type.startsWith('image/')) {
+                showSnackbar('Please select a valid image file (JPEG, PNG, etc.)', 'error');
+                return;
+            }
+            
+            if (file.size > 5 * 1024 * 1024) { // 5MB limit
+                showSnackbar('Image size should be less than 5MB', 'error');
+                return;
+            }
+            
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                photoData = e.target.result;
+                
+                // Show preview
+                const preview = document.getElementById('photo-preview');
+                const previewImage = document.getElementById('preview-image');
+                
+                previewImage.src = photoData;
+                preview.classList.remove('hidden');
+                
+                showSnackbar('Photo uploaded successfully!', 'success');
+            };
+            reader.readAsDataURL(file);
         }
         
-        .text-center {
-            text-align: center;
+        function removePhoto() {
+            photoData = null;
+            document.getElementById('photo-preview').classList.add('hidden');
         }
         
-        .text-muted {
-            color: var(--gray-500);
+        // Make functions globally available
+        window.openCamera = openCamera;
+        window.closeCamera = closeCamera;
+        window.capturePhoto = capturePhoto;
+        window.handleFileUpload = handleFileUpload;
+        window.removePhoto = removePhoto;
+    </script>
+
+        <script>
+    // Emergency fix: Show content immediately
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Emergency fix applied');
+        
+        // Hide any loading screen if it exists
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('hidden');
         }
         
-        .mt-1 { margin-top: var(--space-xs); }
-        .mt-2 { margin-top: var(--space-sm); }
-        .mt-3 { margin-top: var(--space-md); }
-        .mt-4 { margin-top: var(--space-lg); }
-        .mt-5 { margin-top: var(--space-xl); }
+        // Ensure login screen is visible
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(screen => screen.classList.remove('active'));
         
-        .mb-1 { margin-bottom: var(--space-xs); }
-        .mb-2 { margin-bottom: var(--space-sm); }
-        .mb-3 { margin-bottom: var(--space-md); }
-        .mb-4 { margin-bottom: var(--space-lg); }
-        .mb-5 { margin-bottom: var(--space-xl); }
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) {
+            loginScreen.classList.add('active');
+            console.log('Login screen activated');
+        }
         
-        .w-full { width: 100%; }
-        .h-full { height: 100%; }
+        // Remove snowflake background if it's blocking
+        const snowflakes = document.querySelector('.snowflakes');
+        if (snowflakes) {
+            snowflakes.style.opacity = '0.1';
+        }
+    });
+    
+    // Backup: Force show after 3 seconds
+    setTimeout(function() {
+        console.log('Backup timeout triggered');
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.remove();
+        }
         
-        .flex { display: flex; }
-        .flex-col { flex-direction: column; }
-        .items-center { align-items: center; }
-        .justify-center { justify-content: center; }
-        .justify-between { justify-content: space-between; }
-        .gap-1 { gap: var(--space-xs); }
-        .gap-2 { gap: var(--space-sm); }
-        .gap-3 { gap: var(--space-md); }
-        .gap-4 { gap: var(--space-lg); }
-        .gap-5 { gap: var(--space-xl); }
-    </style>
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) {
+            loginScreen.classList.add('active');
+        }
+    }, 3000);
+</script>
 </body>
 </html>
+
+
+
 
