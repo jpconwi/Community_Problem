@@ -60,7 +60,7 @@
     --gradient-purple: linear-gradient(135deg, #9f7aea 0%, #805ad5 100%);
     
     /* Glass effect */
-    --glass-bg: rgba(255, 255, 255, 0.9);
+    --glass-bg: rgba(255, 255, 255, 0.95);
     --glass-border: rgba(255, 255, 255, 0.2);
     --glass-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
 }
@@ -481,7 +481,7 @@ body {
     100% { transform: scale(1); }
 }
 
-/* Three-dot menu styles */
+/* Three-dot menu styles - FIXED */
 .three-dot-menu {
     background: none;
     border: none;
@@ -498,6 +498,7 @@ body {
     transition: all 0.3s ease;
     -webkit-tap-highlight-color: transparent;
     position: relative;
+    z-index: 100;
 }
 
 .three-dot-menu:hover {
@@ -510,11 +511,12 @@ body {
     transform: scale(0.95);
 }
 
-/* Dropdown mobile optimization */
+/* Dropdown container - FIXED */
 .dropdown-container {
     position: relative;
     display: inline-block;
     flex-shrink: 0;
+    z-index: 1000;
 }
 
 .dropdown-menu {
@@ -525,11 +527,20 @@ body {
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
     box-shadow: var(--shadow-xl);
-    z-index: 1000;
+    z-index: 1001;
     margin-top: var(--space-xs);
     min-width: 180px;
     overflow: hidden;
     animation: slideDown 0.3s ease;
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+.dropdown-menu.hidden {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
 }
 
 @keyframes slideDown {
@@ -1485,6 +1496,20 @@ body {
     .auth-header h1 {
         font-size: var(--text-2xl);
     }
+    
+    /* Fix dropdown positioning on small screens */
+    .dropdown-menu {
+        position: fixed;
+        top: auto;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        width: 100%;
+        max-width: 100%;
+        margin: 0;
+        border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        animation: slideUp 0.3s ease;
+    }
 }
 
 /* Small phone adjustments */
@@ -1884,15 +1909,131 @@ input, select, textarea {
         --success-light: #065f46;
         --warning-light: #92400e;
         --danger-light: #7f1d1d;
-        --glass-bg: rgba(30, 41, 59, 0.9);
+        --glass-bg: rgba(30, 41, 59, 0.95);
         --glass-border: rgba(255, 255, 255, 0.1);
-    }
-    
-    body::before {
-        background: linear-gradient(135deg, #1e3a8a 0%, #5b21b6 100%);
     }
     
     .snowflake {
         text-shadow: 0 0 10px rgba(255, 255, 255, 0.6);
+    }
+}
+
+/* Ensure dropdowns are above other content */
+.dropdown-container,
+.dropdown-menu {
+    z-index: 1001 !important;
+}
+
+/* Fix for dropdown click issues */
+.dropdown-item {
+    position: relative;
+    z-index: 1002;
+}
+
+/* Admin dropdown specific fixes */
+.admin-container .dropdown-container {
+    z-index: 1002 !important;
+}
+
+.admin-container .dropdown-menu {
+    z-index: 1003 !important;
+}
+
+/* Make sure dropdowns are visible when not hidden */
+.dropdown-menu:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Fix for dropdown positioning in admin dashboard */
+.admin-container .header-actions {
+    position: relative;
+    z-index: 1000;
+}
+
+/* Ensure dropdown items are clickable */
+.dropdown-item {
+    cursor: pointer;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+}
+
+/* Fix for touch devices */
+@media (hover: none) and (pointer: coarse) {
+    .dropdown-item:active {
+        background: var(--primary-light);
+        color: var(--primary-color);
+    }
+    
+    .three-dot-menu:active {
+        background: var(--primary-light);
+        color: var(--primary-color);
+        transform: rotate(90deg);
+    }
+}
+
+/* Ensure proper stacking context */
+.dashboard-container,
+.admin-container {
+    position: relative;
+    z-index: 1;
+}
+
+/* Fix for dropdown overflow */
+.dropdown-menu {
+    max-height: 300px;
+    overflow-y: auto;
+}
+
+/* Style for dropdown scrollbar */
+.dropdown-menu::-webkit-scrollbar {
+    width: 6px;
+}
+
+.dropdown-menu::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+.dropdown-menu::-webkit-scrollbar-thumb {
+    background: var(--primary-color);
+    border-radius: var(--radius-full);
+}
+
+/* Dropdown animation fix */
+@keyframes dropdownAppear {
+    from {
+        opacity: 0;
+        transform: translateY(-10px) scale(0.95);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+.dropdown-menu {
+    animation: dropdownAppear 0.2s ease-out;
+}
+
+/* Fix for iOS Safari dropdown */
+@supports (-webkit-touch-callout: none) {
+    .dropdown-menu {
+        -webkit-overflow-scrolling: touch;
+    }
+}
+
+/* Ensure dropdown stays within viewport on mobile */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        max-width: calc(100vw - 32px);
+        right: 0;
+        left: auto;
+    }
+    
+    .admin-container .dropdown-menu {
+        max-width: calc(100vw - 32px);
     }
 }
