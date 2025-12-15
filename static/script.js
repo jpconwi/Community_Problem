@@ -915,14 +915,12 @@ function showScreen(screenId) {
     
     // Hide all screens
     document.querySelectorAll('.screen').forEach(screen => {
-        screen.style.display = 'none';
         screen.classList.remove('active');
     });
     
     // Show target screen
     const targetScreen = document.getElementById(screenId);
     if (targetScreen) {
-        targetScreen.style.display = 'block';
         targetScreen.classList.add('active');
         console.log(`Screen ${screenId} is now active`);
     } else {
@@ -2667,7 +2665,6 @@ document.addEventListener('keydown', function(e) {
         toggleDarkMode();
     }
 });
-
 
 
 
