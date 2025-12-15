@@ -1641,25 +1641,34 @@ function showAdminNotificationsModal() {
 // Load admin notifications
 async function loadAdminNotifications() {
     try {
+        const notificationsList = document.getElementById('admin-notifications-list');
+        // Show loading state
+        notificationsList.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+                <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto 16px;"></div>
+                <p style="color: var(--text-muted);">Loading notifications...</p>
+            </div>
+        `;
+
+        // Get new reports count
         const response = await fetch('/api/new_reports_count');
         const data = await response.json();
-        
-        const notificationsList = document.getElementById('admin-notifications-list');
-        
+
         if (data.success && data.count > 0) {
-            // Get detailed new reports info
+            // Get detailed reports info
             const reportsResponse = await fetch('/api/all_reports');
             const reportsData = await reportsResponse.json();
-            
+
             if (reportsData.success) {
                 const yesterday = new Date();
                 yesterday.setHours(yesterday.getHours() - 24);
-                
+
                 const newReports = reportsData.reports.filter(report => {
                     const reportDate = new Date(report.date);
                     return reportDate >= yesterday;
                 });
-                
+
+                // Group by status or type if needed, for now just display all
                 notificationsList.innerHTML = `
                     <div class="notification-header">
                         <i class="fas fa-bell" style="color: #667eea;"></i>
@@ -1667,15 +1676,27 @@ async function loadAdminNotifications() {
                     </div>
                     <div class="new-reports-list">
                         ${newReports.map(report => `
-                            <div class="new-report-item">
-                                <div class="report-type-badge">${report.problem_type}</div>
-                                <div class="report-details">
-                                    <strong>${report.location}</strong>
-                                    <span>By: ${report.username}</span>
-                                    <small>${report.date}</small>
+                            <div class="new-report-item" onclick="viewReport(${report.id})" style="cursor: pointer;">
+                                <div class="report-icon">
+                                    <i class="fas fa-file-alt"></i>
                                 </div>
-                                <div class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
-                                    ${report.status}
+                                <div class="report-content">
+                                    <div class="report-header">
+                                        <div class="report-type">${report.problem_type}</div>
+                                        <div class="report-time">${formatTimeAgo(report.date)}</div>
+                                    </div>
+                                    <div class="report-details">
+                                        <p class="report-location"><i class="fas fa-location-dot"></i> ${report.location}</p>
+                                        <p class="report-submitter"><i class="fas fa-user"></i> ${report.username}</p>
+                                    </div>
+                                    <div class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                                        ${report.status}
+                                    </div>
+                                </div>
+                                <div class="report-actions">
+                                    <button class="btn-mark-read" onclick="event.stopPropagation(); markReportAsRead(${report.id})" title="Mark as read">
+                                        <i class="fas fa-check"></i>
+                                    </button>
                                 </div>
                             </div>
                         `).join('')}
@@ -1684,21 +1705,21 @@ async function loadAdminNotifications() {
             }
         } else {
             notificationsList.innerHTML = `
-                <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+                <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
                     <i class="fas fa-bell-slash" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
                     <p>No new reports</p>
                     <small>All caught up!</small>
                 </div>
             `;
         }
-        
+
         // Update badge count
         await loadAdminNotificationsCount();
     } catch (error) {
         console.error('Failed to load admin notifications:', error);
         const notificationsList = document.getElementById('admin-notifications-list');
         notificationsList.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #64748b;">
+            <div style="text-align: center; padding: 40px 20px; color: var(--text-muted);">
                 <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
                 <p>Failed to load notifications</p>
             </div>
@@ -2664,3 +2685,4 @@ document.addEventListener('keydown', function(e) {
         toggleDarkMode();
     }
 });
+
