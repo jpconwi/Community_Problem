@@ -9,7 +9,6 @@
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="stylesheet" href="{{ url_for('static', filename='enhanced-styles.css') }}">
     <style>
         /* Additional styles for camera modal and 3-dot menu */
         #camera-modal .modal-content {
@@ -45,767 +44,979 @@
             background: var(--background-color);
             color: var(--primary-color);
         }
+        
+        /* Enhanced UI specific styles */
+        .container {
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 1rem;
+        }
+        
+        .mx-auto {
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        .hidden {
+            display: none !important;
+        }
+        
+        .grid {
+            display: grid;
+        }
+        
+        .grid-cols-1 {
+            grid-template-columns: repeat(1, 1fr);
+        }
+        
+        .grid-cols-2 {
+            grid-template-columns: repeat(2, 1fr);
+        }
+        
+        .grid-cols-4 {
+            grid-template-columns: repeat(4, 1fr);
+        }
+        
+        .gap-2 { gap: 0.5rem; }
+        .gap-3 { gap: 0.75rem; }
+        .gap-4 { gap: 1rem; }
+        .gap-6 { gap: 1.5rem; }
+        
+        .flex { display: flex; }
+        .flex-col { flex-direction: column; }
+        .items-center { align-items: center; }
+        .justify-between { justify-content: space-between; }
+        .justify-center { justify-content: center; }
+        
+        .mb-2 { margin-bottom: 0.5rem; }
+        .mb-4 { margin-bottom: 1rem; }
+        .mb-6 { margin-bottom: 1.5rem; }
+        .mb-8 { margin-bottom: 2rem; }
+        
+        .mt-1 { margin-top: 0.25rem; }
+        .mt-2 { margin-top: 0.5rem; }
+        .mt-4 { margin-top: 1rem; }
+        
+        .p-2 { padding: 0.5rem; }
+        .p-3 { padding: 0.75rem; }
+        .p-4 { padding: 1rem; }
+        .p-6 { padding: 1.5rem; }
+        
+        .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+        .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+        .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+        .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+        
+        .px-4 { padding-left: 1rem; padding-right: 1rem; }
+        
+        .w-10 { width: 2.5rem; }
+        .w-12 { width: 3rem; }
+        .w-20 { width: 5rem; }
+        .w-64 { width: 16rem; }
+        .w-full { width: 100%; }
+        
+        .h-10 { height: 2.5rem; }
+        .h-12 { height: 3rem; }
+        .h-20 { height: 5rem; }
+        .h-48 { height: 12rem; }
+        
+        .text-sm { font-size: 0.875rem; }
+        .text-base { font-size: 1rem; }
+        .text-lg { font-size: 1.125rem; }
+        .text-xl { font-size: 1.25rem; }
+        .text-2xl { font-size: 1.5rem; }
+        .text-3xl { font-size: 1.875rem; }
+        
+        .font-medium { font-weight: 500; }
+        .font-semibold { font-weight: 600; }
+        .font-bold { font-weight: 700; }
+        
+        .rounded { border-radius: 0.25rem; }
+        .rounded-lg { border-radius: 0.5rem; }
+        .rounded-xl { border-radius: 0.75rem; }
+        .rounded-2xl { border-radius: 1rem; }
+        .rounded-full { border-radius: 9999px; }
+        
+        .bg-white { background-color: white; }
+        .bg-blue-100 { background-color: #dbeafe; }
+        .bg-yellow-100 { background-color: #fef3c7; }
+        .bg-purple-100 { background-color: #e9d5ff; }
+        .bg-green-100 { background-color: #d1fae5; }
+        .bg-red-500 { background-color: #ef4444; }
+        .bg-gray-100 { background-color: #f3f4f6; }
+        .bg-gray-200 { background-color: #e5e7eb; }
+        .bg-gray-300 { background-color: #d1d5db; }
+        
+        .text-white { color: white; }
+        .text-gray-500 { color: #6b7280; }
+        .text-gray-600 { color: #4b5563; }
+        .text-gray-900 { color: #111827; }
+        .text-blue-600 { color: #2563eb; }
+        .text-yellow-600 { color: #d97706; }
+        .text-purple-600 { color: #7c3aed; }
+        .text-green-600 { color: #059669; }
+        .text-red-600 { color: #dc2626; }
+        
+        .border { border-width: 1px; }
+        .border-b { border-bottom-width: 1px; }
+        .border-t { border-top-width: 1px; }
+        
+        .border-gray-200 { border-color: #e5e7eb; }
+        .border-gray-300 { border-color: #d1d5db; }
+        
+        .shadow-sm { box-shadow: 0 1px 2px 0 rgba(0, 0, 0, 0.05); }
+        .shadow-lg { box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1); }
+        .shadow-xl { box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1); }
+        
+        .relative { position: relative; }
+        .absolute { position: absolute; }
+        .sticky { position: sticky; }
+        
+        .top-0 { top: 0; }
+        .right-0 { right: 0; }
+        .left-3 { left: 0.75rem; }
+        .right-3 { right: 0.75rem; }
+        
+        .top-3 { top: 0.75rem; }
+        .-top-1 { top: -0.25rem; }
+        .-right-1 { right: -0.25rem; }
+        
+        .z-50 { z-index: 50; }
+        
+        .opacity-90 { opacity: 0.9; }
+        .opacity-30 { opacity: 0.3; }
+        
+        .transition-colors { transition: background-color 0.2s, color 0.2s; }
+        
+        .animate-spin {
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotate(0deg); }
+            to { transform: rotate(360deg); }
+        }
+        
+        /* Dark mode specific styles */
+        [data-theme="dark"] .bg-white {
+            background-color: #1e293b;
+        }
+        
+        [data-theme="dark"] .text-gray-600 {
+            color: #94a3b8;
+        }
+        
+        [data-theme="dark"] .border-gray-200 {
+            border-color: #334155;
+        }
+        
+        /* Media queries for responsive design */
+        @media (min-width: 768px) {
+            .md\:flex-row {
+                flex-direction: row;
+            }
+            
+            .md\:grid-cols-2 {
+                grid-template-columns: repeat(2, 1fr);
+            }
+            
+            .md\:grid-cols-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .md\:mt-0 {
+                margin-top: 0;
+            }
+            
+            .md\:block {
+                display: block;
+            }
+        }
+        
+        @media (min-width: 1024px) {
+            .lg\:col-span-1 {
+                grid-column: span 1;
+            }
+            
+            .lg\:col-span-2 {
+                grid-column: span 2;
+            }
+            
+            .lg\:col-span-3 {
+                grid-column: span 3;
+            }
+            
+            .lg\:grid-cols-3 {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            
+            .lg\:grid-cols-4 {
+                grid-template-columns: repeat(4, 1fr);
+            }
+            
+            .lg\:block {
+                display: block;
+            }
+        }
     </style>
 </head>
 <body>
-    <body>
-    <!-- ADD THIS LOADING SCREEN -->
-    <div id="loading-screen" class="loading-screen">
+    <!-- Loading Screen -->
+    <div id="loading-screen" class="loading-screen hidden">
         <div class="loading-container">
             <div class="loading-spinner"></div>
             <h3>Loading BAYAN</h3>
             <p>Barangay Action for Youth and Neighborhoods</p>
         </div>
     </div>
-    
-    <!-- Rest of your existing code... -->
 
-
-    <!-- Add before closing body tag -->
-<div id="help-modal" class="modal hidden">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Welcome to BAYAN</h3>
-            <button class="close-btn" onclick="closeHelpModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div class="onboarding-steps">
-                <div class="step">
-                    <div class="step-number">1</div>
-                    <div class="step-content">
-                        <h4>Submit Reports</h4>
-                        <p>Report community issues with photos and location details</p>
+    <!-- Help Modal -->
+    <div id="help-modal" class="modal hidden">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Welcome to BAYAN</h3>
+                <button class="close-btn" onclick="closeHelpModal()">&times;</button>
+            </div>
+            <div class="modal-body">
+                <div class="onboarding-steps">
+                    <div class="step">
+                        <div class="step-number">1</div>
+                        <div class="step-content">
+                            <h4>Submit Reports</h4>
+                            <p>Report community issues with photos and location details</p>
+                        </div>
                     </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">2</div>
-                    <div class="step-content">
-                        <h4>Track Progress</h4>
-                        <p>Monitor your report status from pending to resolved</p>
+                    <div class="step">
+                        <div class="step-number">2</div>
+                        <div class="step-content">
+                            <h4>Track Progress</h4>
+                            <p>Monitor your report status from pending to resolved</p>
+                        </div>
                     </div>
-                </div>
-                <div class="step">
-                    <div class="step-number">3</div>
-                    <div class="step-content">
-                        <h4>Get Notified</h4>
-                        <p>Receive updates when your reports are addressed</p>
+                    <div class="step">
+                        <div class="step-number">3</div>
+                        <div class="step-content">
+                            <h4>Get Notified</h4>
+                            <p>Receive updates when your reports are addressed</p>
+                        </div>
                     </div>
                 </div>
             </div>
-        </div>
-        <div class="modal-actions">
-            <button class="btn btn-primary" onclick="closeHelpModal()">
-                Get Started
-            </button>
+            <div class="modal-actions">
+                <button class="btn btn-primary" onclick="closeHelpModal()">
+                    Get Started
+                </button>
+            </div>
         </div>
     </div>
-</div>
     
     <div id="app">
         <!-- Login Screen -->
-        <!-- Enhanced Login Screen -->
-<div id="login-screen" class="screen active">
-    <div class="auth-container">
-        <div class="auth-card card-enhanced" style="max-width: 440px;">
-            <!-- Brand Header -->
-            <div class="text-center mb-8">
-                <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
-                    <i class="fas fa-hands-helping text-white text-3xl"></i>
-                </div>
-                <h1 class="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
-                    BAYAN
-                </h1>
-                <p class="text-gray-600">Barangay Action for Youth and Neighborhoods</p>
-                <p class="text-sm text-gray-500 mt-1">Sign in to continue</p>
-            </div>
-
-            <!-- Login Form -->
-            <form id="login-form" class="form-enhanced">
-                <div class="form-group-enhanced">
-                    <label for="login-email" class="form-label">Email Address</label>
-                    <div class="relative">
-                        <i class="fas fa-envelope absolute left-3 top-3 text-gray-400"></i>
-                        <input type="email" id="login-email" class="form-input-enhanced pl-10" placeholder="you@example.com" required>
-                    </div>
-                </div>
-
-                <div class="form-group-enhanced">
-                    <div class="flex justify-between items-center">
-                        <label for="login-password" class="form-label">Password</label>
-                        <a href="#" class="text-sm text-primary-600 hover:text-primary-700">Forgot password?</a>
-                    </div>
-                    <div class="relative">
-                        <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
-                        <input type="password" id="login-password" class="form-input-enhanced pl-10 pr-10" placeholder="Enter your password" required>
-                        <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="togglePassword('login-password')">
-                            <i class="fas fa-eye"></i>
-                        </button>
-                    </div>
-                </div>
-
-                <div class="form-group-enhanced">
-                    <button type="submit" class="btn-enhanced btn-enhanced-primary w-full py-3">
-                        <i class="fas fa-sign-in-alt"></i>
-                        Sign In
-                    </button>
-                </div>
-
-                <div class="relative my-6">
-                    <div class="absolute inset-0 flex items-center">
-                        <div class="w-full border-t border-gray-300"></div>
-                    </div>
-                    <div class="relative flex justify-center text-sm">
-                        <span class="px-2 bg-white text-gray-500">Or continue with</span>
-                    </div>
-                </div>
-
-                <button type="button" class="btn-enhanced btn-enhanced-outline w-full" onclick="showScreen('register-screen')">
-                    <i class="fas fa-user-plus"></i>
-                    Create Account
-                </button>
-            </form>
-
-            <!-- Footer -->
-            <div class="mt-8 text-center">
-                <p class="text-sm text-gray-600">
-                    By continuing, you agree to our 
-                    <a href="#" class="text-primary-600 hover:text-primary-700">Terms of Service</a> 
-                    and 
-                    <a href="#" class="text-primary-600 hover:text-primary-700">Privacy Policy</a>
-                </p>
-            </div>
-        </div>
-    </div>
-</div>
-
-
-        <!-- Enhanced Register Screen -->
-<div id="register-screen" class="screen">
-    <div class="auth-container">
-        <div class="auth-card card-enhanced" style="max-width: 440px;">
-            <!-- Back Button -->
-            <button onclick="showScreen('login-screen')" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
-                <i class="fas fa-arrow-left"></i>
-                <span>Back to Login</span>
-            </button>
-
-            <!-- Register Header -->
-            <div class="text-center mb-8">
-                <h1 class="text-3xl font-bold mb-2">Create Account</h1>
-                <p class="text-gray-600">Join BAYAN Community today</p>
-            </div>
-
-            <!-- Register Form -->
-            <form id="register-form" class="form-enhanced">
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-group-enhanced">
-                        <label for="register-username" class="form-label">Full Name</label>
-                        <div class="relative">
-                            <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
-                            <input type="text" id="register-username" class="form-input-enhanced pl-10" placeholder="John Doe" required>
+        <div id="login-screen" class="screen active">
+            <div class="auth-container">
+                <div class="auth-card card-enhanced" style="max-width: 440px;">
+                    <!-- Brand Header -->
+                    <div class="text-center mb-8">
+                        <div class="w-20 h-20 mx-auto mb-4 rounded-full bg-gradient-primary flex items-center justify-center shadow-lg">
+                            <i class="fas fa-hands-helping text-white text-3xl"></i>
                         </div>
+                        <h1 class="text-3xl font-bold mb-2 bg-gradient-primary bg-clip-text text-transparent">
+                            BAYAN
+                        </h1>
+                        <p class="text-gray-600">Barangay Action for Youth and Neighborhoods</p>
+                        <p class="text-sm text-gray-500 mt-1">Sign in to continue</p>
                     </div>
 
-                    <div class="form-group-enhanced">
-                        <label for="register-phone" class="form-label">Phone Number</label>
-                        <div class="relative">
-                            <i class="fas fa-phone absolute left-3 top-3 text-gray-400"></i>
-                            <input type="tel" id="register-phone" class="form-input-enhanced pl-10" placeholder="+63 912 345 6789">
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group-enhanced">
-                    <label for="register-email" class="form-label">Email Address</label>
-                    <div class="relative">
-                        <i class="fas fa-envelope absolute left-3 top-3 text-gray-400"></i>
-                        <input type="email" id="register-email" class="form-input-enhanced pl-10" placeholder="you@example.com" required>
-                    </div>
-                </div>
-
-                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div class="form-group-enhanced">
-                        <label for="register-password" class="form-label">Password</label>
-                        <div class="relative">
-                            <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
-                            <input type="password" id="register-password" class="form-input-enhanced pl-10 pr-10" placeholder="Create password" required>
-                            <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="togglePassword('register-password')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-
-                    <div class="form-group-enhanced">
-                        <label for="register-confirm-password" class="form-label">Confirm Password</label>
-                        <div class="relative">
-                            <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
-                            <input type="password" id="register-confirm-password" class="form-input-enhanced pl-10 pr-10" placeholder="Confirm password" required>
-                            <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="togglePassword('register-confirm-password')">
-                                <i class="fas fa-eye"></i>
-                            </button>
-                        </div>
-                    </div>
-                </div>
-
-                <div class="form-group-enhanced">
-                    <div class="flex items-center gap-2">
-                        <input type="checkbox" id="terms" class="rounded border-gray-300" required>
-                        <label for="terms" class="text-sm text-gray-600">
-                            I agree to the <a href="#" class="text-primary-600 hover:text-primary-700">Terms of Service</a> and <a href="#" class="text-primary-600 hover:text-primary-700">Privacy Policy</a>
-                        </label>
-                    </div>
-                </div>
-
-                <div class="form-group-enhanced">
-                    <button type="submit" class="btn-enhanced btn-enhanced-primary w-full py-3">
-                        <i class="fas fa-user-plus"></i>
-                        Create Account
-                    </button>
-                </div>
-
-                <div class="text-center">
-                    <p class="text-gray-600">
-                        Already have an account? 
-                        <button type="button" onclick="showScreen('login-screen')" class="text-primary-600 hover:text-primary-700 font-medium">
-                            Sign In
-                        </button>
-                    </p>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-        
-
-        <!-- Enhanced User Dashboard -->
-<div id="user-dashboard" class="screen">
-    <!-- Enhanced Header -->
-    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
-                <!-- Left: Logo & Brand -->
-                <div class="flex items-center gap-4">
-                    <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900">
-                        <i class="fas fa-bars text-xl"></i>
-                    </button>
-                    
-                    <div class="flex items-center gap-3">
-                        <div class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
-                            <i class="fas fa-hands-helping text-white"></i>
-                        </div>
-                        <div>
-                            <h1 class="font-bold text-lg">BAYAN</h1>
-                            <p class="text-xs text-gray-500">Community Portal</p>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Center: Search (Desktop only) -->
-                <div class="hidden lg:block flex-1 max-w-xl mx-8">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        <input type="search" placeholder="Search reports..." 
-                               class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
-                    </div>
-                </div>
-
-                <!-- Right: Actions -->
-                <div class="flex items-center gap-3">
-                    <!-- Dark Mode Toggle -->
-                    <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Toggle dark mode">
-                        <i class="fas fa-moon text-gray-600"></i>
-                        <i class="fas fa-sun text-yellow-500 hidden"></i>
-                    </button>
-
-                    <!-- Notifications -->
-                    <div class="relative">
-                        <button onclick="showNotifications()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors relative" title="Notifications">
-                            <i class="fas fa-bell text-gray-600"></i>
-                            <span id="notification-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center hidden">3</span>
-                        </button>
-                    </div>
-
-                    <!-- User Menu -->
-                    <div class="relative">
-                        <button onclick="toggleUserMenu()" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                            <div class="w-9 h-9 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold" id="user-avatar">
-                                U
-                            </div>
-                            <div class="hidden md:block text-left">
-                                <div class="font-medium" id="user-name">User</div>
-                                <div class="text-xs text-gray-500">Resident</div>
-                            </div>
-                            <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
-                        </button>
-
-                        <!-- Dropdown Menu -->
-                        <div id="user-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 hidden">
-                            <div class="p-4 border-b border-gray-100">
-                                <div class="flex items-center gap-3">
-                                    <div class="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold">
-                                        U
-                                    </div>
-                                    <div>
-                                        <div class="font-semibold" id="dropdown-user-name">User</div>
-                                        <div class="text-sm text-gray-500" id="dropdown-user-email">user@example.com</div>
-                                    </div>
-                                </div>
-                            </div>
-                            
-                            <div class="p-2">
-                                <a href="#" onclick="showMyReports()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-file-alt text-gray-500 w-5"></i>
-                                    <span>My Reports</span>
-                                </a>
-                                
-                                <a href="#" onclick="showSettings()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
-                                    <i class="fas fa-cog text-gray-500 w-5"></i>
-                                    <span>Settings</span>
-                                </a>
-                                
-                                <div class="border-t border-gray-100 my-2"></div>
-                                
-                                <button onclick="logout()" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600 transition-colors">
-                                    <i class="fas fa-sign-out-alt w-5"></i>
-                                    <span>Logout</span>
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </header>
-
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 py-6">
-        <!-- Welcome Section -->
-        <div class="mb-8">
-            <div class="bg-gradient-primary rounded-2xl p-6 text-white">
-                <div class="flex flex-col md:flex-row items-center justify-between">
-                    <div>
-                        <h2 class="text-2xl font-bold mb-2">Welcome back, <span id="welcome-name">User</span>! 👋</h2>
-                        <p class="opacity-90">Track your community reports and stay updated on resolutions</p>
-                    </div>
-                    <button onclick="openCamera()" class="mt-4 md:mt-0 btn-enhanced btn-enhanced-primary bg-white text-primary-600 hover:bg-gray-50">
-                        <i class="fas fa-plus"></i>
-                        New Report
-                    </button>
-                </div>
-            </div>
-        </div>
-
-        <!-- Stats Overview -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div class="card-enhanced">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">Total Reports</p>
-                        <h3 class="text-2xl font-bold mt-1" id="user-reports-count">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
-                        <i class="fas fa-file-alt text-blue-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <div class="flex items-center gap-1 text-green-600">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span class="text-sm">12% from last month</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-enhanced">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">Pending</p>
-                        <h3 class="text-2xl font-bold mt-1" id="user-pending-count">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
-                        <i class="fas fa-clock text-yellow-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <div class="flex items-center gap-1 text-gray-600">
-                        <i class="fas fa-minus text-xs"></i>
-                        <span class="text-sm">No change</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-enhanced">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">In Progress</p>
-                        <h3 class="text-2xl font-bold mt-1" id="user-inprogress-count">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
-                        <i class="fas fa-spinner text-purple-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <div class="flex items-center gap-1 text-green-600">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span class="text-sm">20% from last week</span>
-                    </div>
-                </div>
-            </div>
-
-            <div class="card-enhanced">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm text-gray-600">Resolved</p>
-                        <h3 class="text-2xl font-bold mt-1" id="user-resolved-count">0</h3>
-                    </div>
-                    <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
-                        <i class="fas fa-check-circle text-green-600 text-xl"></i>
-                    </div>
-                </div>
-                <div class="mt-4 pt-4 border-t border-gray-100">
-                    <div class="flex items-center gap-1 text-green-600">
-                        <i class="fas fa-arrow-up text-xs"></i>
-                        <span class="text-sm">25% from last week</span>
-                    </div>
-                </div>
-            </div>
-        </div>
-
-        <!-- Main Content Grid -->
-        <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <!-- Left Column: Quick Report -->
-            <div class="lg:col-span-2">
-                <div class="card-enhanced">
-                    <h3 class="text-xl font-bold mb-6">Submit New Report</h3>
-                    
-                    <form id="report-form" class="form-enhanced">
-                        <!-- Problem Type -->
+                    <!-- Login Form -->
+                    <form id="login-form" class="form-enhanced">
                         <div class="form-group-enhanced">
-                            <label class="form-label">Problem Type</label>
-                            <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
-                                <button type="button" class="problem-type-btn active" data-type="Pothole">
-                                    <i class="fas fa-road"></i>
-                                    <span>Pothole</span>
-                                </button>
-                                <button type="button" class="problem-type-btn" data-type="Garbage">
-                                    <i class="fas fa-trash"></i>
-                                    <span>Garbage</span>
-                                </button>
-                                <button type="button" class="problem-type-btn" data-type="Light">
-                                    <i class="fas fa-lightbulb"></i>
-                                    <span>Street Light</span>
-                                </button>
-                                <button type="button" class="problem-type-btn" data-type="Water">
-                                    <i class="fas fa-tint"></i>
-                                    <span>Water Leak</span>
-                                </button>
-                                <button type="button" class="problem-type-btn" data-type="Noise">
-                                    <i class="fas fa-volume-up"></i>
-                                    <span>Noise</span>
-                                </button>
-                                <button type="button" class="problem-type-btn" data-type="Other">
-                                    <i class="fas fa-ellipsis-h"></i>
-                                    <span>Other</span>
-                                </button>
-                            </div>
-                            <input type="hidden" id="problem-type" required>
-                        </div>
-
-                        <!-- Location -->
-                        <div class="form-group-enhanced">
-                            <label for="location" class="form-label">Location</label>
+                            <label for="login-email" class="form-label">Email Address</label>
                             <div class="relative">
-                                <i class="fas fa-map-marker-alt absolute left-3 top-3 text-gray-400"></i>
-                                <input type="text" id="location" class="form-input-enhanced pl-10" placeholder="Enter exact location or address" required>
+                                <i class="fas fa-envelope absolute left-3 top-3 text-gray-400"></i>
+                                <input type="email" id="login-email" class="form-input-enhanced pl-10" placeholder="you@example.com" required>
                             </div>
                         </div>
 
-                        <!-- Issue Description -->
                         <div class="form-group-enhanced">
-                            <label for="issue" class="form-label">Issue Description</label>
-                            <textarea id="issue" class="form-input-enhanced" rows="3" placeholder="Describe the issue in detail..." required></textarea>
+                            <div class="flex justify-between items-center">
+                                <label for="login-password" class="form-label">Password</label>
+                                <a href="#" class="text-sm text-primary-600 hover:text-primary-700">Forgot password?</a>
+                            </div>
+                            <div class="relative">
+                                <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                                <input type="password" id="login-password" class="form-input-enhanced pl-10 pr-10" placeholder="Enter your password" required>
+                                <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="togglePassword('login-password')">
+                                    <i class="fas fa-eye"></i>
+                                </button>
+                            </div>
                         </div>
 
-                        <!-- Priority & Photo -->
+                        <div class="form-group-enhanced">
+                            <button type="submit" class="btn-enhanced btn-enhanced-primary w-full py-3">
+                                <i class="fas fa-sign-in-alt"></i>
+                                Sign In
+                            </button>
+                        </div>
+
+                        <div class="relative my-6">
+                            <div class="absolute inset-0 flex items-center">
+                                <div class="w-full border-t border-gray-300"></div>
+                            </div>
+                            <div class="relative flex justify-center text-sm">
+                                <span class="px-2 bg-white text-gray-500">Or continue with</span>
+                            </div>
+                        </div>
+
+                        <button type="button" class="btn-enhanced btn-enhanced-outline w-full" onclick="showScreen('register-screen')">
+                            <i class="fas fa-user-plus"></i>
+                            Create Account
+                        </button>
+                    </form>
+
+                    <!-- Footer -->
+                    <div class="mt-8 text-center">
+                        <p class="text-sm text-gray-600">
+                            By continuing, you agree to our 
+                            <a href="#" class="text-primary-600 hover:text-primary-700">Terms of Service</a> 
+                            and 
+                            <a href="#" class="text-primary-600 hover:text-primary-700">Privacy Policy</a>
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Register Screen -->
+        <div id="register-screen" class="screen">
+            <div class="auth-container">
+                <div class="auth-card card-enhanced" style="max-width: 440px;">
+                    <!-- Back Button -->
+                    <button onclick="showScreen('login-screen')" class="flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6">
+                        <i class="fas fa-arrow-left"></i>
+                        <span>Back to Login</span>
+                    </button>
+
+                    <!-- Register Header -->
+                    <div class="text-center mb-8">
+                        <h1 class="text-3xl font-bold mb-2">Create Account</h1>
+                        <p class="text-gray-600">Join BAYAN Community today</p>
+                    </div>
+
+                    <!-- Register Form -->
+                    <form id="register-form" class="form-enhanced">
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <div class="form-group-enhanced">
-                                <label for="priority" class="form-label">Priority Level</label>
-                                <select id="priority" class="form-input-enhanced">
-                                    <option value="Low">Low Priority</option>
-                                    <option value="Medium" selected>Medium Priority</option>
-                                    <option value="High">High Priority</option>
-                                    <option value="Urgent">Urgent</option>
-                                </select>
+                                <label for="register-username" class="form-label">Full Name</label>
+                                <div class="relative">
+                                    <i class="fas fa-user absolute left-3 top-3 text-gray-400"></i>
+                                    <input type="text" id="register-username" class="form-input-enhanced pl-10" placeholder="John Doe" required>
+                                </div>
                             </div>
 
                             <div class="form-group-enhanced">
-                                <label class="form-label">Add Photo (Optional)</label>
-                                <div class="grid grid-cols-2 gap-2">
-                                    <button type="button" class="photo-action-btn" onclick="openCamera()">
-                                        <i class="fas fa-camera"></i>
-                                        <span>Take Photo</span>
-                                    </button>
-                                    <button type="button" class="photo-action-btn" onclick="document.getElementById('file-upload').click()">
-                                        <i class="fas fa-upload"></i>
-                                        <span>Upload</span>
-                                    </button>
+                                <label for="register-phone" class="form-label">Phone Number</label>
+                                <div class="relative">
+                                    <i class="fas fa-phone absolute left-3 top-3 text-gray-400"></i>
+                                    <input type="tel" id="register-phone" class="form-input-enhanced pl-10" placeholder="+63 912 345 6789">
                                 </div>
-                                <input type="file" id="file-upload" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files[0])">
                             </div>
                         </div>
 
-                        <!-- Photo Preview -->
-                        <div id="photo-preview" class="hidden">
-                            <div class="mt-4 p-4 border border-gray-300 rounded-lg">
-                                <div class="flex items-center justify-between mb-2">
-                                    <span class="font-medium">Photo Preview</span>
-                                    <button type="button" onclick="removePhoto()" class="text-red-600 hover:text-red-700">
-                                        <i class="fas fa-times"></i>
-                                    </button>
-                                </div>
-                                <img id="preview-image" src="" alt="Preview" class="w-full h-48 object-cover rounded">
+                        <div class="form-group-enhanced">
+                            <label for="register-email" class="form-label">Email Address</label>
+                            <div class="relative">
+                                <i class="fas fa-envelope absolute left-3 top-3 text-gray-400"></i>
+                                <input type="email" id="register-email" class="form-input-enhanced pl-10" placeholder="you@example.com" required>
                             </div>
                         </div>
 
-                        <!-- Submit Button -->
-                        <div class="form-group-enhanced mt-6">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div class="form-group-enhanced">
+                                <label for="register-password" class="form-label">Password</label>
+                                <div class="relative">
+                                    <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                                    <input type="password" id="register-password" class="form-input-enhanced pl-10 pr-10" placeholder="Create password" required>
+                                    <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="togglePassword('register-password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="form-group-enhanced">
+                                <label for="register-confirm-password" class="form-label">Confirm Password</label>
+                                <div class="relative">
+                                    <i class="fas fa-lock absolute left-3 top-3 text-gray-400"></i>
+                                    <input type="password" id="register-confirm-password" class="form-input-enhanced pl-10 pr-10" placeholder="Confirm password" required>
+                                    <button type="button" class="absolute right-3 top-3 text-gray-400 hover:text-gray-600" onclick="togglePassword('register-confirm-password')">
+                                        <i class="fas fa-eye"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group-enhanced">
+                            <div class="flex items-center gap-2">
+                                <input type="checkbox" id="terms" class="rounded border-gray-300" required>
+                                <label for="terms" class="text-sm text-gray-600">
+                                    I agree to the <a href="#" class="text-primary-600 hover:text-primary-700">Terms of Service</a> and <a href="#" class="text-primary-600 hover:text-primary-700">Privacy Policy</a>
+                                </label>
+                            </div>
+                        </div>
+
+                        <div class="form-group-enhanced">
                             <button type="submit" class="btn-enhanced btn-enhanced-primary w-full py-3">
-                                <i class="fas fa-paper-plane"></i>
-                                Submit Report
+                                <i class="fas fa-user-plus"></i>
+                                Create Account
                             </button>
+                        </div>
+
+                        <div class="text-center">
+                            <p class="text-gray-600">
+                                Already have an account? 
+                                <button type="button" onclick="showScreen('login-screen')" class="text-primary-600 hover:text-primary-700 font-medium">
+                                    Sign In
+                                </button>
+                            </p>
                         </div>
                     </form>
                 </div>
             </div>
+        </div>
 
-            <!-- Right Column: Recent Activity -->
-            <div class="lg:col-span-1">
-                <!-- Recent Reports -->
-                <div class="card-enhanced mb-6">
-                    <div class="flex items-center justify-between mb-4">
-                        <h3 class="text-xl font-bold">Recent Reports</h3>
-                        <button onclick="showMyReports()" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
-                            View All
-                        </button>
+        <!-- User Dashboard -->
+        <div id="user-dashboard" class="screen">
+            <!-- Enhanced Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+                <div class="container mx-auto px-4 py-3">
+                    <div class="flex items-center justify-between">
+                        <!-- Left: Logo & Brand -->
+                        <div class="flex items-center gap-4">
+                            <button onclick="toggleSidebar()" class="lg:hidden text-gray-600 hover:text-gray-900">
+                                <i class="fas fa-bars text-xl"></i>
+                            </button>
+                            
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 rounded-full bg-gradient-primary flex items-center justify-center">
+                                    <i class="fas fa-hands-helping text-white"></i>
+                                </div>
+                                <div>
+                                    <h1 class="font-bold text-lg">BAYAN</h1>
+                                    <p class="text-xs text-gray-500">Community Portal</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Center: Search (Desktop only) -->
+                        <div class="hidden lg:block flex-1 max-w-xl mx-8">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                <input type="search" placeholder="Search reports..." 
+                                       class="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-primary-500 focus:border-transparent">
+                            </div>
+                        </div>
+
+                        <!-- Right: Actions -->
+                        <div class="flex items-center gap-3">
+                            <!-- Dark Mode Toggle -->
+                            <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Toggle dark mode">
+                                <i class="fas fa-moon text-gray-600"></i>
+                                <i class="fas fa-sun text-yellow-500 hidden"></i>
+                            </button>
+
+                            <!-- Notifications -->
+                            <div class="relative">
+                                <button onclick="showNotifications()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors relative" title="Notifications">
+                                    <i class="fas fa-bell text-gray-600"></i>
+                                    <span id="notification-badge" class="absolute -top-1 -right-1 w-5 h-5 bg-red-500 text-white text-xs rounded-full flex items-center justify-center hidden">3</span>
+                                </button>
+                            </div>
+
+                            <!-- User Menu -->
+                            <div class="relative">
+                                <button onclick="toggleUserMenu()" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                    <div class="w-9 h-9 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold" id="user-avatar">
+                                        U
+                                    </div>
+                                    <div class="hidden md:block text-left">
+                                        <div class="font-medium" id="user-name">User</div>
+                                        <div class="text-xs text-gray-500">Resident</div>
+                                    </div>
+                                    <i class="fas fa-chevron-down text-gray-400 text-sm"></i>
+                                </button>
+
+                                <!-- Dropdown Menu -->
+                                <div id="user-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 hidden">
+                                    <div class="p-4 border-b border-gray-100">
+                                        <div class="flex items-center gap-3">
+                                            <div class="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold">
+                                                U
+                                            </div>
+                                            <div>
+                                                <div class="font-semibold" id="dropdown-user-name">User</div>
+                                                <div class="text-sm text-gray-500" id="dropdown-user-email">user@example.com</div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                    
+                                    <div class="p-2">
+                                        <a href="#" onclick="showMyReports()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                            <i class="fas fa-file-alt text-gray-500 w-5"></i>
+                                            <span>My Reports</span>
+                                        </a>
+                                        
+                                        <a href="#" onclick="showSettings()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                            <i class="fas fa-cog text-gray-500 w-5"></i>
+                                            <span>Settings</span>
+                                        </a>
+                                        
+                                        <div class="border-t border-gray-100 my-2"></div>
+                                        
+                                        <button onclick="logout()" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600 transition-colors">
+                                            <i class="fas fa-sign-out-alt w-5"></i>
+                                            <span>Logout</span>
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                     </div>
-                    
-                    <div id="recent-reports-list" class="space-y-3">
-                        <!-- Recent reports will be loaded here -->
-                        <div class="text-center py-8 text-gray-500">
-                            <i class="fas fa-file-alt text-4xl mb-3 opacity-30"></i>
-                            <p>No recent reports</p>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <div class="container mx-auto px-4 py-6">
+                <!-- Welcome Section -->
+                <div class="mb-8">
+                    <div class="bg-gradient-primary rounded-2xl p-6 text-white">
+                        <div class="flex flex-col md:flex-row items-center justify-between">
+                            <div>
+                                <h2 class="text-2xl font-bold mb-2">Welcome back, <span id="welcome-name">User</span>! 👋</h2>
+                                <p class="opacity-90">Track your community reports and stay updated on resolutions</p>
+                            </div>
+                            <button onclick="openCamera()" class="mt-4 md:mt-0 btn-enhanced btn-enhanced-primary bg-white text-primary-600 hover:bg-gray-50">
+                                <i class="fas fa-plus"></i>
+                                New Report
+                            </button>
                         </div>
                     </div>
                 </div>
 
-                <!-- Quick Stats -->
+                <!-- Stats Overview -->
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+                    <div class="card-enhanced">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Total Reports</p>
+                                <h3 class="text-2xl font-bold mt-1" id="user-reports-count">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-blue-100 flex items-center justify-center">
+                                <i class="fas fa-file-alt text-blue-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center gap-1 text-green-600">
+                                <i class="fas fa-arrow-up text-xs"></i>
+                                <span class="text-sm">12% from last month</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-enhanced">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Pending</p>
+                                <h3 class="text-2xl font-bold mt-1" id="user-pending-count">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-yellow-100 flex items-center justify-center">
+                                <i class="fas fa-clock text-yellow-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center gap-1 text-gray-600">
+                                <i class="fas fa-minus text-xs"></i>
+                                <span class="text-sm">No change</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-enhanced">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">In Progress</p>
+                                <h3 class="text-2xl font-bold mt-1" id="user-inprogress-count">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center">
+                                <i class="fas fa-spinner text-purple-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center gap-1 text-green-600">
+                                <i class="fas fa-arrow-up text-xs"></i>
+                                <span class="text-sm">20% from last week</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="card-enhanced">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm text-gray-600">Resolved</p>
+                                <h3 class="text-2xl font-bold mt-1" id="user-resolved-count">0</h3>
+                            </div>
+                            <div class="w-12 h-12 rounded-full bg-green-100 flex items-center justify-center">
+                                <i class="fas fa-check-circle text-green-600 text-xl"></i>
+                            </div>
+                        </div>
+                        <div class="mt-4 pt-4 border-t border-gray-100">
+                            <div class="flex items-center gap-1 text-green-600">
+                                <i class="fas fa-arrow-up text-xs"></i>
+                                <span class="text-sm">25% from last week</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Grid -->
+                <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+                    <!-- Left Column: Quick Report -->
+                    <div class="lg:col-span-2">
+                        <div class="card-enhanced">
+                            <h3 class="text-xl font-bold mb-6">Submit New Report</h3>
+                            
+                            <form id="report-form" class="form-enhanced">
+                                <!-- Problem Type -->
+                                <div class="form-group-enhanced">
+                                    <label class="form-label">Problem Type</label>
+                                    <div class="grid grid-cols-2 md:grid-cols-3 gap-2">
+                                        <button type="button" class="problem-type-btn active" data-type="Pothole">
+                                            <i class="fas fa-road"></i>
+                                            <span>Pothole</span>
+                                        </button>
+                                        <button type="button" class="problem-type-btn" data-type="Garbage">
+                                            <i class="fas fa-trash"></i>
+                                            <span>Garbage</span>
+                                        </button>
+                                        <button type="button" class="problem-type-btn" data-type="Light">
+                                            <i class="fas fa-lightbulb"></i>
+                                            <span>Street Light</span>
+                                        </button>
+                                        <button type="button" class="problem-type-btn" data-type="Water">
+                                            <i class="fas fa-tint"></i>
+                                            <span>Water Leak</span>
+                                        </button>
+                                        <button type="button" class="problem-type-btn" data-type="Noise">
+                                            <i class="fas fa-volume-up"></i>
+                                            <span>Noise</span>
+                                        </button>
+                                        <button type="button" class="problem-type-btn" data-type="Other">
+                                            <i class="fas fa-ellipsis-h"></i>
+                                            <span>Other</span>
+                                        </button>
+                                    </div>
+                                    <input type="hidden" id="problem-type" required>
+                                </div>
+
+                                <!-- Location -->
+                                <div class="form-group-enhanced">
+                                    <label for="location" class="form-label">Location</label>
+                                    <div class="relative">
+                                        <i class="fas fa-map-marker-alt absolute left-3 top-3 text-gray-400"></i>
+                                        <input type="text" id="location" class="form-input-enhanced pl-10" placeholder="Enter exact location or address" required>
+                                    </div>
+                                </div>
+
+                                <!-- Issue Description -->
+                                <div class="form-group-enhanced">
+                                    <label for="issue" class="form-label">Issue Description</label>
+                                    <textarea id="issue" class="form-input-enhanced" rows="3" placeholder="Describe the issue in detail..." required></textarea>
+                                </div>
+
+                                <!-- Priority & Photo -->
+                                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    <div class="form-group-enhanced">
+                                        <label for="priority" class="form-label">Priority Level</label>
+                                        <select id="priority" class="form-input-enhanced">
+                                            <option value="Low">Low Priority</option>
+                                            <option value="Medium" selected>Medium Priority</option>
+                                            <option value="High">High Priority</option>
+                                            <option value="Urgent">Urgent</option>
+                                        </select>
+                                    </div>
+
+                                    <div class="form-group-enhanced">
+                                        <label class="form-label">Add Photo (Optional)</label>
+                                        <div class="grid grid-cols-2 gap-2">
+                                            <button type="button" class="photo-action-btn" onclick="openCamera()">
+                                                <i class="fas fa-camera"></i>
+                                                <span>Take Photo</span>
+                                            </button>
+                                            <button type="button" class="photo-action-btn" onclick="document.getElementById('file-upload').click()">
+                                                <i class="fas fa-upload"></i>
+                                                <span>Upload</span>
+                                            </button>
+                                        </div>
+                                        <input type="file" id="file-upload" accept="image/*" style="display: none;" onchange="handleFileUpload(this.files[0])">
+                                    </div>
+                                </div>
+
+                                <!-- Photo Preview -->
+                                <div id="photo-preview" class="hidden">
+                                    <div class="mt-4 p-4 border border-gray-300 rounded-lg">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <span class="font-medium">Photo Preview</span>
+                                            <button type="button" onclick="removePhoto()" class="text-red-600 hover:text-red-700">
+                                                <i class="fas fa-times"></i>
+                                            </button>
+                                        </div>
+                                        <img id="preview-image" src="" alt="Preview" class="w-full h-48 object-cover rounded">
+                                    </div>
+                                </div>
+
+                                <!-- Submit Button -->
+                                <div class="form-group-enhanced mt-6">
+                                    <button type="submit" class="btn-enhanced btn-enhanced-primary w-full py-3">
+                                        <i class="fas fa-paper-plane"></i>
+                                        Submit Report
+                                    </button>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Right Column: Recent Activity -->
+                    <div class="lg:col-span-1">
+                        <!-- Recent Reports -->
+                        <div class="card-enhanced mb-6">
+                            <div class="flex items-center justify-between mb-4">
+                                <h3 class="text-xl font-bold">Recent Reports</h3>
+                                <button onclick="showMyReports()" class="text-primary-600 hover:text-primary-700 text-sm font-medium">
+                                    View All
+                                </button>
+                            </div>
+                            
+                            <div id="recent-reports-list" class="space-y-3">
+                                <!-- Recent reports will be loaded here -->
+                                <div class="text-center py-8 text-gray-500">
+                                    <i class="fas fa-file-alt text-4xl mb-3 opacity-30"></i>
+                                    <p>No recent reports</p>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Quick Stats -->
+                        <div class="card-enhanced">
+                            <h3 class="text-xl font-bold mb-4">Community Stats</h3>
+                            <div class="space-y-4">
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm font-medium">Report Resolution Rate</span>
+                                        <span class="text-sm font-bold text-green-600">89%</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-green-500 h-2 rounded-full" style="width: 89%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div>
+                                    <div class="flex justify-between mb-1">
+                                        <span class="text-sm font-medium">Average Response Time</span>
+                                        <span class="text-sm font-bold text-blue-600">2.4h</span>
+                                    </div>
+                                    <div class="w-full bg-gray-200 rounded-full h-2">
+                                        <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
+                                    </div>
+                                </div>
+                                
+                                <div class="pt-4 border-t border-gray-100">
+                                    <div class="flex items-center justify-center gap-4">
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold text-primary-600">1,234</div>
+                                            <div class="text-sm text-gray-600">Total Reports</div>
+                                        </div>
+                                        <div class="text-center">
+                                            <div class="text-2xl font-bold text-green-600">1,098</div>
+                                            <div class="text-sm text-gray-600">Resolved</div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- My Reports Screen -->
+        <div id="my-reports-screen" class="screen">
+            <!-- Header -->
+            <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
+                <div class="container mx-auto px-4 py-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center gap-4">
+                            <button onclick="showScreen('user-dashboard')" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <i class="fas fa-arrow-left"></i>
+                            </button>
+                            <div>
+                                <h1 class="text-xl font-bold">My Reports</h1>
+                                <p class="text-sm text-gray-500">Track all your submitted reports</p>
+                            </div>
+                        </div>
+                        
+                        <div class="flex items-center gap-3">
+                            <div class="relative">
+                                <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
+                                <input type="search" id="report-search" placeholder="Search reports..." 
+                                       class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64" 
+                                       oninput="filterReports(this.value)">
+                            </div>
+                            
+                            <select id="report-filter" class="border border-gray-300 rounded-lg px-3 py-2" onchange="filterByStatus(this.value)">
+                                <option value="all">All Status</option>
+                                <option value="pending">Pending</option>
+                                <option value="in-progress">In Progress</option>
+                                <option value="resolved">Resolved</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </header>
+
+            <!-- Main Content -->
+            <div class="container mx-auto px-4 py-6">
+                <!-- Stats Summary -->
+                <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+                    <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Total</p>
+                                <h3 class="text-2xl font-bold mt-1" id="total-count">0</h3>
+                            </div>
+                            <i class="fas fa-file-alt text-2xl opacity-80"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Pending</p>
+                                <h3 class="text-2xl font-bold mt-1" id="pending-count">0</h3>
+                            </div>
+                            <i class="fas fa-clock text-2xl opacity-80"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">In Progress</p>
+                                <h3 class="text-2xl font-bold mt-1" id="inprogress-count">0</h3>
+                            </div>
+                            <i class="fas fa-spinner text-2xl opacity-80"></i>
+                        </div>
+                    </div>
+                    
+                    <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
+                        <div class="flex items-center justify-between">
+                            <div>
+                                <p class="text-sm opacity-90">Resolved</p>
+                                <h3 class="text-2xl font-bold mt-1" id="resolved-count">0</h3>
+                            </div>
+                            <i class="fas fa-check-circle text-2xl opacity-80"></i>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reports List -->
                 <div class="card-enhanced">
-                    <h3 class="text-xl font-bold mb-4">Community Stats</h3>
-                    <div class="space-y-4">
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium">Report Resolution Rate</span>
-                                <span class="text-sm font-bold text-green-600">89%</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-green-500 h-2 rounded-full" style="width: 89%"></div>
-                            </div>
+                    <div class="overflow-x-auto">
+                        <table class="w-full">
+                            <thead>
+                                <tr class="border-b border-gray-200">
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Report ID</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Location</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Priority</th>
+                                    <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody id="reports-table-body">
+                                <!-- Reports will be loaded here -->
+                            </tbody>
+                        </table>
+                        
+                        <!-- Empty State -->
+                        <div id="empty-reports-state" class="text-center py-12 hidden">
+                            <i class="fas fa-file-alt text-5xl text-gray-300 mb-4"></i>
+                            <h3 class="text-lg font-semibold text-gray-600 mb-2">No reports found</h3>
+                            <p class="text-gray-500 mb-6">You haven't submitted any reports yet</p>
+                            <button onclick="showScreen('user-dashboard')" class="btn-enhanced btn-enhanced-primary">
+                                <i class="fas fa-plus"></i>
+                                Submit Your First Report
+                            </button>
                         </div>
                         
-                        <div>
-                            <div class="flex justify-between mb-1">
-                                <span class="text-sm font-medium">Average Response Time</span>
-                                <span class="text-sm font-bold text-blue-600">2.4h</span>
-                            </div>
-                            <div class="w-full bg-gray-200 rounded-full h-2">
-                                <div class="bg-blue-500 h-2 rounded-full" style="width: 75%"></div>
-                            </div>
+                        <!-- Loading State -->
+                        <div id="loading-reports" class="text-center py-12">
+                            <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
+                            <p class="mt-4 text-gray-600">Loading reports...</p>
                         </div>
-                        
-                        <div class="pt-4 border-t border-gray-100">
-                            <div class="flex items-center justify-center gap-4">
-                                <div class="text-center">
-                                    <div class="text-2xl font-bold text-primary-600">1,234</div>
-                                    <div class="text-sm text-gray-600">Total Reports</div>
-                                </div>
-                                <div class="text-center">
-                                    <div class="text-2xl font-bold text-green-600">1,098</div>
-                                    <div class="text-sm text-gray-600">Resolved</div>
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
-        <!-- Enhanced My Reports Screen -->
-<div id="my-reports-screen" class="screen">
-    <!-- Header -->
-    <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
-        <div class="container mx-auto px-4 py-3">
-            <div class="flex items-center justify-between">
-                <div class="flex items-center gap-4">
-                    <button onclick="showScreen('user-dashboard')" class="p-2 rounded-lg hover:bg-gray-100 transition-colors">
-                        <i class="fas fa-arrow-left"></i>
-                    </button>
-                    <div>
-                        <h1 class="text-xl font-bold">My Reports</h1>
-                        <p class="text-sm text-gray-500">Track all your submitted reports</p>
-                    </div>
-                </div>
-                
-                <div class="flex items-center gap-3">
-                    <div class="relative">
-                        <i class="fas fa-search absolute left-3 top-3 text-gray-400"></i>
-                        <input type="search" id="report-search" placeholder="Search reports..." 
-                               class="pl-10 pr-4 py-2 border border-gray-300 rounded-lg w-64" 
-                               oninput="filterReports(this.value)">
                     </div>
                     
-                    <select id="report-filter" class="border border-gray-300 rounded-lg px-3 py-2" onchange="filterByStatus(this.value)">
-                        <option value="all">All Status</option>
-                        <option value="pending">Pending</option>
-                        <option value="in-progress">In Progress</option>
-                        <option value="resolved">Resolved</option>
-                    </select>
+                    <!-- Pagination -->
+                    <div class="flex items-center justify-between border-t border-gray-200 px-4 py-3 mt-4">
+                        <div class="text-sm text-gray-600">
+                            Showing <span id="start-index">1</span> to <span id="end-index">10</span> of <span id="total-items">0</span> results
+                        </div>
+                        <div class="flex gap-2">
+                            <button id="prev-page" class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50" disabled>
+                                Previous
+                            </button>
+                            <button id="next-page" class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50" disabled>
+                                Next
+                            </button>
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
-    </header>
-
-    <!-- Main Content -->
-    <div class="container mx-auto px-4 py-6">
-        <!-- Stats Summary -->
-        <div class="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div class="bg-gradient-to-r from-blue-500 to-blue-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90">Total</p>
-                        <h3 class="text-2xl font-bold mt-1" id="total-count">0</h3>
-                    </div>
-                    <i class="fas fa-file-alt text-2xl opacity-80"></i>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90">Pending</p>
-                        <h3 class="text-2xl font-bold mt-1" id="pending-count">0</h3>
-                    </div>
-                    <i class="fas fa-clock text-2xl opacity-80"></i>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-r from-purple-500 to-purple-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90">In Progress</p>
-                        <h3 class="text-2xl font-bold mt-1" id="inprogress-count">0</h3>
-                    </div>
-                    <i class="fas fa-spinner text-2xl opacity-80"></i>
-                </div>
-            </div>
-            
-            <div class="bg-gradient-to-r from-green-500 to-green-600 rounded-xl p-4 text-white">
-                <div class="flex items-center justify-between">
-                    <div>
-                        <p class="text-sm opacity-90">Resolved</p>
-                        <h3 class="text-2xl font-bold mt-1" id="resolved-count">0</h3>
-                    </div>
-                    <i class="fas fa-check-circle text-2xl opacity-80"></i>
-                </div>
-            </div>
-        </div>
-
-        <!-- Reports List -->
-        <div class="card-enhanced">
-            <div class="overflow-x-auto">
-                <table class="w-full">
-                    <thead>
-                        <tr class="border-b border-gray-200">
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Report ID</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Type</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Location</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Date</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Status</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Priority</th>
-                            <th class="text-left py-3 px-4 text-sm font-semibold text-gray-600">Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="reports-table-body">
-                        <!-- Reports will be loaded here -->
-                    </tbody>
-                </table>
-                
-                <!-- Empty State -->
-                <div id="empty-reports-state" class="text-center py-12 hidden">
-                    <i class="fas fa-file-alt text-5xl text-gray-300 mb-4"></i>
-                    <h3 class="text-lg font-semibold text-gray-600 mb-2">No reports found</h3>
-                    <p class="text-gray-500 mb-6">You haven't submitted any reports yet</p>
-                    <button onclick="showScreen('user-dashboard')" class="btn-enhanced btn-enhanced-primary">
-                        <i class="fas fa-plus"></i>
-                        Submit Your First Report
-                    </button>
-                </div>
-                
-                <!-- Loading State -->
-                <div id="loading-reports" class="text-center py-12">
-                    <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
-                    <p class="mt-4 text-gray-600">Loading reports...</p>
-                </div>
-            </div>
-            
-            <!-- Pagination -->
-            <div class="flex items-center justify-between border-t border-gray-200 px-4 py-3 mt-4">
-                <div class="text-sm text-gray-600">
-                    Showing <span id="start-index">1</span> to <span id="end-index">10</span> of <span id="total-items">0</span> results
-                </div>
-                <div class="flex gap-2">
-                    <button id="prev-page" class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50" disabled>
-                        Previous
-                    </button>
-                    <button id="next-page" class="px-3 py-1 border border-gray-300 rounded disabled:opacity-50" disabled>
-                        Next
-                    </button>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
 
         <!-- Admin Dashboard -->
         <div id="admin-dashboard" class="screen">
             <div class="admin-container">
-    <div class="header">
-        <div class="user-info">
-            <h2 id="admin-name">BAYAN Admin Dashboard</h2>
-            <p>Manage community reports</p>
-        </div>
-        <div class="header-actions">
-            <button class="icon-btn" onclick="showAdminNotifications()">
-                <i class="fas fa-bell"></i>
-                <span id="admin-notification-badge" class="badge hidden">0</span>
-            </button>
-            <div class="dropdown-container">
-                <button class="three-dot-menu" onclick="toggleAdminDropdown()">
-                    <i class="fas fa-ellipsis-v"></i>
-                </button>
-                <div id="admin-dropdown-menu" class="dropdown-menu hidden">
-                    <button class="dropdown-item" onclick="refreshAdminDashboard()">
-                        <i class="fas fa-sync-alt"></i>
-                        Refresh
-                    </button>
-                    <button class="dropdown-item" onclick="logout()">
-                        <i class="fas fa-sign-out-alt"></i>
-                        Logout
-                    </button>
+                <div class="header">
+                    <div class="user-info">
+                        <h2 id="admin-name">BAYAN Admin Dashboard</h2>
+                        <p>Manage community reports</p>
+                    </div>
+                    <div class="header-actions">
+                        <button class="icon-btn" onclick="showAdminNotifications()">
+                            <i class="fas fa-bell"></i>
+                            <span id="admin-notification-badge" class="badge hidden">0</span>
+                        </button>
+                        <div class="dropdown-container">
+                            <button class="three-dot-menu" onclick="toggleAdminDropdown()">
+                                <i class="fas fa-ellipsis-v"></i>
+                            </button>
+                            <div id="admin-dropdown-menu" class="dropdown-menu hidden">
+                                <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                                    <i class="fas fa-sync-alt"></i>
+                                    Refresh
+                                </button>
+                                <button class="dropdown-item" onclick="logout()">
+                                    <i class="fas fa-sign-out-alt"></i>
+                                    Logout
+                                </button>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
-        </div>
-    </div>
 
                 <!-- Rest of your admin dashboard content -->
                 <div class="admin-stats">
@@ -858,7 +1069,7 @@
             </div>
         </div>
 
-        <!-- Camera Modal - Moved to bottom of body to ensure proper rendering -->
+        <!-- Camera Modal -->
         <div id="camera-modal" class="modal hidden">
             <div class="modal-content">
                 <div class="modal-header">
@@ -1001,7 +1212,6 @@
                 </div>
             </div>
         </div>
-        
     </div>
 
     <!-- Snowflakes Container -->
@@ -1147,52 +1357,50 @@
         window.removePhoto = removePhoto;
     </script>
 
-        <script>
-    // Emergency fix: Show content immediately
-    document.addEventListener('DOMContentLoaded', function() {
-        console.log('Emergency fix applied');
+    <script>
+        // Emergency fix: Show content immediately
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Emergency fix applied');
+            
+            // Hide any loading screen if it exists
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+            }
+            
+            // Ensure login screen is visible
+            const screens = document.querySelectorAll('.screen');
+            screens.forEach(screen => screen.classList.remove('active'));
+            
+            const loginScreen = document.getElementById('login-screen');
+            if (loginScreen) {
+                loginScreen.classList.add('active');
+                console.log('Login screen activated');
+            }
+            
+            // Remove snowflake background if it's blocking
+            const snowflakes = document.querySelector('.snowflakes');
+            if (snowflakes) {
+                snowflakes.style.opacity = '0.1';
+            }
+        });
         
-        // Hide any loading screen if it exists
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-            loadingScreen.classList.add('hidden');
-        }
-        
-        // Ensure login screen is visible
-        const screens = document.querySelectorAll('.screen');
-        screens.forEach(screen => screen.classList.remove('active'));
-        
-        const loginScreen = document.getElementById('login-screen');
-        if (loginScreen) {
-            loginScreen.classList.add('active');
-            console.log('Login screen activated');
-        }
-        
-        // Remove snowflake background if it's blocking
-        const snowflakes = document.querySelector('.snowflakes');
-        if (snowflakes) {
-            snowflakes.style.opacity = '0.1';
-        }
-    });
+        // Backup: Force show after 3 seconds
+        setTimeout(function() {
+            console.log('Backup timeout triggered');
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.remove();
+            }
+            
+            const loginScreen = document.getElementById('login-screen');
+            if (loginScreen) {
+                loginScreen.classList.add('active');
+            }
+        }, 3000);
+    </script>
     
-    // Backup: Force show after 3 seconds
-    setTimeout(function() {
-        console.log('Backup timeout triggered');
-        const loadingScreen = document.getElementById('loading-screen');
-        if (loadingScreen) {
-            loadingScreen.remove();
-        }
-        
-        const loginScreen = document.getElementById('login-screen');
-        if (loginScreen) {
-            loginScreen.classList.add('active');
-        }
-    }, 3000);
-</script>
+    <!-- Enhanced UI JavaScript -->
+    <script src="{{ url_for('static', filename='enhanced-ui.js') }}"></script>
 </body>
 </html>
-
-
-
-
-
