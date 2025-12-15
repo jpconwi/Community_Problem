@@ -199,34 +199,41 @@
         <!-- User Dashboard -->
         <div id="user-dashboard" class="screen">
             <div class="dashboard-container">
-                <div class="header">
-                    <div class="user-info">
-                        <h2 id="user-name">User</h2>
-                        <p>Welcome to BAYAN!</p>
-                    </div>
-                    <div class="header-actions">
-                        <button class="icon-btn" onclick="showNotifications()">
-                            <i class="fas fa-bell"></i>
-                            <span id="notification-badge" class="badge hidden">0</span>
-                        </button>
-                        <div class="dropdown-container">
-                            <!-- FIXED: Added logout function directly to dropdown items -->
-                            <button class="three-dot-menu" onclick="toggleDropdown()">
-                                <i class="fas fa-ellipsis-v"></i>
-                            </button>
-                            <div id="user-dropdown" class="dropdown-menu hidden">
-                                <button class="dropdown-item" onclick="showMyReports()">
-                                    <i class="fas fa-list"></i>
-                                    My Reports
-                                </button>
-                                <button class="dropdown-item" onclick="logout()">
-                                    <i class="fas fa-sign-out-alt"></i>
-                                    Logout
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
+               <div class="header">
+    <div class="user-info">
+        <h2 id="user-name">User</h2>
+        <p>Welcome to BAYAN!</p>
+    </div>
+    <div class="header-actions">
+        <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+            <i class="fas fa-moon"></i>
+            <i class="fas fa-sun"></i>
+        </button>
+        <button class="icon-btn" onclick="showNotifications()">
+            <i class="fas fa-bell"></i>
+            <span id="notification-badge" class="badge hidden">0</span>
+        </button>
+        <div class="dropdown-container">
+            <button class="three-dot-menu" onclick="toggleDropdown()">
+                <i class="fas fa-ellipsis-v"></i>
+            </button>
+            <div id="user-dropdown" class="dropdown-menu hidden">
+                <button class="dropdown-item" onclick="showMyReports()">
+                    <i class="fas fa-list"></i>
+                    My Reports
+                </button>
+                <button class="dropdown-item" onclick="toggleDarkMode()">
+                    <i class="fas fa-moon"></i>
+                    Toggle Dark Mode
+                </button>
+                <button class="dropdown-item" onclick="logout()">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
 
                 <div class="stats-card">
                     <div class="stat-item">
@@ -753,6 +760,7 @@
 </script>
 </body>
 </html>
+
 
 
 
