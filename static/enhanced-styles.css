@@ -887,3 +887,298 @@ body {
     padding-left: env(safe-area-inset-left);
     padding-right: env(safe-area-inset-right);
 }
+
+/* enhanced-styles.css */
+
+/* Enhanced UI Components */
+
+/* Enhanced Cards */
+.card-enhanced {
+    background: var(--surface-color);
+    border-radius: var(--radius-lg);
+    padding: var(--space-6);
+    box-shadow: var(--shadow-md);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-base);
+    overflow: hidden;
+    position: relative;
+}
+
+.card-enhanced::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: var(--gradient-primary);
+    border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+}
+
+.card-enhanced:hover {
+    transform: translateY(-4px);
+    box-shadow: var(--shadow-xl);
+    border-color: var(--primary-300);
+}
+
+/* Enhanced Forms */
+.form-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.form-group-enhanced {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.form-label {
+    font-weight: 500;
+    color: var(--text-secondary);
+    font-size: 0.875rem;
+}
+
+.form-input-enhanced {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    font-size: 1rem;
+    transition: all var(--transition-base);
+    background: var(--surface-color);
+    color: var(--text-primary);
+}
+
+.form-input-enhanced:focus {
+    outline: none;
+    border-color: var(--primary-500);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+}
+
+.form-input-enhanced::placeholder {
+    color: var(--text-muted);
+}
+
+/* Enhanced Buttons */
+.btn-enhanced {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    font-size: 0.875rem;
+    cursor: pointer;
+    transition: all var(--transition-base);
+    border: 2px solid transparent;
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-enhanced-primary {
+    background: var(--gradient-primary);
+    color: white;
+    box-shadow: var(--shadow-md);
+}
+
+.btn-enhanced-primary:hover {
+    background: var(--gradient-primary-hover);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+.btn-enhanced-outline {
+    background: transparent;
+    border-color: var(--primary-300);
+    color: var(--primary-600);
+}
+
+.btn-enhanced-outline:hover {
+    background: var(--primary-50);
+    border-color: var(--primary-500);
+    color: var(--primary-700);
+}
+
+/* Problem Type Buttons */
+.problem-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.problem-type-btn:hover {
+    border-color: var(--primary-400);
+    color: var(--primary-600);
+}
+
+.problem-type-btn.active {
+    border-color: var(--primary-500);
+    background: var(--primary-50);
+    color: var(--primary-700);
+}
+
+.problem-type-btn i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.problem-type-btn span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Photo Action Buttons */
+.photo-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 2px solid var(--border-color);
+    border-radius: var(--radius-md);
+    background: var(--surface-color);
+    color: var(--text-secondary);
+    font-weight: 500;
+    transition: all var(--transition-base);
+    cursor: pointer;
+}
+
+.photo-action-btn:hover {
+    border-color: var(--primary-400);
+    color: var(--primary-600);
+    background: var(--primary-50);
+}
+
+/* Report Status Badges */
+.report-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.report-status-pending {
+    background: var(--warning-light);
+    color: var(--warning-dark);
+}
+
+.report-status-in-progress {
+    background: var(--info-light);
+    color: var(--info-dark);
+}
+
+.report-status-resolved {
+    background: var(--success-light);
+    color: var(--success-dark);
+}
+
+/* Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 0.5rem;
+    background: var(--border-color);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+/* Recent Report Items */
+.recent-report-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--border-color);
+    transition: all var(--transition-base);
+}
+
+.recent-report-item:hover {
+    border-color: var(--primary-300);
+    background: var(--primary-50);
+}
+
+/* Stat Cards with Icons */
+.stat-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+/* Gradient Backgrounds */
+.bg-gradient-primary {
+    background: linear-gradient(135deg, var(--primary-500) 0%, var(--primary-700) 100%);
+}
+
+.bg-gradient-to-r {
+    background: linear-gradient(to right, var(--from-color), var(--to-color));
+}
+
+/* Responsive Utilities */
+@media (max-width: 768px) {
+    .container {
+        padding: 0 0.5rem;
+    }
+    
+    .problem-type-btn {
+        padding: 0.75rem 0.25rem;
+    }
+    
+    .problem-type-btn i {
+        font-size: 1.25rem;
+    }
+    
+    .photo-action-btn span {
+        font-size: 0.75rem;
+    }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .problem-type-btn {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .problem-type-btn.active {
+    background: rgba(37, 99, 235, 0.2);
+    border-color: var(--primary-500);
+    color: var(--primary-300);
+}
+
+[data-theme="dark"] .photo-action-btn {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .btn-enhanced-outline {
+    border-color: var(--primary-700);
+    color: var(--primary-300);
+}
+
+[data-theme="dark"] .btn-enhanced-outline:hover {
+    background: rgba(37, 99, 235, 0.1);
+    border-color: var(--primary-400);
+}
