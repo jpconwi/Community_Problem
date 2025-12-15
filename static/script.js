@@ -475,72 +475,278 @@ async function showAdminNotifications() {
     await loadAdminNotifications();
 }
 
+// Updated loadAdminNotifications function
 async function loadAdminNotifications() {
     try {
-        const response = await fetch('/api/notifications');
-        const data = await response.json();
-        
         const notificationsList = document.getElementById('admin-notifications-list');
         
-        if (data.success && data.notifications.length > 0) {
-            notificationsList.innerHTML = data.notifications.map(notification => `
-                <div class="notification-item ${notification.is_read ? '' : 'unread'}" 
-                     onclick="markAdminNotificationAsRead('${notification.id}')">
-                    <div class="notification-header">
-                        <div class="notification-title">
-                            <i class="fas ${getAdminNotificationIcon(notification.type)}"></i>
-                            ${notification.title}
+        // Show loading state
+        notificationsList.innerHTML = `
+            <div style="text-align: center; padding: 40px 20px;">
+                <div class="loading-spinner" style="width: 40px; height: 40px; margin: 0 auto 16px;"></div>
+                <p style="color: var(--text-muted);">Loading notifications...</p>
+            </div>
+        `;
+        
+        // Get new reports count
+        const response = await fetch('/api/new_reports_count');
+        const data = await response.json();
+        
+        if (data.success && data.count > 0) {
+            // Get detailed reports info
+            const reportsResponse = await fetch('/api/all_reports');
+            const reportsData = await reportsResponse.json();
+            
+            if (reportsData.success) {
+                const yesterday = new Date();
+                yesterday.setHours(yesterday.getHours() - 24);
+                
+                const newReports = reportsData.reports.filter(report => {
+                    const reportDate = new Date(report.date);
+                    return reportDate >= yesterday;
+                });
+                
+                // Categorize reports
+                const newReportsList = newReports.filter(r => r.status === 'Pending');
+                const updatedReports = newReports.filter(r => r.status === 'In Progress');
+                const resolvedReports = newReports.filter(r => r.status === 'Resolved');
+                const urgentReports = newReports.filter(r => r.priority === 'Urgent' || r.priority === 'High');
+                
+                notificationsList.innerHTML = `
+                    <div class="notification-summary">
+                        <div class="summary-stats">
+                            <div class="summary-stat">
+                                <span class="summary-stat-value">${data.count}</span>
+                                <span class="summary-stat-label">Total New</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value">${newReportsList.length}</span>
+                                <span class="summary-stat-label">Pending</span>
+                            </div>
+                            <div class="summary-stat">
+                                <span class="summary-stat-value">${urgentReports.length}</span>
+                                <span class="summary-stat-label">Urgent</span>
+                            </div>
                         </div>
-                        <div class="notification-time">
-                            ${formatTimeAgo(notification.created_at)}
-                        </div>
-                    </div>
-                    <div class="notification-message">${notification.message}</div>
-                    <div class="notification-meta">
-                        <span class="notification-tag tag-${notification.priority || 'admin'}">
-                            ${notification.priority || 'Admin'}
-                        </span>
-                        ${notification.report_id ? `
-                            <span class="notification-tag tag-user">
-                                Report #${notification.report_id}
-                            </span>
-                        ` : ''}
-                    </div>
-                    ${notification.report_id ? `
-                        <div class="notification-actions">
-                            <button class="btn btn-sm btn-primary notification-action-btn"
-                                    onclick="event.stopPropagation(); viewReport(${notification.report_id})">
-                                <i class="fas fa-eye"></i> View Report
+                        <div class="summary-actions">
+                            <button class="btn btn-sm btn-outline" onclick="markAllNotificationsAsRead()" style="flex: 1;">
+                                <i class="fas fa-check-double"></i> Mark All Read
+                            </button>
+                            <button class="btn btn-sm btn-primary" onclick="loadAllReports()" style="flex: 1;">
+                                <i class="fas fa-list"></i> View All Reports
                             </button>
                         </div>
-                    ` : ''}
-                </div>
-            `).join('');
+                    </div>
+                    
+                    <div class="notification-categories">
+                        <button class="notification-category-btn active" onclick="filterNotifications('all')">
+                            All (${data.count})
+                        </button>
+                        <button class="notification-category-btn" onclick="filterNotifications('new')">
+                            New Reports (${newReportsList.length})
+                        </button>
+                        <button class="notification-category-btn" onclick="filterNotifications('updates')">
+                            Updates (${updatedReports.length})
+                        </button>
+                        <button class="notification-category-btn" onclick="filterNotifications('resolved')">
+                            Resolved (${resolvedReports.length})
+                        </button>
+                        <button class="notification-category-btn" onclick="filterNotifications('urgent')">
+                            Urgent (${urgentReports.length})
+                        </button>
+                    </div>
+                    
+                    <div id="notifications-container" class="notifications-container">
+                        ${renderNotificationItems(newReports)}
+                    </div>
+                `;
+            }
         } else {
             notificationsList.innerHTML = `
-                <div class="empty-state">
+                <div class="admin-notifications-empty">
                     <i class="fas fa-bell-slash"></i>
-                    <h4>No Notifications</h4>
-                    <p>No new notifications at this time.</p>
+                    <h4 style="margin-bottom: 8px; color: var(--text-primary);">No New Notifications</h4>
+                    <p style="margin-bottom: 20px; max-width: 300px; margin-left: auto; margin-right: auto;">
+                        You're all caught up! There are no new reports or updates at the moment.
+                    </p>
+                    <button class="btn btn-outline" onclick="loadAllReports()">
+                        <i class="fas fa-chart-bar"></i>
+                        View Dashboard
+                    </button>
                 </div>
             `;
         }
         
+        // Update badge count
         await loadAdminNotificationsCount();
+        
     } catch (error) {
         console.error('Failed to load admin notifications:', error);
         const notificationsList = document.getElementById('admin-notifications-list');
         notificationsList.innerHTML = `
-            <div class="error-state">
-                <i class="fas fa-exclamation-triangle"></i>
-                <h4>Unable to Load Notifications</h4>
-                <p>Please check your connection and try again.</p>
-                <button class="btn btn-primary" onclick="loadAdminNotifications()">
-                    <i class="fas fa-redo"></i> Try Again
+            <div class="admin-notifications-empty">
+                <i class="fas fa-exclamation-triangle" style="color: #ef4444;"></i>
+                <h4 style="margin-bottom: 8px; color: var(--text-primary);">Unable to Load</h4>
+                <p style="margin-bottom: 20px;">Failed to load notifications. Please check your connection.</p>
+                <button class="btn btn-outline" onclick="loadAdminNotifications()">
+                    <i class="fas fa-redo"></i>
+                    Try Again
                 </button>
             </div>
         `;
     }
+}
+
+// Helper function to render notification items
+function renderNotificationItems(reports) {
+    return reports.map(report => {
+        const reportDate = new Date(report.date);
+        const timeAgo = formatTimeAgo(report.date);
+        const isNew = (new Date() - reportDate) <= (24 * 60 * 60 * 1000);
+        
+        let iconClass = 'notification-new';
+        let icon = 'fa-plus-circle';
+        let title = 'New Report Submitted';
+        
+        if (report.status === 'In Progress') {
+            iconClass = 'notification-update';
+            icon = 'fa-sync-alt';
+            title = 'Report Updated';
+        } else if (report.status === 'Resolved') {
+            iconClass = 'notification-resolved';
+            icon = 'fa-check-circle';
+            title = 'Report Resolved';
+        }
+        
+        if (report.priority === 'Urgent' || report.priority === 'High') {
+            iconClass = 'notification-urgent';
+            icon = 'fa-exclamation-triangle';
+            title = 'Urgent Report';
+        }
+        
+        return `
+            <div class="admin-notification-item ${isNew ? 'unread' : ''}" onclick="viewReport(${report.id})">
+                ${isNew ? '<div class="notification-badge"></div>' : ''}
+                <div class="admin-notification-icon ${iconClass}">
+                    <i class="fas ${icon}"></i>
+                </div>
+                <div class="admin-notification-content">
+                    <div class="notification-header">
+                        <div class="notification-title">${title}</div>
+                        <div class="notification-time">
+                            <i class="fas fa-clock"></i> ${timeAgo}
+                        </div>
+                    </div>
+                    <div class="notification-message">
+                        <strong>${report.problem_type}</strong> reported at ${report.location}
+                    </div>
+                    <div class="notification-details">
+                        <div class="notification-detail-item">
+                            <i class="fas fa-user"></i>
+                            <span>${report.username}</span>
+                        </div>
+                        <div class="notification-detail-item">
+                            <i class="fas fa-flag"></i>
+                            <span>${report.priority} Priority</span>
+                        </div>
+                        <div class="notification-detail-item">
+                            <i class="fas fa-tag"></i>
+                            <span class="status-${report.status.toLowerCase().replace(' ', '-')}">${report.status}</span>
+                        </div>
+                    </div>
+                    <div class="notification-actions">
+                        <button class="notification-action-btn" onclick="event.stopPropagation(); viewReport(${report.id})">
+                            <i class="fas fa-eye"></i> View
+                        </button>
+                        <button class="notification-action-btn primary" onclick="event.stopPropagation(); updateReportStatus(${report.id})">
+                            <i class="fas fa-edit"></i> Update
+                        </button>
+                    </div>
+                </div>
+            </div>
+        `;
+    }).join('');
+}
+
+// Helper function to format time ago
+function formatTimeAgo(dateString) {
+    const date = new Date(dateString);
+    const now = new Date();
+    const diffInMinutes = Math.floor((now - date) / (1000 * 60));
+    const diffInHours = Math.floor(diffInMinutes / 60);
+    const diffInDays = Math.floor(diffInHours / 24);
+    
+    if (diffInMinutes < 1) return 'Just now';
+    if (diffInMinutes < 60) return `${diffInMinutes}m ago`;
+    if (diffInHours < 24) return `${diffInHours}h ago`;
+    if (diffInDays < 7) return `${diffInDays}d ago`;
+    return date.toLocaleDateString();
+}
+
+// Notification filtering function
+function filterNotifications(filterType) {
+    const categoryBtns = document.querySelectorAll('.notification-category-btn');
+    categoryBtns.forEach(btn => btn.classList.remove('active'));
+    
+    const clickedBtn = event.target.closest('.notification-category-btn');
+    clickedBtn.classList.add('active');
+    
+    const notificationItems = document.querySelectorAll('.admin-notification-item');
+    notificationItems.forEach(item => {
+        switch(filterType) {
+            case 'new':
+                item.style.display = item.querySelector('.fa-plus-circle, .fa-exclamation-triangle') ? '' : 'none';
+                break;
+            case 'updates':
+                item.style.display = item.querySelector('.fa-sync-alt') ? '' : 'none';
+                break;
+            case 'resolved':
+                item.style.display = item.querySelector('.fa-check-circle') ? '' : 'none';
+                break;
+            case 'urgent':
+                item.style.display = item.querySelector('.fa-exclamation-triangle') ? '' : 'none';
+                break;
+            default:
+                item.style.display = '';
+        }
+    });
+}
+
+// Mark all as read function
+function markAllNotificationsAsRead() {
+    const unreadItems = document.querySelectorAll('.admin-notification-item.unread');
+    unreadItems.forEach(item => {
+        item.classList.remove('unread');
+        const badge = item.querySelector('.notification-badge');
+        if (badge) badge.remove();
+    });
+    
+    // Update badge count
+    document.getElementById('admin-notification-badge').classList.add('hidden');
+    
+    showSnackbar('All notifications marked as read', 'success');
+}
+
+// View report function
+function viewReport(reportId) {
+    // Navigate to admin dashboard and highlight the report
+    showScreen('admin-dashboard');
+    setTimeout(() => {
+        // Scroll to and highlight the report
+        const reportElement = document.querySelector(`[data-report-id="${reportId}"]`);
+        if (reportElement) {
+            reportElement.scrollIntoView({ behavior: 'smooth' });
+            reportElement.style.animation = 'highlight-pulse 2s ease';
+        }
+    }, 100);
+}
+
+// Update report status function
+async function updateReportStatus(reportId) {
+    const modal = document.getElementById('resolution-modal');
+    modal.dataset.reportId = reportId;
+    modal.classList.remove('hidden');
+    document.getElementById('auditor-name').focus();
 }
 
 // Notification Helper Functions
@@ -1562,3 +1768,4 @@ window.deleteReport = deleteReport;
 window.refreshAdminDashboard = refreshAdminDashboard;
 window.closeHelpModal = closeHelpModal;
 window.cancelResolution = cancelResolution;
+
