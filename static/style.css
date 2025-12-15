@@ -2079,3 +2079,151 @@ input, select, textarea {
     opacity: 1 !important;
 }
 
+/* Ensure both user and admin three-dot menus have same style */
+.dashboard-container .three-dot-menu,
+.admin-container .three-dot-menu {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-container .three-dot-menu:hover,
+.admin-container .three-dot-menu:hover {
+    background: var(--background-color);
+    color: var(--primary-color);
+}
+
+.dashboard-container .three-dot-menu:active,
+.admin-container .three-dot-menu:active {
+    transform: scale(0.95);
+}
+
+/* Dropdown menu consistency */
+.dashboard-container .dropdown-menu,
+.admin-container .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: 1002;
+    margin-top: 8px;
+    min-width: 160px;
+    overflow: hidden;
+    animation: dropdownSlideIn 0.2s ease;
+}
+
+/* Dropdown item consistency */
+.dashboard-container .dropdown-item,
+.admin-container .dropdown-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    width: 100%;
+    padding: 12px 16px;
+    border: none;
+    background: none;
+    color: var(--text-primary);
+    cursor: pointer;
+    font-size: var(--text-sm);
+    font-family: inherit;
+    text-align: left;
+    transition: all 0.2s ease;
+    border-bottom: 1px solid var(--border-color);
+    text-decoration: none;
+    white-space: nowrap;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.dashboard-container .dropdown-item:last-child,
+.admin-container .dropdown-item:last-child {
+    border-bottom: none;
+}
+
+.dashboard-container .dropdown-item:hover,
+.admin-container .dropdown-item:hover {
+    background: var(--primary-light);
+    color: var(--primary-color);
+}
+
+.dashboard-container .dropdown-item i,
+.admin-container .dropdown-item i {
+    width: 16px;
+    text-align: center;
+    font-size: var(--text-base);
+    color: var(--text-muted);
+}
+
+.dashboard-container .dropdown-item:hover i,
+.admin-container .dropdown-item:hover i {
+    color: var(--primary-color);
+}
+
+/* Make sure the dropdown is visible when not hidden */
+.dashboard-container .dropdown-menu:not(.hidden),
+.admin-container .dropdown-menu:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Remove any admin-specific dropdown overrides that might conflict */
+.admin-container .admin-dropdown-btn,
+.admin-container .admin-dropdown-menu,
+.admin-container .admin-dropdown-item,
+.admin-container .admin-dropdown-container,
+.admin-container .admin-dropdown-arrow {
+    /* These should be removed if they exist */
+}
+
+/* If there are specific admin header styles overriding, reset them */
+.admin-container .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: nowrap;
+}
+
+.admin-container .header-actions .icon-btn {
+    background: none;
+    border: none;
+    font-size: var(--text-lg);
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: var(--space-sm);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    min-width: 44px;
+    min-height: 44px;
+    -webkit-tap-highlight-color: transparent;
+    flex-shrink: 0;
+}
+
+.admin-container .header-actions .icon-btn:active {
+    background: var(--background-color);
+    color: var(--primary-color);
+}
+
+/* Ensure admin dropdown positioning is correct */
+.admin-container .dropdown-container {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+}
