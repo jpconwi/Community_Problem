@@ -1,14 +1,8 @@
 // enhanced-ui.js - Enhanced UI Functions
 
-let currentPage = 1;
-const itemsPerPage = 10;
-
 // Initialize Enhanced UI
 function initEnhancedUI() {
     console.log('🚀 Initializing Enhanced UI...');
-    
-    // Setup dark mode
-    initDarkMode();
     
     // Setup problem type buttons
     setupProblemTypeButtons();
@@ -16,60 +10,18 @@ function initEnhancedUI() {
     // Setup form validation
     setupFormValidation();
     
-    // Load initial data
-    if (currentUser) {
+    // Setup event listeners
+    setupEnhancedEventListeners();
+    
+    // Initialize dark mode
+    initDarkMode();
+    
+    // Load initial data if user is logged in
+    if (window.currentUser) {
         updateUserInitials();
         loadDashboardStats();
         loadRecentReports();
     }
-    
-    // Setup event listeners
-    setupEnhancedEventListeners();
-}
-
-// Initialize Dark Mode
-function initDarkMode() {
-    const isDarkMode = localStorage.getItem('darkMode') === 'true';
-    
-    if (isDarkMode) {
-        document.documentElement.setAttribute('data-theme', 'dark');
-        updateDarkModeIcons(true);
-    }
-    
-    // Add event listener for dark mode toggle
-    document.querySelectorAll('[onclick*="toggleDarkMode"]').forEach(btn => {
-        btn.addEventListener('click', toggleDarkMode);
-    });
-}
-
-// Toggle Dark Mode
-function toggleDarkMode() {
-    const html = document.documentElement;
-    const isDarkMode = html.getAttribute('data-theme') === 'dark';
-    
-    if (isDarkMode) {
-        html.removeAttribute('data-theme');
-        localStorage.setItem('darkMode', 'false');
-        updateDarkModeIcons(false);
-        showToast('Light mode enabled', 'Switched to light theme', 'info');
-    } else {
-        html.setAttribute('data-theme', 'dark');
-        localStorage.setItem('darkMode', 'true');
-        updateDarkModeIcons(true);
-        showToast('Dark mode enabled', 'Switched to dark theme', 'info');
-    }
-}
-
-// Update Dark Mode Icons
-function updateDarkModeIcons(isDark) {
-    document.querySelectorAll('.fa-moon, .fa-sun').forEach(icon => {
-        if (icon.classList.contains('fa-moon')) {
-            icon.style.display = isDark ? 'none' : 'inline-block';
-        }
-        if (icon.classList.contains('fa-sun')) {
-            icon.style.display = isDark ? 'inline-block' : 'none';
-        }
-    });
 }
 
 // Setup Problem Type Buttons
@@ -86,7 +38,9 @@ function setupProblemTypeButtons() {
             this.classList.add('active');
             
             // Update hidden input value
-            hiddenInput.value = this.dataset.type;
+            if (hiddenInput) {
+                hiddenInput.value = this.dataset.type;
+            }
         });
     });
 }
@@ -94,7 +48,7 @@ function setupProblemTypeButtons() {
 // Setup Enhanced Event Listeners
 function setupEnhancedEventListeners() {
     // User menu toggle
-    const userMenuBtn = document.querySelector('[onclick="toggleUserMenu"]');
+    const userMenuBtn = document.querySelector('[onclick*="toggleUserMenu"]');
     if (userMenuBtn) {
         userMenuBtn.addEventListener('click', toggleUserMenu);
     }
@@ -102,16 +56,38 @@ function setupEnhancedEventListeners() {
     // Search functionality
     const searchInput = document.getElementById('report-search');
     if (searchInput) {
-        searchInput.addEventListener('input', debounce(filterReports, 300));
+        searchInput.addEventListener('input', function(e) {
+            filterReports(e.target.value);
+        });
+    }
+    
+    // Status filter
+    const statusFilter = document.getElementById('report-filter');
+    if (statusFilter) {
+        statusFilter.addEventListener('change', function(e) {
+            filterByStatus(e.target.value);
+        });
     }
     
     // Pagination
     const prevBtn = document.getElementById('prev-page');
     const nextBtn = document.getElementById('next-page');
-    if (prevBtn && nextBtn) {
+    if (prevBtn) {
         prevBtn.addEventListener('click', goToPrevPage);
+    }
+    if (nextBtn) {
         nextBtn.addEventListener('click', goToNextPage);
     }
+    
+    // Close dropdowns when clicking outside
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.user-menu') && !event.target.closest('[onclick*="toggleUserMenu"]')) {
+            const dropdown = document.getElementById('user-dropdown');
+            if (dropdown && !dropdown.classList.contains('hidden')) {
+                dropdown.classList.add('hidden');
+            }
+        }
+    });
 }
 
 // Toggle User Menu
@@ -124,63 +100,67 @@ function toggleUserMenu() {
 
 // Update User Initials
 function updateUserInitials() {
-    const initials = getInitials(currentUser?.username || 'User');
+    const user = window.currentUser;
+    if (!user || !user.username) return;
+    
+    const initials = getInitials(user.username);
     
     document.querySelectorAll('#user-avatar, .user-avatar-large').forEach(el => {
-        if (el.id === 'user-avatar' || el.classList.contains('user-avatar-large')) {
-            el.textContent = initials;
-        }
+        el.textContent = initials;
     });
+    
+    // Update user name in dropdown
+    const dropdownName = document.getElementById('dropdown-user-name');
+    const userName = document.getElementById('user-name');
+    const welcomeName = document.getElementById('welcome-name');
+    
+    if (dropdownName) dropdownName.textContent = user.username;
+    if (userName) userName.textContent = user.username;
+    if (welcomeName) welcomeName.textContent = user.username.split(' ')[0];
 }
 
 function getInitials(name) {
     return name.split(' ').map(n => n[0]).join('').toUpperCase().substring(0, 2);
 }
 
-// Show Toast Notification
-function showToast(title, message, type = 'info') {
-    // Create toast container if it doesn't exist
-    let container = document.getElementById('toast-container');
-    if (!container) {
-        container = document.createElement('div');
-        container.id = 'toast-container';
-        container.className = 'fixed bottom-4 right-4 z-50 flex flex-col gap-2';
-        document.body.appendChild(container);
+// Initialize Dark Mode
+function initDarkMode() {
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    
+    if (isDarkMode) {
+        document.documentElement.setAttribute('data-theme', 'dark');
+        updateDarkModeIcons(true);
     }
+}
+
+// Toggle Dark Mode
+function toggleDarkMode() {
+    const html = document.documentElement;
+    const isDarkMode = html.getAttribute('data-theme') === 'dark';
     
-    // Create toast
-    const toast = document.createElement('div');
-    toast.className = `toast toast-${type} bg-white border-l-4 rounded-lg shadow-lg p-4 min-w-80 max-w-md animate-slide-in`;
-    
-    const icons = {
-        success: 'fa-check-circle text-green-500',
-        error: 'fa-exclamation-circle text-red-500',
-        warning: 'fa-exclamation-triangle text-yellow-500',
-        info: 'fa-info-circle text-blue-500'
-    };
-    
-    toast.innerHTML = `
-        <div class="flex items-start gap-3">
-            <i class="fas ${icons[type]} text-xl mt-0.5"></i>
-            <div class="flex-1">
-                <div class="font-semibold text-gray-800">${title}</div>
-                <div class="text-sm text-gray-600 mt-1">${message}</div>
-            </div>
-            <button onclick="this.parentElement.parentElement.remove()" class="text-gray-400 hover:text-gray-600">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-    `;
-    
-    container.appendChild(toast);
-    
-    // Auto-remove after 5 seconds
-    setTimeout(() => {
-        if (toast.parentElement) {
-            toast.classList.add('animate-slide-out');
-            setTimeout(() => toast.remove(), 300);
+    if (isDarkMode) {
+        html.removeAttribute('data-theme');
+        localStorage.setItem('darkMode', 'false');
+        updateDarkModeIcons(false);
+        showSnackbar('Light mode enabled', 'success');
+    } else {
+        html.setAttribute('data-theme', 'dark');
+        localStorage.setItem('darkMode', 'true');
+        updateDarkModeIcons(true);
+        showSnackbar('Dark mode enabled', 'success');
+    }
+}
+
+// Update Dark Mode Icons
+function updateDarkModeIcons(isDark) {
+    document.querySelectorAll('.fa-moon, .fa-sun').forEach(icon => {
+        if (icon.classList.contains('fa-moon')) {
+            icon.style.display = isDark ? 'none' : 'inline-block';
         }
-    }, 5000);
+        if (icon.classList.contains('fa-sun')) {
+            icon.style.display = isDark ? 'inline-block' : 'none';
+        }
+    });
 }
 
 // Load Dashboard Stats
@@ -193,15 +173,18 @@ async function loadDashboardStats() {
             const stats = data.stats;
             
             // Update stats on dashboard
-            document.getElementById('user-reports-count').textContent = stats.my_reports || 0;
-            document.getElementById('user-pending-count').textContent = stats.pending || 0;
-            document.getElementById('user-inprogress-count').textContent = stats.in_progress || 0;
-            document.getElementById('user-resolved-count').textContent = stats.resolved || 0;
+            const elements = {
+                'user-reports-count': stats.my_reports || 0,
+                'user-pending-count': stats.pending || 0,
+                'user-inprogress-count': stats.in_progress || 0,
+                'user-resolved-count': stats.resolved || 0
+            };
             
-            // Update welcome name
-            const welcomeName = document.getElementById('welcome-name');
-            if (welcomeName && currentUser) {
-                welcomeName.textContent = currentUser.username.split(' ')[0];
+            for (const [id, value] of Object.entries(elements)) {
+                const element = document.getElementById(id);
+                if (element) {
+                    animateCounter(element, value);
+                }
             }
         }
     } catch (error) {
@@ -209,18 +192,31 @@ async function loadDashboardStats() {
     }
 }
 
+// Animated Counter
+function animateCounter(element, targetValue) {
+    if (!element) return;
+    
+    const currentValue = parseInt(element.textContent) || 0;
+    if (currentValue === targetValue) return;
+    
+    const increment = targetValue > currentValue ? 1 : -1;
+    let current = currentValue;
+    
+    const interval = setInterval(() => {
+        current += increment;
+        element.textContent = current;
+        
+        if (current === targetValue) {
+            clearInterval(interval);
+        }
+    }, 50);
+}
+
 // Load Recent Reports
 async function loadRecentReports() {
     try {
         const container = document.getElementById('recent-reports-list');
         if (!container) return;
-        
-        // Show loading
-        container.innerHTML = `
-            <div class="text-center py-4">
-                <div class="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-primary-600"></div>
-            </div>
-        `;
         
         const response = await fetch('/api/user_reports?limit=5');
         const data = await response.json();
@@ -245,13 +241,6 @@ async function loadRecentReports() {
                     </div>
                 </div>
             `).join('');
-        } else {
-            container.innerHTML = `
-                <div class="text-center py-8 text-gray-500">
-                    <i class="fas fa-file-alt text-4xl mb-3 opacity-30"></i>
-                    <p>No recent reports</p>
-                </div>
-            `;
         }
     } catch (error) {
         console.error('Failed to load recent reports:', error);
@@ -262,10 +251,10 @@ async function loadRecentReports() {
 function getReportTypeIcon(type) {
     const icons = {
         'Pothole': 'fa-road',
-        'Garbage Collection': 'fa-trash',
-        'Street Light': 'fa-lightbulb',
-        'Water Leak': 'fa-tint',
-        'Noise Complaint': 'fa-volume-up',
+        'Garbage': 'fa-trash',
+        'Light': 'fa-lightbulb',
+        'Water': 'fa-tint',
+        'Noise': 'fa-volume-up',
         'Other': 'fa-ellipsis-h'
     };
     return icons[type] || 'fa-file-alt';
@@ -274,10 +263,10 @@ function getReportTypeIcon(type) {
 function getReportTypeColor(type) {
     const colors = {
         'Pothole': 'bg-orange-100 text-orange-600',
-        'Garbage Collection': 'bg-red-100 text-red-600',
-        'Street Light': 'bg-yellow-100 text-yellow-600',
-        'Water Leak': 'bg-blue-100 text-blue-600',
-        'Noise Complaint': 'bg-purple-100 text-purple-600',
+        'Garbage': 'bg-red-100 text-red-600',
+        'Light': 'bg-yellow-100 text-yellow-600',
+        'Water': 'bg-blue-100 text-blue-600',
+        'Noise': 'bg-purple-100 text-purple-600',
         'Other': 'bg-gray-100 text-gray-600'
     };
     return colors[type] || 'bg-gray-100 text-gray-600';
@@ -292,19 +281,6 @@ function formatDate(dateString) {
     if (diffInDays === 1) return 'Yesterday';
     if (diffInDays < 7) return `${diffInDays} days ago`;
     return date.toLocaleDateString();
-}
-
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
 }
 
 // Filter Reports
@@ -344,7 +320,10 @@ function filterByStatus(status) {
     });
 }
 
-// Pagination Functions
+// Pagination
+let currentPage = 1;
+const itemsPerPage = 10;
+
 function goToPrevPage() {
     if (currentPage > 1) {
         currentPage--;
@@ -359,13 +338,13 @@ function goToNextPage() {
 
 // Setup Form Validation
 function setupFormValidation() {
-    const forms = document.querySelectorAll('form');
+    const forms = document.querySelectorAll('form[data-validate]');
     
     forms.forEach(form => {
         form.addEventListener('submit', function(e) {
             if (!validateForm(this)) {
                 e.preventDefault();
-                showToast('Validation Error', 'Please fill in all required fields correctly', 'error');
+                showSnackbar('Please fill in all required fields correctly', 'error');
             }
         });
     });
@@ -416,3 +395,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Wait a bit for other scripts to load
     setTimeout(initEnhancedUI, 100);
 });
+
+// Export functions for global use
+window.toggleDarkMode = toggleDarkMode;
+window.updateUserInitials = updateUserInitials;
+window.loadDashboardStats = loadDashboardStats;
+window.loadRecentReports = loadRecentReports;
