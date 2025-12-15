@@ -204,3 +204,201 @@ body {
 .shadow-lg { box-shadow: var(--shadow-lg); }
 
 .hidden { display: none; }
+/* DASHBOARD SPECIFIC STYLES */
+
+/* Header */
+.sticky-header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--gray-200);
+}
+
+/* Stats Cards */
+.stat-card {
+    transition: all var(--transition-base);
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+}
+
+.stat-icon-circle {
+    width: 48px;
+    height: 48px;
+    border-radius: var(--radius-full);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.25rem;
+}
+
+/* Problem Type Buttons */
+.problem-type-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 1rem 0.5rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--gray-700);
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.problem-type-btn:hover {
+    border-color: var(--primary-400);
+    color: var(--primary-600);
+}
+
+.problem-type-btn.active {
+    border-color: var(--primary-500);
+    background: var(--primary-50);
+    color: var(--primary-700);
+}
+
+.problem-type-btn i {
+    font-size: 1.5rem;
+    margin-bottom: 0.25rem;
+}
+
+.problem-type-btn span {
+    font-size: 0.875rem;
+    font-weight: 500;
+}
+
+/* Photo Action Buttons */
+.photo-action-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.75rem;
+    border: 2px solid var(--gray-300);
+    border-radius: var(--radius-md);
+    background: white;
+    color: var(--gray-700);
+    font-weight: 500;
+    transition: all var(--transition-fast);
+    cursor: pointer;
+}
+
+.photo-action-btn:hover {
+    border-color: var(--primary-400);
+    color: var(--primary-600);
+    background: var(--primary-50);
+}
+
+/* Recent Reports */
+.recent-report-item {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.75rem;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--gray-200);
+    transition: all var(--transition-fast);
+}
+
+.recent-report-item:hover {
+    border-color: var(--primary-300);
+    background: var(--primary-50);
+}
+
+.report-status-badge {
+    padding: 0.25rem 0.75rem;
+    border-radius: var(--radius-full);
+    font-size: 0.75rem;
+    font-weight: 600;
+    text-transform: uppercase;
+}
+
+.report-status-pending {
+    background: #fef3c7;
+    color: #92400e;
+}
+
+.report-status-in-progress {
+    background: #dbeafe;
+    color: #1e40af;
+}
+
+.report-status-resolved {
+    background: #d1fae5;
+    color: #065f46;
+}
+
+/* Progress Bars */
+.progress-bar {
+    width: 100%;
+    height: 0.5rem;
+    background: var(--gray-200);
+    border-radius: var(--radius-full);
+    overflow: hidden;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: var(--radius-full);
+    transition: width 0.3s ease;
+}
+
+/* Loading States */
+.loading-skeleton {
+    background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+    background-size: 200% 100%;
+    animation: loading 1.5s infinite;
+}
+
+@keyframes loading {
+    0% { background-position: -200% 0; }
+    100% { background-position: 200% 0; }
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .container {
+        padding-left: 1rem;
+        padding-right: 1rem;
+    }
+    
+    .problem-type-btn {
+        padding: 0.75rem 0.25rem;
+    }
+    
+    .problem-type-btn i {
+        font-size: 1.25rem;
+    }
+    
+    .photo-action-btn span {
+        font-size: 0.75rem;
+    }
+}
+
+/* Dark Mode Adjustments */
+[data-theme="dark"] .sticky-header {
+    background: rgba(30, 41, 59, 0.95);
+    border-color: var(--border-color);
+}
+
+[data-theme="dark"] .problem-type-btn {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
+
+[data-theme="dark"] .problem-type-btn.active {
+    background: rgba(37, 99, 235, 0.2);
+    border-color: var(--primary-500);
+    color: var(--primary-300);
+}
+
+[data-theme="dark"] .photo-action-btn {
+    background: var(--surface-color);
+    border-color: var(--border-color);
+    color: var(--text-secondary);
+}
