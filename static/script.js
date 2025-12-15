@@ -2377,3 +2377,290 @@ function checkForAppUpdates() {
 document.addEventListener('DOMContentLoaded', initializeApp);
 
 
+// ========================
+// DARK MODE FUNCTIONALITY
+// ========================
+
+// Initialize dark mode
+function initDarkMode() {
+    const isDarkMode = localStorage.getItem('darkMode') === 'true';
+    
+    if (isDarkMode) {
+        document.body.classList.add('dark-mode');
+        console.log('🌙 Dark mode enabled');
+    } else {
+        document.body.classList.remove('dark-mode');
+        console.log('☀️ Light mode enabled');
+    }
+    
+    // Update toggle button state
+    updateDarkModeToggle();
+    
+    // Listen for system preference changes
+    listenForSystemDarkMode();
+}
+
+// Toggle dark mode
+function toggleDarkMode() {
+    const isDarkMode = document.body.classList.toggle('dark-mode');
+    
+    // Save preference
+    localStorage.setItem('darkMode', isDarkMode);
+    
+    // Update UI
+    updateDarkModeToggle();
+    
+    // Show feedback
+    showSnackbar(`Switched to ${isDarkMode ? 'dark' : 'light'} mode`, 'info');
+    
+    console.log(`🎨 Dark mode ${isDarkMode ? 'enabled' : 'disabled'}`);
+}
+
+// Update dark mode toggle button
+function updateDarkModeToggle() {
+    const isDarkMode = document.body.classList.contains('dark-mode');
+    const toggleBtns = document.querySelectorAll('.dark-mode-toggle');
+    
+    toggleBtns.forEach(btn => {
+        const moonIcon = btn.querySelector('.fa-moon');
+        const sunIcon = btn.querySelector('.fa-sun');
+        
+        if (moonIcon && sunIcon) {
+            moonIcon.style.opacity = isDarkMode ? '0' : '1';
+            moonIcon.style.transform = isDarkMode ? 'rotate(-90deg)' : 'rotate(0deg)';
+            sunIcon.style.opacity = isDarkMode ? '1' : '0';
+            sunIcon.style.transform = isDarkMode ? 'rotate(0deg)' : 'rotate(90deg)';
+        }
+    });
+}
+
+// Listen for system dark mode preference
+function listenForSystemDarkMode() {
+    if (window.matchMedia) {
+        const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+        
+        // Only auto-apply if user hasn't set a preference
+        if (!localStorage.getItem('darkMode')) {
+            if (mediaQuery.matches) {
+                document.body.classList.add('dark-mode');
+                updateDarkModeToggle();
+            }
+        }
+        
+        // Listen for changes
+        mediaQuery.addEventListener('change', (e) => {
+            if (!localStorage.getItem('darkMode')) {
+                if (e.matches) {
+                    document.body.classList.add('dark-mode');
+                } else {
+                    document.body.classList.remove('dark-mode');
+                }
+                updateDarkModeToggle();
+            }
+        });
+    }
+}
+
+// Add dark mode toggle to user dashboard
+function addDarkModeToggleToUserDashboard() {
+    const headerActions = document.querySelector('.dashboard-container .header-actions');
+    if (!headerActions) return;
+    
+    // Check if toggle already exists
+    if (!document.querySelector('.dashboard-container .dark-mode-toggle')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'dark-mode-toggle';
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i><i class="fas fa-sun"></i>';
+        toggleBtn.title = 'Toggle dark mode';
+        toggleBtn.setAttribute('aria-label', 'Toggle dark mode');
+        toggleBtn.onclick = toggleDarkMode;
+        
+        // Insert before notification button
+        const notificationBtn = headerActions.querySelector('.icon-btn');
+        if (notificationBtn) {
+            headerActions.insertBefore(toggleBtn, notificationBtn);
+        } else {
+            headerActions.appendChild(toggleBtn);
+        }
+    }
+}
+
+// Add dark mode toggle to admin dashboard
+function addDarkModeToggleToAdminDashboard() {
+    const headerActions = document.querySelector('.admin-container .header-actions');
+    if (!headerActions) return;
+    
+    // Check if toggle already exists
+    if (!document.querySelector('.admin-container .dark-mode-toggle')) {
+        const toggleBtn = document.createElement('button');
+        toggleBtn.className = 'dark-mode-toggle';
+        toggleBtn.innerHTML = '<i class="fas fa-moon"></i><i class="fas fa-sun"></i>';
+        toggleBtn.title = 'Toggle dark mode';
+        toggleBtn.setAttribute('aria-label', 'Toggle dark mode');
+        toggleBtn.onclick = toggleDarkMode;
+        
+        // Insert before notification button
+        const notificationBtn = headerActions.querySelector('.icon-btn');
+        if (notificationBtn) {
+            headerActions.insertBefore(toggleBtn, notificationBtn);
+        } else {
+            headerActions.appendChild(toggleBtn);
+        }
+    }
+}
+
+// Update existing functions to include dark mode initialization:
+
+// Update loadUserDashboard function:
+async function loadUserDashboard() {
+    if (!currentUser) return;
+    
+    document.getElementById('user-name').textContent = currentUser.username;
+    await loadStats();
+    await loadNotificationsCount();
+    addDarkModeToggleToUserDashboard();
+    initDarkMode(); // Initialize dark mode
+}
+
+// Update loadAdminDashboard function:
+async function loadAdminDashboard() {
+    if (!currentUser || currentUser.role !== 'admin') return;
+    
+    const adminContainer = document.querySelector('.admin-container');
+    adminContainer.innerHTML = `
+        <div class="screen-header">
+            <h2>Admin Dashboard</h2>
+            <div class="header-actions">
+                <button class="dark-mode-toggle" onclick="toggleDarkMode()" title="Toggle dark mode">
+                    <i class="fas fa-moon"></i>
+                    <i class="fas fa-sun"></i>
+                </button>
+                <button class="icon-btn" onclick="showAdminNotifications()">
+                    <i class="fas fa-bell"></i>
+                    <span id="admin-notification-badge" class="badge hidden">0</span>
+                </button>
+                <div class="dropdown-container">
+                    <button class="three-dot-menu" onclick="toggleAdminDropdown()">
+                        <i class="fas fa-ellipsis-v"></i>
+                    </button>
+                    <div id="admin-dropdown-menu" class="dropdown-menu hidden">
+                        <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                            <i class="fas fa-sync-alt"></i>
+                            Refresh
+                        </button>
+                        <button class="dropdown-item" onclick="toggleDarkMode()">
+                            <i class="fas fa-moon"></i>
+                            Toggle Dark Mode
+                        </button>
+                        <button class="dropdown-item" onclick="logout()">
+                            <i class="fas fa-sign-out-alt"></i>
+                            Logout
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Rest of admin dashboard HTML remains the same -->
+        <!-- Notification Status -->
+        <div id="admin-notification-status" class="notification-status hidden">
+            <!-- New reports notification will appear here -->
+        </div>
+        
+        <!-- Filter Controls -->
+        <div class="card">
+            <h3>Filter Reports</h3>
+            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
+                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-day"></i> Today
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-week"></i> This Week
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar-alt"></i> This Month
+                </button>
+                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
+                    <i class="fas fa-calendar"></i> All Time
+                </button>
+            </div>
+            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
+                Showing: All Time
+            </div>
+        </div>
+        
+        <div class="admin-stats" id="admin-stats">
+            <!-- Stats will be loaded here -->
+        </div>
+        
+        <div class="card">
+            <h3>Reports</h3>
+            <div id="admin-reports-list">
+                <!-- Reports will be loaded here -->
+            </div>
+        </div>
+    `;
+    
+    await loadAdminStats();
+    await loadAllReports();
+    await checkNewReportsNotification();
+    await loadAdminNotificationsCount();
+    addDarkModeToggleToAdminDashboard();
+    initDarkMode(); // Initialize dark mode
+}
+
+// Update initializeApp function to include dark mode initialization
+async function initializeApp() {
+    console.log('🚀 Initializing BAYAN App...');
+    
+    try {
+        // Show loading screen
+        document.getElementById('loading-screen').classList.add('active');
+        
+        // Initialize dark mode first
+        initDarkMode();
+        
+        // Check authentication
+        await checkAuthStatus();
+        
+        // Setup all event listeners
+        setupEventListeners();
+        
+        // Setup network monitoring
+        setupNetworkStatusListener();
+        
+        // Check for updates
+        checkForAppUpdates();
+        
+        // Setup service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed:', error);
+                });
+        }
+        
+        // Check first-time user
+        checkFirstTimeUser();
+        
+    } catch (error) {
+        console.error('App initialization failed:', error);
+        showSnackbar('Failed to initialize app', 'error');
+    } finally {
+        // Hide loading screen
+        setTimeout(() => {
+            document.getElementById('loading-screen').classList.remove('active');
+        }, 500);
+    }
+}
+
+// Add keyboard shortcut for dark mode (Ctrl/Cmd + D)
+document.addEventListener('keydown', function(e) {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'd') {
+        e.preventDefault();
+        toggleDarkMode();
+    }
+});
