@@ -548,107 +548,58 @@
             </div>
         </div>
 
-        <!-- Enhanced Admin Notifications Modal -->
+        <!-- Admin Notifications Modal -->
 <div id="admin-notifications-modal" class="modal hidden">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h3>Admin Notifications</h3>
-            <button class="close-btn" onclick="closeAdminNotificationsModal()">&times;</button>
-        </div>
-        <div class="modal-body">
-            <div id="admin-notifications-container">
-                <!-- Loading State -->
-                <div id="notifications-loading" class="notifications-loading">
-                    <div class="loading-spinner"></div>
-                    <p>Loading notifications...</p>
+    <div class="modal-content notification-modal">
+        <!-- Header with Stats & Controls -->
+        <div class="modal-header notification-modal-header">
+            <div class="notification-header-content">
+                <div class="notification-header-title">
+                    <i class="fas fa-bell"></i>
+                    <h3>Admin Notifications</h3>
+                    <div class="notification-count-badge" id="notification-badge">0</div>
                 </div>
-
-                <!-- Empty State (hidden by default) -->
-                <div id="notifications-empty" class="notifications-empty hidden">
-                    <i class="fas fa-bell-slash"></i>
-                    <h4>No notifications yet</h4>
-                    <p>You're all caught up! New notifications will appear here.</p>
-                </div>
-
-                <!-- Error State (hidden by default) -->
-                <div id="notifications-error" class="notifications-error hidden">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h4>Unable to load notifications</h4>
-                    <p>There was an error loading your notifications. Please try again.</p>
-                    <button class="btn btn-outline" onclick="loadNotifications()">
-                        <i class="fas fa-redo"></i>
-                        Retry
-                    </button>
-                </div>
-
-                <!-- Notifications List (hidden by default) -->
-                <div id="admin-notifications-list" class="notifications-list hidden">
-                    <!-- Notifications will be loaded here -->
+                <div class="notification-stats">
+                    <span class="stat-item total" title="Total Notifications">
+                        <i class="fas fa-layer-group"></i>
+                        <span id="total-notifications">0</span>
+                    </span>
+                    <span class="stat-item unread" title="Unread Notifications">
+                        <i class="fas fa-envelope"></i>
+                        <span id="unread-notifications">0</span>
+                    </span>
                 </div>
             </div>
+            <button class="close-btn notification-close" onclick="closeAdminNotifications()">&times;</button>
         </div>
-        <div class="modal-actions">
-            <button type="button" class="btn btn-primary" onclick="closeAdminNotificationsModal()">
-                Close
-            </button>
-        </div>
-    </div>
-</div>
 
         <!-- Filter Controls -->
         <div class="notification-filters">
             <div class="filter-tabs">
-                <button class="filter-tab active" data-filter="all" onclick="filterNotifications('all')">
+                <button class="filter-tab active" onclick="filterNotifications('all')">
                     <i class="fas fa-list"></i>
                     All
-                    <span class="filter-count" id="count-all">0</span>
                 </button>
-                <button class="filter-tab" data-filter="unread" onclick="filterNotifications('unread')">
+                <button class="filter-tab" onclick="filterNotifications('unread')">
                     <i class="fas fa-envelope"></i>
                     Unread
-                    <span class="filter-count" id="count-unread">0</span>
                 </button>
-                <button class="filter-tab" data-filter="important" onclick="filterNotifications('important')">
+                <button class="filter-tab" onclick="filterNotifications('important')">
                     <i class="fas fa-exclamation-circle"></i>
                     Important
-                    <span class="filter-count" id="count-important">0</span>
-                </button>
-                <button class="filter-tab" data-filter="system" onclick="filterNotifications('system')">
-                    <i class="fas fa-cog"></i>
-                    System
-                    <span class="filter-count" id="count-system">0</span>
-                </button>
-                <button class="filter-tab" data-filter="user" onclick="filterNotifications('user')">
-                    <i class="fas fa-users"></i>
-                    User
-                    <span class="filter-count" id="count-user">0</span>
                 </button>
             </div>
             <div class="filter-actions">
                 <button class="filter-action-btn" onclick="markAllAsRead()" title="Mark all as read">
                     <i class="fas fa-check-double"></i>
-                    Mark All Read
                 </button>
-                <button class="filter-action-btn" onclick="clearAllNotifications()" title="Clear all notifications">
-                    <i class="fas fa-trash-alt"></i>
-                    Clear All
+                <button class="filter-action-btn" onclick="refreshNotifications()" title="Refresh">
+                    <i class="fas fa-redo"></i>
                 </button>
             </div>
         </div>
 
-        <!-- Search Bar -->
-        <div class="notification-search">
-            <i class="fas fa-search"></i>
-            <input type="text" 
-                   id="notification-search" 
-                   placeholder="Search notifications..." 
-                   onkeyup="searchNotifications(this.value)">
-            <button class="clear-search" onclick="clearSearch()" title="Clear search">
-                <i class="fas fa-times"></i>
-            </button>
-        </div>
-
-        <!-- Notifications List Container -->
+        <!-- Notifications Container -->
         <div class="modal-body notification-modal-body">
             <div id="admin-notifications-container">
                 <!-- Loading State -->
@@ -664,17 +615,6 @@
                     <p>You're all caught up! New notifications will appear here.</p>
                 </div>
 
-                <!-- Error State -->
-                <div id="notifications-error" class="notifications-error hidden">
-                    <i class="fas fa-exclamation-triangle"></i>
-                    <h4>Unable to load notifications</h4>
-                    <p>There was an error loading your notifications. Please try again.</p>
-                    <button class="btn btn-outline" onclick="loadNotifications()">
-                        <i class="fas fa-redo"></i>
-                        Retry
-                    </button>
-                </div>
-
                 <!-- Notifications List -->
                 <div id="admin-notifications-list" class="notifications-list hidden">
                     <!-- Notifications will be loaded here -->
@@ -682,39 +622,21 @@
             </div>
         </div>
 
-        <!-- Footer with Bulk Actions -->
+        <!-- Footer -->
         <div class="modal-actions notification-modal-footer">
-            <div class="bulk-actions">
-                <label class="bulk-select-label">
-                    <input type="checkbox" id="select-all-notifications" onchange="toggleSelectAll(this.checked)">
-                    Select All
-                </label>
-                <div class="bulk-action-buttons">
-                    <button class="btn btn-outline bulk-btn" onclick="markSelectedAsRead()" disabled>
-                        <i class="fas fa-check"></i>
-                        Mark as Read
-                    </button>
-                    <button class="btn btn-outline bulk-btn" onclick="deleteSelectedNotifications()" disabled>
-                        <i class="fas fa-trash"></i>
-                        Delete
-                    </button>
-                </div>
-            </div>
-            <div class="footer-actions">
-                <button class="btn btn-primary" onclick="closeAdminNotifications()">
-                    <i class="fas fa-check"></i>
-                    Done
-                </button>
-            </div>
+            <button class="btn btn-primary" onclick="closeAdminNotifications()">
+                <i class="fas fa-check"></i>
+                Close
+            </button>
         </div>
     </div>
 </div>
 
 <style>
-/* Enhanced Notification Modal Styles */
+/* Notification Modal Styles */
 .notification-modal {
-    max-width: 800px;
-    max-height: 90vh;
+    max-width: 600px;
+    max-height: 80vh;
     display: flex;
     flex-direction: column;
 }
@@ -724,9 +646,6 @@
     color: white;
     padding: var(--space-lg);
     border-bottom: none;
-    position: sticky;
-    top: 0;
-    z-index: 10;
 }
 
 .notification-header-content {
@@ -767,18 +686,11 @@
     justify-content: center;
     font-size: var(--text-xs);
     font-weight: 700;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0% { transform: scale(1); }
-    50% { transform: scale(1.1); }
-    100% { transform: scale(1); }
 }
 
 .notification-stats {
     display: flex;
-    gap: var(--space-lg);
+    gap: var(--space-md);
     flex-wrap: wrap;
 }
 
@@ -791,7 +703,6 @@
     padding: var(--space-xs) var(--space-sm);
     background: rgba(255, 255, 255, 0.1);
     border-radius: var(--radius-sm);
-    backdrop-filter: blur(10px);
 }
 
 .stat-item i {
@@ -800,7 +711,6 @@
 
 .stat-item.total i { color: #60a5fa; }
 .stat-item.unread i { color: #fbbf24; }
-.stat-item.important i { color: #ef4444; }
 
 .notification-close {
     color: white;
@@ -810,10 +720,9 @@
 
 .notification-close:hover {
     background: rgba(255, 255, 255, 0.2);
-    transform: rotate(90deg);
 }
 
-/* Filter Tabs */
+/* Filter Controls */
 .notification-filters {
     display: flex;
     justify-content: space-between;
@@ -823,16 +732,12 @@
     border-bottom: 1px solid var(--border-color);
     flex-wrap: wrap;
     gap: var(--space-md);
-    position: sticky;
-    top: 0;
-    z-index: 9;
 }
 
 .filter-tabs {
     display: flex;
     gap: var(--space-xs);
     overflow-x: auto;
-    padding-bottom: 2px;
 }
 
 .filter-tab {
@@ -855,7 +760,6 @@
 .filter-tab:hover {
     border-color: var(--primary-color);
     color: var(--primary-color);
-    transform: translateY(-1px);
 }
 
 .filter-tab.active {
@@ -869,18 +773,6 @@
     font-size: var(--text-sm);
 }
 
-.filter-count {
-    background: rgba(255, 255, 255, 0.2);
-    padding: 2px 8px;
-    border-radius: 10px;
-    font-size: var(--text-xs);
-    font-weight: 600;
-}
-
-.filter-tab.active .filter-count {
-    background: rgba(255, 255, 255, 0.3);
-}
-
 .filter-actions {
     display: flex;
     gap: var(--space-xs);
@@ -891,7 +783,7 @@
     display: flex;
     align-items: center;
     gap: var(--space-xs);
-    padding: var(--space-sm) var(--space-md);
+    padding: var(--space-sm);
     background: var(--surface-color);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-sm);
@@ -899,73 +791,15 @@
     font-size: var(--text-sm);
     cursor: pointer;
     transition: all 0.2s ease;
+    min-width: 36px;
+    min-height: 36px;
+    justify-content: center;
 }
 
 .filter-action-btn:hover {
     background: var(--primary-color);
     color: white;
     border-color: var(--primary-color);
-}
-
-.filter-action-btn i {
-    font-size: var(--text-sm);
-}
-
-/* Search Bar */
-.notification-search {
-    position: relative;
-    padding: var(--space-md) var(--space-lg);
-    border-bottom: 1px solid var(--border-color);
-    background: var(--surface-color);
-}
-
-.notification-search i {
-    position: absolute;
-    left: calc(var(--space-lg) + 12px);
-    top: 50%;
-    transform: translateY(-50%);
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-}
-
-.notification-search input {
-    width: 100%;
-    padding: var(--space-sm) var(--space-md) var(--space-sm) 40px;
-    border: 1px solid var(--border-color);
-    border-radius: var(--radius-md);
-    background: var(--surface-color);
-    color: var(--text-primary);
-    font-size: var(--text-sm);
-    transition: all 0.2s ease;
-}
-
-.notification-search input:focus {
-    border-color: var(--primary-color);
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
-    outline: none;
-}
-
-.clear-search {
-    position: absolute;
-    right: calc(var(--space-lg) + 12px);
-    top: 50%;
-    transform: translateY(-50%);
-    background: none;
-    border: none;
-    color: var(--text-muted);
-    cursor: pointer;
-    padding: var(--space-xs);
-    border-radius: 50%;
-    display: none;
-}
-
-.clear-search.visible {
-    display: block;
-}
-
-.clear-search:hover {
-    background: var(--background-color);
-    color: var(--danger-color);
 }
 
 /* Modal Body */
@@ -979,19 +813,18 @@
     height: 100%;
     display: flex;
     flex-direction: column;
+    position: relative;
 }
 
 /* States */
-.notifications-loading,
-.notifications-empty,
-.notifications-error {
+.notifications-loading {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: var(--space-xl);
     text-align: center;
-    flex: 1;
+    height: 100%;
 }
 
 .notifications-loading .loading-spinner {
@@ -1008,23 +841,30 @@
     to { transform: rotate(360deg); }
 }
 
-.notifications-empty i,
-.notifications-error i {
+.notifications-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-xl);
+    text-align: center;
+    height: 100%;
+}
+
+.notifications-empty i {
     font-size: 48px;
     color: var(--text-muted);
     margin-bottom: var(--space-md);
     opacity: 0.5;
 }
 
-.notifications-empty h4,
-.notifications-error h4 {
+.notifications-empty h4 {
     color: var(--text-primary);
     margin-bottom: var(--space-sm);
     font-size: var(--text-lg);
 }
 
-.notifications-empty p,
-.notifications-error p {
+.notifications-empty p {
     color: var(--text-muted);
     margin-bottom: var(--space-lg);
     max-width: 300px;
@@ -1037,10 +877,9 @@
     max-height: 400px;
 }
 
-/* Notification Item Template */
 .notification-item {
-    display: grid;
-    grid-template-columns: auto 1fr auto;
+    display: flex;
+    align-items: flex-start;
     gap: var(--space-md);
     padding: var(--space-md) var(--space-lg);
     border-bottom: 1px solid var(--border-color);
@@ -1052,48 +891,21 @@
 
 .notification-item:hover {
     background: var(--background-color);
-    transform: translateX(4px);
 }
 
 .notification-item.unread {
-    background: linear-gradient(135deg, 
-        rgba(37, 99, 235, 0.05) 0%, 
-        rgba(37, 99, 235, 0.02) 100%);
-    border-left: 4px solid var(--primary-color);
+    background: rgba(37, 99, 235, 0.05);
+    border-left: 3px solid var(--primary-color);
 }
 
 .notification-item.important {
-    background: linear-gradient(135deg, 
-        rgba(245, 158, 11, 0.05) 0%, 
-        rgba(245, 158, 11, 0.02) 100%);
-    border-left: 4px solid var(--warning-color);
+    background: rgba(245, 158, 11, 0.05);
+    border-left: 3px solid var(--warning-color);
 }
 
 .notification-item.urgent {
-    background: linear-gradient(135deg, 
-        rgba(239, 68, 68, 0.05) 0%, 
-        rgba(239, 68, 68, 0.02) 100%);
-    border-left: 4px solid var(--danger-color);
-}
-
-.notification-item.selected {
-    background: rgba(37, 99, 235, 0.1);
-}
-
-.notification-checkbox {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    opacity: 0;
-    transition: opacity 0.2s ease;
-}
-
-.notification-item:hover .notification-checkbox {
-    opacity: 1;
-}
-
-.notification-item.selected .notification-checkbox {
-    opacity: 1;
+    background: rgba(239, 68, 68, 0.05);
+    border-left: 3px solid var(--danger-color);
 }
 
 .notification-icon {
@@ -1105,6 +917,7 @@
     justify-content: center;
     font-size: var(--text-lg);
     flex-shrink: 0;
+    margin-top: 2px;
 }
 
 .notification-icon.info {
@@ -1128,6 +941,7 @@
 }
 
 .notification-content {
+    flex: 1;
     min-width: 0;
 }
 
@@ -1145,41 +959,10 @@
     font-size: var(--text-base);
 }
 
-.notification-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    background: var(--background-color);
-    color: var(--text-muted);
-    border-radius: 12px;
-    font-size: var(--text-xs);
-    font-weight: 500;
-}
-
-.notification-badge.system {
-    background: var(--primary-light);
-    color: var(--primary-color);
-}
-
-.notification-badge.user {
-    background: var(--success-light);
-    color: var(--success-color);
-}
-
-.notification-badge.alert {
-    background: var(--danger-light);
-    color: var(--danger-color);
-}
-
 .notification-message {
     color: var(--text-secondary);
     line-height: 1.5;
     margin-bottom: var(--space-xs);
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    -webkit-box-orient: vertical;
-    overflow: hidden;
 }
 
 .notification-meta {
@@ -1243,82 +1026,20 @@
     background: var(--danger-light);
 }
 
-.unread-indicator {
-    position: absolute;
-    left: var(--space-lg);
-    top: 50%;
-    transform: translateY(-50%);
-    width: 8px;
-    height: 8px;
-    background: var(--primary-color);
-    border-radius: 50%;
-    opacity: 0;
-}
-
-.notification-item.unread .unread-indicator {
-    opacity: 1;
-}
-
 /* Footer */
 .notification-modal-footer {
     display: flex;
-    justify-content: space-between;
-    align-items: center;
+    justify-content: flex-end;
     padding: var(--space-md) var(--space-lg);
     background: var(--background-color);
     border-top: 1px solid var(--border-color);
-    flex-wrap: wrap;
-    gap: var(--space-md);
 }
 
-.bulk-actions {
-    display: flex;
-    align-items: center;
-    gap: var(--space-md);
-    flex-wrap: wrap;
-}
-
-.bulk-select-label {
-    display: flex;
-    align-items: center;
-    gap: var(--space-xs);
-    color: var(--text-muted);
-    font-size: var(--text-sm);
-    cursor: pointer;
-    user-select: none;
-}
-
-.bulk-select-label input[type="checkbox"] {
-    width: 16px;
-    height: 16px;
-    cursor: pointer;
-}
-
-.bulk-action-buttons {
-    display: flex;
-    gap: var(--space-sm);
-}
-
-.bulk-btn {
-    padding: var(--space-xs) var(--space-md);
-    font-size: var(--text-sm);
-    min-height: 36px;
-}
-
-.bulk-btn:disabled {
-    opacity: 0.5;
-    cursor: not-allowed;
-}
-
-.footer-actions {
-    flex-shrink: 0;
-}
-
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
     .notification-modal {
         margin: var(--space-sm);
-        max-height: 95vh;
+        max-height: 90vh;
     }
     
     .notification-header-content {
@@ -1334,368 +1055,420 @@
     }
     
     .filter-tabs {
-        order: 2;
-        justify-content: flex-start;
+        justify-content: center;
     }
     
     .filter-actions {
-        order: 1;
-        justify-content: space-between;
-        width: 100%;
+        justify-content: center;
     }
-    
-    .notification-item {
-        grid-template-columns: 1fr auto;
-        gap: var(--space-sm);
-        padding: var(--space-md);
-    }
-    
-    .notification-checkbox {
-        grid-column: 1;
-        grid-row: 1;
-        justify-self: start;
-        opacity: 1;
-    }
-    
-    .notification-icon {
-        grid-column: 1;
-        grid-row: 2;
-        width: 32px;
-        height: 32px;
-        font-size: var(--text-base);
-    }
-    
-    .notification-content {
-        grid-column: 2;
-        grid-row: 1 / span 2;
-    }
-    
-    .notification-actions {
-        grid-column: 2;
-        grid-row: 3;
-        opacity: 1;
-        justify-self: end;
-    }
-    
-    .notification-modal-footer {
-        flex-direction: column;
-        align-items: stretch;
-        gap: var(--space-sm);
-    }
-    
-    .bulk-actions {
-        justify-content: space-between;
-    }
-    
-    .footer-actions .btn {
-        width: 100%;
-    }
-}
-
-@media (max-width: 480px) {
-    .notification-modal {
-        margin: 0;
-        border-radius: 0;
-        max-height: 100vh;
-        min-height: 100vh;
-    }
-    
-    .notification-stats {
-        gap: var(--space-sm);
-    }
-    
-    .stat-item {
-        padding: var(--space-xs);
-    }
-    
-    .filter-tabs {
-        overflow-x: auto;
-        padding-bottom: 4px;
-    }
-    
-    .filter-tab {
-        padding: var(--space-xs) var(--space-sm);
-        font-size: var(--text-xs);
-    }
-}
-
-/* Dark Mode Support */
-body.dark-mode .notification-modal-header {
-    background: linear-gradient(135deg, #4f46e5, #4338ca);
-}
-
-body.dark-mode .stat-item {
-    background: rgba(255, 255, 255, 0.05);
-}
-
-body.dark-mode .notification-item.unread {
-    background: linear-gradient(135deg, 
-        rgba(37, 99, 235, 0.1) 0%, 
-        rgba(37, 99, 235, 0.05) 100%);
-}
-
-body.dark-mode .notification-item.important {
-    background: linear-gradient(135deg, 
-        rgba(245, 158, 11, 0.1) 0%, 
-        rgba(245, 158, 11, 0.05) 100%);
-}
-
-body.dark-mode .notification-item.urgent {
-    background: linear-gradient(135deg, 
-        rgba(239, 68, 68, 0.1) 0%, 
-        rgba(239, 68, 68, 0.05) 100%);
-}
-
-body.dark-mode .notification-item:hover {
-    background: rgba(30, 41, 59, 0.7);
-}
-
-body.dark-mode .notification-badge {
-    background: rgba(30, 41, 59, 0.8);
 }
 </style>
 
 <script>
-// JavaScript functions for the enhanced notifications modal
-function closeAdminNotifications() {
-    document.getElementById('admin-notifications-modal').classList.add('hidden');
-    clearSearch();
+// Notification data structure
+let notifications = [];
+let currentFilter = 'all';
+
+// Sample notifications data - Replace with actual API calls
+const sampleNotifications = [
+    {
+        id: 1,
+        title: "New User Registration",
+        message: "John Doe has registered on the platform",
+        type: "info",
+        category: "user",
+        timestamp: new Date(Date.now() - 300000), // 5 minutes ago
+        read: false,
+        important: false
+    },
+    {
+        id: 2,
+        title: "System Update Required",
+        message: "Your system needs to be updated to version 2.5.1",
+        type: "warning",
+        category: "system",
+        timestamp: new Date(Date.now() - 1800000), // 30 minutes ago
+        read: false,
+        important: true
+    },
+    {
+        id: 3,
+        title: "Report Generated Successfully",
+        message: "Monthly report has been generated and is ready for download",
+        type: "success",
+        category: "report",
+        timestamp: new Date(Date.now() - 3600000), // 1 hour ago
+        read: true,
+        important: false
+    },
+    {
+        id: 4,
+        title: "Database Backup Failed",
+        message: "Scheduled database backup failed. Please check logs.",
+        type: "danger",
+        category: "system",
+        timestamp: new Date(Date.now() - 7200000), // 2 hours ago
+        read: false,
+        important: true
+    },
+    {
+        id: 5,
+        title: "New Message Received",
+        message: "You have received a new support message from a user",
+        type: "info",
+        category: "support",
+        timestamp: new Date(Date.now() - 10800000), // 3 hours ago
+        read: true,
+        important: false
+    }
+];
+
+// Initialize notifications
+function initNotifications() {
+    notifications = [...sampleNotifications];
+    renderNotifications();
 }
 
+// Render notifications
+function renderNotifications() {
+    const container = document.getElementById('admin-notifications-container');
+    const listElement = document.getElementById('admin-notifications-list');
+    const loadingElement = document.getElementById('notifications-loading');
+    const emptyElement = document.getElementById('notifications-empty');
+    
+    // Hide loading state
+    loadingElement.classList.add('hidden');
+    
+    // Filter notifications
+    let filteredNotifications = notifications;
+    if (currentFilter === 'unread') {
+        filteredNotifications = notifications.filter(n => !n.read);
+    } else if (currentFilter === 'important') {
+        filteredNotifications = notifications.filter(n => n.important);
+    }
+    
+    if (filteredNotifications.length === 0) {
+        // Show empty state
+        emptyElement.classList.remove('hidden');
+        listElement.classList.add('hidden');
+        listElement.innerHTML = '';
+    } else {
+        // Show list
+        emptyElement.classList.add('hidden');
+        listElement.classList.remove('hidden');
+        
+        // Clear existing content
+        listElement.innerHTML = '';
+        
+        // Add notifications
+        filteredNotifications.forEach(notification => {
+            const notificationElement = createNotificationElement(notification);
+            listElement.appendChild(notificationElement);
+        });
+    }
+    
+    // Update stats
+    updateNotificationStats();
+}
+
+// Create notification element
+function createNotificationElement(notification) {
+    const div = document.createElement('div');
+    div.className = 'notification-item';
+    
+    // Add status classes
+    if (!notification.read) {
+        div.classList.add('unread');
+    }
+    if (notification.important) {
+        div.classList.add('important');
+    }
+    
+    // Get icon based on type
+    const iconMap = {
+        'info': 'fa-info-circle',
+        'success': 'fa-check-circle',
+        'warning': 'fa-exclamation-triangle',
+        'danger': 'fa-exclamation-circle'
+    };
+    
+    const iconClass = iconMap[notification.type] || 'fa-bell';
+    const iconColorClass = `notification-icon ${notification.type}`;
+    
+    // Format time
+    const timeAgo = getTimeAgo(notification.timestamp);
+    
+    div.innerHTML = `
+        <div class="${iconColorClass}">
+            <i class="fas ${iconClass}"></i>
+        </div>
+        <div class="notification-content">
+            <div class="notification-title">
+                <h4>${notification.title}</h4>
+            </div>
+            <p class="notification-message">${notification.message}</p>
+            <div class="notification-meta">
+                <span class="notification-time">
+                    <i class="far fa-clock"></i>
+                    ${timeAgo}
+                </span>
+            </div>
+        </div>
+        <div class="notification-actions">
+            ${!notification.read ? 
+                `<button class="notification-action-btn read" onclick="markAsRead(${notification.id})" title="Mark as read">
+                    <i class="fas fa-envelope-open"></i>
+                </button>` 
+                : 
+                `<button class="notification-action-btn read" onclick="markAsUnread(${notification.id})" title="Mark as unread">
+                    <i class="fas fa-envelope"></i>
+                </button>`
+            }
+            <button class="notification-action-btn delete" onclick="deleteNotification(${notification.id})" title="Delete">
+                <i class="fas fa-trash"></i>
+            </button>
+        </div>
+    `;
+    
+    // Add click handler for the whole notification
+    div.addEventListener('click', (e) => {
+        if (!e.target.closest('.notification-actions')) {
+            markAsRead(notification.id);
+            // You can add more actions here, like opening notification details
+        }
+    });
+    
+    return div;
+}
+
+// Get time ago string
+function getTimeAgo(date) {
+    const seconds = Math.floor((new Date() - date) / 1000);
+    
+    let interval = Math.floor(seconds / 31536000);
+    if (interval >= 1) return interval + " year" + (interval > 1 ? "s" : "") + " ago";
+    
+    interval = Math.floor(seconds / 2592000);
+    if (interval >= 1) return interval + " month" + (interval > 1 ? "s" : "") + " ago";
+    
+    interval = Math.floor(seconds / 86400);
+    if (interval >= 1) return interval + " day" + (interval > 1 ? "s" : "") + " ago";
+    
+    interval = Math.floor(seconds / 3600);
+    if (interval >= 1) return interval + " hour" + (interval > 1 ? "s" : "") + " ago";
+    
+    interval = Math.floor(seconds / 60);
+    if (interval >= 1) return interval + " minute" + (interval > 1 ? "s" : "") + " ago";
+    
+    return "just now";
+}
+
+// Update notification stats
+function updateNotificationStats() {
+    const total = notifications.length;
+    const unread = notifications.filter(n => !n.read).length;
+    
+    // Update header stats
+    document.getElementById('total-notifications').textContent = total;
+    document.getElementById('unread-notifications').textContent = unread;
+    
+    // Update badge
+    const badge = document.getElementById('notification-badge');
+    badge.textContent = unread;
+    
+    // Show/hide badge
+    if (unread > 0) {
+        badge.style.display = 'flex';
+        // Add animation for new notifications
+        badge.style.animation = 'pulse 2s infinite';
+    } else {
+        badge.style.display = 'none';
+    }
+    
+    // Also update the bell icon badge in the header
+    const headerBadge = document.querySelector('.header-actions .badge');
+    if (headerBadge) {
+        headerBadge.textContent = unread;
+        headerBadge.style.display = unread > 0 ? 'flex' : 'none';
+    }
+}
+
+// Filter notifications
 function filterNotifications(filter) {
-    // Remove active class from all tabs
+    currentFilter = filter;
+    
+    // Update active tab
     document.querySelectorAll('.filter-tab').forEach(tab => {
         tab.classList.remove('active');
     });
-    
-    // Add active class to clicked tab
     event.target.closest('.filter-tab').classList.add('active');
     
-    // Filter notifications based on selected filter
-    const notifications = document.querySelectorAll('.notification-item');
-    notifications.forEach(notification => {
-        if (filter === 'all') {
-            notification.style.display = 'grid';
-        } else {
-            notification.style.display = notification.classList.contains(filter) ? 'grid' : 'none';
-        }
-    });
-    
-    // Update counts
-    updateFilterCounts();
+    // Re-render
+    renderNotifications();
 }
 
-function searchNotifications(query) {
-    const notifications = document.querySelectorAll('.notification-item');
-    const clearBtn = document.querySelector('.clear-search');
-    
-    if (query.trim() === '') {
-        clearBtn.classList.remove('visible');
-        notifications.forEach(notification => {
-            notification.style.display = 'grid';
-        });
-        return;
-    }
-    
-    clearBtn.classList.add('visible');
-    const searchTerm = query.toLowerCase();
-    
-    notifications.forEach(notification => {
-        const title = notification.querySelector('.notification-title h4').textContent.toLowerCase();
-        const message = notification.querySelector('.notification-message').textContent.toLowerCase();
-        
-        if (title.includes(searchTerm) || message.includes(searchTerm)) {
-            notification.style.display = 'grid';
-        } else {
-            notification.style.display = 'none';
-        }
-    });
-}
-
-function clearSearch() {
-    const searchInput = document.getElementById('notification-search');
-    searchInput.value = '';
-    searchNotifications('');
-}
-
-function toggleSelectAll(checked) {
-    const checkboxes = document.querySelectorAll('.notification-item input[type="checkbox"]');
-    const bulkButtons = document.querySelectorAll('.bulk-btn');
-    
-    checkboxes.forEach(checkbox => {
-        checkbox.checked = checked;
-        const item = checkbox.closest('.notification-item');
-        if (checked) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
-        }
-    });
-    
-    // Enable/disable bulk buttons based on selection
-    const hasSelection = Array.from(checkboxes).some(cb => cb.checked);
-    bulkButtons.forEach(btn => {
-        btn.disabled = !hasSelection;
-    });
-}
-
-function updateSelection() {
-    const checkboxes = document.querySelectorAll('.notification-item input[type="checkbox"]');
-    const selectAllCheckbox = document.getElementById('select-all-notifications');
-    const bulkButtons = document.querySelectorAll('.bulk-btn');
-    
-    const total = checkboxes.length;
-    const selected = Array.from(checkboxes).filter(cb => cb.checked).length;
-    
-    // Update individual item selection state
-    checkboxes.forEach(checkbox => {
-        const item = checkbox.closest('.notification-item');
-        if (checkbox.checked) {
-            item.classList.add('selected');
-        } else {
-            item.classList.remove('selected');
-        }
-    });
-    
-    // Update "Select All" checkbox
-    selectAllCheckbox.checked = selected === total && total > 0;
-    selectAllCheckbox.indeterminate = selected > 0 && selected < total;
-    
-    // Enable/disable bulk buttons
-    const hasSelection = selected > 0;
-    bulkButtons.forEach(btn => {
-        btn.disabled = !hasSelection;
-    });
-}
-
-function markSelectedAsRead() {
-    const selectedCheckboxes = document.querySelectorAll('.notification-item input[type="checkbox"]:checked');
-    
-    selectedCheckboxes.forEach(checkbox => {
-        const item = checkbox.closest('.notification-item');
-        item.classList.remove('unread');
-        item.querySelector('.unread-indicator').style.opacity = '0';
-        
-        // Update action button
-        const readBtn = item.querySelector('.notification-action-btn.read');
-        if (readBtn) {
-            readBtn.innerHTML = '<i class="fas fa-envelope-open"></i>';
-            readBtn.title = 'Mark as unread';
-        }
-    });
-    
-    // Update counts
-    updateNotificationCounts();
-    updateSelection();
-}
-
-function deleteSelectedNotifications() {
-    if (confirm('Are you sure you want to delete the selected notifications?')) {
-        const selectedCheckboxes = document.querySelectorAll('.notification-item input[type="checkbox"]:checked');
-        
-        selectedCheckboxes.forEach(checkbox => {
-            const item = checkbox.closest('.notification-item');
-            item.style.animation = 'slideOut 0.3s ease forwards';
-            setTimeout(() => item.remove(), 300);
-        });
-        
-        // Update counts
-        setTimeout(updateNotificationCounts, 350);
-        updateSelection();
+// Mark as read
+function markAsRead(id) {
+    const notification = notifications.find(n => n.id === id);
+    if (notification && !notification.read) {
+        notification.read = true;
+        renderNotifications();
+        showSnackbar('Notification marked as read', 'success');
     }
 }
 
+// Mark as unread
+function markAsUnread(id) {
+    const notification = notifications.find(n => n.id === id);
+    if (notification && notification.read) {
+        notification.read = false;
+        renderNotifications();
+        showSnackbar('Notification marked as unread', 'info');
+    }
+}
+
+// Delete notification
+function deleteNotification(id) {
+    if (confirm('Are you sure you want to delete this notification?')) {
+        notifications = notifications.filter(n => n.id !== id);
+        renderNotifications();
+        showSnackbar('Notification deleted', 'success');
+    }
+}
+
+// Mark all as read
 function markAllAsRead() {
-    const unreadItems = document.querySelectorAll('.notification-item.unread');
+    notifications.forEach(notification => {
+        notification.read = true;
+    });
+    renderNotifications();
+    showSnackbar('All notifications marked as read', 'success');
+}
+
+// Refresh notifications
+function refreshNotifications() {
+    const loadingElement = document.getElementById('notifications-loading');
+    loadingElement.classList.remove('hidden');
     
-    unreadItems.forEach(item => {
-        item.classList.remove('unread');
-        item.querySelector('.unread-indicator').style.opacity = '0';
-        
-        const readBtn = item.querySelector('.notification-action-btn.read');
-        if (readBtn) {
-            readBtn.innerHTML = '<i class="fas fa-envelope-open"></i>';
-            readBtn.title = 'Mark as unread';
+    // Simulate API call
+    setTimeout(() => {
+        // In real app, fetch from server here
+        renderNotifications();
+        showSnackbar('Notifications refreshed', 'success');
+    }, 500);
+}
+
+// Open notifications modal
+function openAdminNotificationsModal() {
+    const modal = document.getElementById('admin-notifications-modal');
+    modal.classList.remove('hidden');
+    
+    // Show loading state
+    const loadingElement = document.getElementById('notifications-loading');
+    const listElement = document.getElementById('admin-notifications-list');
+    const emptyElement = document.getElementById('notifications-empty');
+    
+    loadingElement.classList.remove('hidden');
+    listElement.classList.add('hidden');
+    emptyElement.classList.add('hidden');
+    
+    // Load notifications
+    setTimeout(() => {
+        initNotifications();
+    }, 300);
+}
+
+// Close notifications modal
+function closeAdminNotifications() {
+    const modal = document.getElementById('admin-notifications-modal');
+    modal.classList.add('hidden');
+}
+
+// Simulate receiving new notification
+function simulateNewNotification() {
+    const newId = notifications.length > 0 ? Math.max(...notifications.map(n => n.id)) + 1 : 1;
+    
+    const newNotification = {
+        id: newId,
+        title: "New System Alert",
+        message: "System performance metrics have exceeded normal thresholds",
+        type: "warning",
+        category: "system",
+        timestamp: new Date(),
+        read: false,
+        important: true
+    };
+    
+    notifications.unshift(newNotification); // Add to beginning
+    renderNotifications();
+    
+    // Show notification toast
+    showSnackbar('New notification received', 'info');
+    
+    // Play notification sound if needed
+    if (typeof playNotificationSound === 'function') {
+        playNotificationSound();
+    }
+}
+
+// Initialize on page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize notifications
+    initNotifications();
+    
+    // Close modal when clicking outside
+    const modal = document.getElementById('admin-notifications-modal');
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeAdminNotifications();
         }
     });
     
-    updateNotificationCounts();
-}
-
-function clearAllNotifications() {
-    if (confirm('Are you sure you want to clear all notifications?')) {
-        const items = document.querySelectorAll('.notification-item');
-        
-        items.forEach((item, index) => {
-            item.style.animation = 'slideOut 0.3s ease forwards';
-            item.style.animationDelay = `${index * 50}ms`;
-            setTimeout(() => item.remove(), 300 + (index * 50));
-        });
-        
-        setTimeout(updateNotificationCounts, 350 + (items.length * 50));
-    }
-}
-
-function updateNotificationCounts() {
-    const totalItems = document.querySelectorAll('.notification-item').length;
-    const unreadItems = document.querySelectorAll('.notification-item.unread').length;
-    const importantItems = document.querySelectorAll('.notification-item.important').length;
-    
-    // Update badge counts
-    document.getElementById('unread-count').textContent = unreadItems;
-    document.getElementById('total-count').textContent = totalItems;
-    document.getElementById('unread-stat-count').textContent = unreadItems;
-    document.getElementById('important-count').textContent = importantItems;
-}
-
-function updateFilterCounts() {
-    const totalItems = document.querySelectorAll('.notification-item').length;
-    const unreadItems = document.querySelectorAll('.notification-item.unread').length;
-    const importantItems = document.querySelectorAll('.notification-item.important').length;
-    const systemItems = document.querySelectorAll('.notification-item.system').length;
-    const userItems = document.querySelectorAll('.notification-item.user').length;
-    
-    // Update filter tab counts
-    document.getElementById('count-all').textContent = totalItems;
-    document.getElementById('count-unread').textContent = unreadItems;
-    document.getElementById('count-important').textContent = importantItems;
-    document.getElementById('count-system').textContent = systemItems;
-    document.getElementById('count-user').textContent = userItems;
-}
-
-// Add slideOut animation
-const style = document.createElement('style');
-style.textContent = `
-    @keyframes slideOut {
-        from {
-            opacity: 1;
-            transform: translateX(0);
-            max-height: 100px;
+    // Add CSS for pulse animation
+    const style = document.createElement('style');
+    style.textContent = `
+        @keyframes pulse {
+            0% { transform: scale(1); }
+            50% { transform: scale(1.1); }
+            100% { transform: scale(1); }
         }
-        to {
-            opacity: 0;
-            transform: translateX(-100%);
-            max-height: 0;
-            padding: 0;
-            margin: 0;
-            border: 0;
-        }
-    }
-`;
-document.head.appendChild(style);
-
-// Load notifications when modal opens
-document.getElementById('admin-notifications-modal').addEventListener('click', function(e) {
-    if (e.target === this) {
-        closeAdminNotifications();
-    }
+    `;
+    document.head.appendChild(style);
 });
 
-// Prevent modal body click from closing modal
-document.querySelector('.notification-modal').addEventListener('click', function(e) {
-    e.stopPropagation();
-});
+// Helper function to show snackbar
+function showSnackbar(message, type) {
+    // Create snackbar if it doesn't exist
+    let snackbar = document.getElementById('global-snackbar');
+    if (!snackbar) {
+        snackbar = document.createElement('div');
+        snackbar.id = 'global-snackbar';
+        snackbar.className = 'snackbar';
+        document.body.appendChild(snackbar);
+    }
+    
+    // Set message and type
+    snackbar.textContent = message;
+    snackbar.className = 'snackbar';
+    if (type) {
+        snackbar.classList.add(type);
+    }
+    
+    // Show snackbar
+    snackbar.style.display = 'block';
+    
+    // Hide after 3 seconds
+    setTimeout(() => {
+        snackbar.style.display = 'none';
+    }, 3000);
+}
 </script>
+
+<!-- Add this button to open the notifications modal (if not already in your header) -->
+<button class="icon-btn" onclick="openAdminNotificationsModal()" title="Notifications">
+    <i class="fas fa-bell"></i>
+    <span class="badge" id="header-notification-badge">0</span>
+</button>
 
     <!-- Snowflakes Container -->
     <div class="snowflakes">
@@ -1884,6 +1657,7 @@ document.querySelector('.notification-modal').addEventListener('click', function
 </script>
 </body>
 </html>
+
 
 
 
