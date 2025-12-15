@@ -10,41 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <style>
-        /* Additional styles for camera modal and 3-dot menu */
-        #camera-modal .modal-content {
-            max-width: 95vw;
-            max-height: 90vh;
-        }
-        
-        #camera-view {
-            width: 100%;
-            height: 60vh;
-            max-height: 500px;
-            object-fit: cover;
-            border-radius: 8px;
-            background: #000;
-        }
-        
-        .three-dot-menu {
-            background: none;
-            border: none;
-            color: var(--text-muted);
-            cursor: pointer;
-            padding: 8px;
-            border-radius: 50%;
-            font-size: 20px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            min-width: 44px;
-            min-height: 44px;
-        }
-        
-        .three-dot-menu:hover {
-            background: var(--background-color);
-            color: var(--primary-color);
-        }
-        
         /* Enhanced UI specific styles */
         .container {
             width: 100%;
@@ -265,9 +230,9 @@
         }
     </style>
 </head>
-<body>
+<body data-theme="light">
     <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen hidden">
+    <div id="loading-screen" class="loading-screen active">
         <div class="loading-container">
             <div class="loading-spinner"></div>
             <h3>Loading BAYAN</h3>
@@ -317,7 +282,7 @@
     
     <div id="app">
         <!-- Login Screen -->
-        <div id="login-screen" class="screen active">
+        <div id="login-screen" class="screen">
             <div class="auth-container">
                 <div class="auth-card card-enhanced" style="max-width: 440px;">
                     <!-- Brand Header -->
@@ -392,7 +357,7 @@
         </div>
 
         <!-- Register Screen -->
-        <div id="register-screen" class="screen">
+        <div id="register-screen" class="screen hidden">
             <div class="auth-container">
                 <div class="auth-card card-enhanced" style="max-width: 440px;">
                     <!-- Back Button -->
@@ -489,7 +454,7 @@
         </div>
 
         <!-- User Dashboard -->
-        <div id="user-dashboard" class="screen">
+        <div id="user-dashboard" class="screen hidden">
             <!-- Enhanced Header -->
             <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
                 <div class="container mx-auto px-4 py-3">
@@ -523,7 +488,7 @@
                         <!-- Right: Actions -->
                         <div class="flex items-center gap-3">
                             <!-- Dark Mode Toggle -->
-                            <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors" title="Toggle dark mode">
+                            <button onclick="toggleDarkMode()" class="p-2 rounded-lg hover:bg-gray-100 transition-colors dark-mode-toggle" title="Toggle dark mode">
                                 <i class="fas fa-moon text-gray-600"></i>
                                 <i class="fas fa-sun text-yellow-500 hidden"></i>
                             </button>
@@ -538,7 +503,7 @@
 
                             <!-- User Menu -->
                             <div class="relative">
-                                <button onclick="toggleUserMenu()" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors">
+                                <button onclick="toggleUserMenu()" class="flex items-center gap-3 p-2 rounded-lg hover:bg-gray-100 transition-colors user-menu">
                                     <div class="w-9 h-9 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold" id="user-avatar">
                                         U
                                     </div>
@@ -550,7 +515,7 @@
                                 </button>
 
                                 <!-- Dropdown Menu -->
-                                <div id="user-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 hidden">
+                                <div id="user-dropdown" class="absolute right-0 mt-2 w-64 bg-white rounded-lg shadow-xl border border-gray-200 hidden dropdown-menu">
                                     <div class="p-4 border-b border-gray-100">
                                         <div class="flex items-center gap-3">
                                             <div class="w-12 h-12 rounded-full bg-gradient-primary flex items-center justify-center text-white font-semibold">
@@ -564,19 +529,19 @@
                                     </div>
                                     
                                     <div class="p-2">
-                                        <a href="#" onclick="showMyReports()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <a href="#" onclick="showMyReports()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors dropdown-item">
                                             <i class="fas fa-file-alt text-gray-500 w-5"></i>
                                             <span>My Reports</span>
                                         </a>
                                         
-                                        <a href="#" onclick="showSettings()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors">
+                                        <a href="#" onclick="showSettings()" class="flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-colors dropdown-item">
                                             <i class="fas fa-cog text-gray-500 w-5"></i>
                                             <span>Settings</span>
                                         </a>
                                         
                                         <div class="border-t border-gray-100 my-2"></div>
                                         
-                                        <button onclick="logout()" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600 transition-colors">
+                                        <button onclick="logout()" class="w-full flex items-center gap-3 p-3 rounded-lg hover:bg-red-50 text-red-600 transition-colors dropdown-item">
                                             <i class="fas fa-sign-out-alt w-5"></i>
                                             <span>Logout</span>
                                         </button>
@@ -779,7 +744,7 @@
 
                                 <!-- Submit Button -->
                                 <div class="form-group-enhanced mt-6">
-                                    <button type="submit" class="btn-enhanced btn-enhanced-primary w-full py-3">
+                                    <button type="submit" class="btn-enhanced btn-enhanced-primary w-full py-3" id="submit-report-btn">
                                         <i class="fas fa-paper-plane"></i>
                                         Submit Report
                                     </button>
@@ -852,7 +817,7 @@
         </div>
 
         <!-- My Reports Screen -->
-        <div id="my-reports-screen" class="screen">
+        <div id="my-reports-screen" class="screen hidden">
             <!-- Header -->
             <header class="bg-white shadow-sm border-b border-gray-200 sticky top-0 z-50">
                 <div class="container mx-auto px-4 py-3">
@@ -963,7 +928,7 @@
                         </div>
                         
                         <!-- Loading State -->
-                        <div id="loading-reports" class="text-center py-12">
+                        <div id="loading-reports" class="text-center py-12 hidden">
                             <div class="inline-block animate-spin rounded-full h-12 w-12 border-b-2 border-primary-600"></div>
                             <p class="mt-4 text-gray-600">Loading reports...</p>
                         </div>
@@ -988,7 +953,7 @@
         </div>
 
         <!-- Admin Dashboard -->
-        <div id="admin-dashboard" class="screen">
+        <div id="admin-dashboard" class="screen hidden">
             <div class="admin-container">
                 <div class="header">
                     <div class="user-info">
@@ -1240,6 +1205,46 @@
 
     <script src="{{ url_for('static', filename='script.js') }}"></script>
     <script>
+        // Initialize the app
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('DOM loaded');
+            
+            // Show login screen immediately
+            setTimeout(function() {
+                hideLoading();
+                showScreen('login-screen');
+            }, 1000);
+            
+            // Setup event listeners
+            setupEventListeners();
+        });
+        
+        function hideLoading() {
+            const loadingScreen = document.getElementById('loading-screen');
+            if (loadingScreen) {
+                loadingScreen.classList.add('hidden');
+            }
+        }
+        
+        function setupEventListeners() {
+            // Problem type buttons
+            document.querySelectorAll('.problem-type-btn').forEach(button => {
+                button.addEventListener('click', function() {
+                    document.querySelectorAll('.problem-type-btn').forEach(btn => {
+                        btn.classList.remove('active');
+                    });
+                    this.classList.add('active');
+                    document.getElementById('problem-type').value = this.dataset.type;
+                });
+            });
+            
+            // Initialize first problem type as active
+            const firstProblemType = document.querySelector('.problem-type-btn');
+            if (firstProblemType) {
+                firstProblemType.click();
+            }
+        }
+        
         // Camera functions
         let stream = null;
         let photoData = null;
@@ -1356,49 +1361,5 @@
         window.handleFileUpload = handleFileUpload;
         window.removePhoto = removePhoto;
     </script>
-
-    <script>
-        // Emergency fix: Show content immediately
-        document.addEventListener('DOMContentLoaded', function() {
-            console.log('Emergency fix applied');
-            
-            // Hide any loading screen if it exists
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.classList.add('hidden');
-            }
-            
-            // Ensure login screen is visible
-            const screens = document.querySelectorAll('.screen');
-            screens.forEach(screen => screen.classList.remove('active'));
-            
-            const loginScreen = document.getElementById('login-screen');
-            if (loginScreen) {
-                loginScreen.classList.add('active');
-                console.log('Login screen activated');
-            }
-            
-            // Remove snowflake background if it's blocking
-            const snowflakes = document.querySelector('.snowflakes');
-            if (snowflakes) {
-                snowflakes.style.opacity = '0.1';
-            }
-        });
-        
-        // Backup: Force show after 3 seconds
-        setTimeout(function() {
-            console.log('Backup timeout triggered');
-            const loadingScreen = document.getElementById('loading-screen');
-            if (loadingScreen) {
-                loadingScreen.remove();
-            }
-            
-            const loginScreen = document.getElementById('login-screen');
-            if (loginScreen) {
-                loginScreen.classList.add('active');
-            }
-        }, 3000);
-    </script>
 </body>
 </html>
-
