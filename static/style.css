@@ -2227,3 +2227,87 @@ input, select, textarea {
     display: inline-block;
     flex-shrink: 0;
 }
+
+/* ============================================== */
+/* ADMIN 3-DOTS MENU SPECIFIC STYLES             */
+/* ============================================== */
+
+/* Remove any admin-specific button styles that might affect the 3-dots menu */
+.admin-container .admin-dropdown-btn,
+.admin-container .btn.btn-outline.admin-dropdown-btn {
+    display: none !important; /* Hide the old OPTIONS button */
+}
+
+/* Ensure admin 3-dots menu uses same styling as user */
+.admin-container .three-dot-menu {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    transition: all 0.2s ease;
+    -webkit-tap-highlight-color: transparent;
+}
+
+.admin-container .three-dot-menu:hover {
+    background: var(--background-color);
+    color: var(--primary-color);
+}
+
+.admin-container .three-dot-menu:active {
+    transform: scale(0.95);
+}
+
+/* Hide any admin-specific chevron arrows */
+.admin-container .admin-dropdown-arrow {
+    display: none !important;
+}
+
+/* Remove admin-specific dropdown styles */
+.admin-container .admin-dropdown-menu {
+    display: none !important;
+}
+
+/* Use the standard dropdown menu for admin */
+.admin-container .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-sm);
+    box-shadow: var(--shadow-lg);
+    z-index: 1002;
+    margin-top: 8px;
+    min-width: 160px;
+    overflow: hidden;
+    animation: dropdownSlideIn 0.2s ease;
+}
+
+.admin-container .dropdown-menu:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+}
+
+/* Ensure header actions container works properly */
+.admin-container .header-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    flex-wrap: nowrap;
+}
+
+/* Remove any conflicting admin-specific dropdown container styles */
+.admin-container .admin-dropdown-container {
+    all: unset;
+    display: inline-block;
+    position: relative;
+}
