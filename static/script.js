@@ -1720,17 +1720,43 @@ async function filterReports(period) {
             
             switch(period) {
                 case 'today':
+                    // Get today's date in YYYY-MM-DD format
+                    const todayStr = now.toISOString().split('T')[0];
+                    console.log(`📅 Today's date: ${todayStr}`);
+                    
                     filteredReports = data.reports.filter(report => {
-                        const reportDate = new Date(report.date);
-                        return reportDate.toDateString() === now.toDateString();
+                        // Parse the report date - handle different formats
+                        let reportDate;
+                        try {
+                            reportDate = new Date(report.date);
+                        } catch (e) {
+                            console.warn(`⚠️ Invalid date format for report ${report.id}: ${report.date}`);
+                            return false;
+                        }
+                        
+                        if (isNaN(reportDate.getTime())) {
+                            console.warn(`⚠️ Invalid date for report ${report.id}: ${report.date}`);
+                            return false;
+                        }
+                        
+                        // Format report date as YYYY-MM-DD for comparison
+                        const reportDateStr = reportDate.toISOString().split('T')[0];
+                        const isToday = reportDateStr === todayStr;
+                        
+                        if (isToday) {
+                            console.log(`✅ Report ${report.id} is from today: ${reportDateStr}`);
+                        }
+                        
+                        return isToday;
                     });
+                    console.log(`📊 Today's reports count: ${filteredReports.length}`);
                     break;
                     
                 case 'week':
                     const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
                     filteredReports = data.reports.filter(report => {
                         const reportDate = new Date(report.date);
-                        return reportDate >= oneWeekAgo;
+                        return !isNaN(reportDate.getTime()) && reportDate >= oneWeekAgo;
                     });
                     break;
                     
@@ -1738,7 +1764,7 @@ async function filterReports(period) {
                     const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
                     filteredReports = data.reports.filter(report => {
                         const reportDate = new Date(report.date);
-                        return reportDate >= oneMonthAgo;
+                        return !isNaN(reportDate.getTime()) && reportDate >= oneMonthAgo;
                     });
                     break;
                     
@@ -1749,91 +1775,113 @@ async function filterReports(period) {
             }
             
             displayFilteredReports(filteredReports, period);
-            updateFilterStats(filteredReports);
+            updateFilterStats(filteredReports, period);
         } else {
-            document.getElementById('admin-reports-list').innerHTML = `
-                <div style="text-align: center; padding: 20px; color: #64748b;">
-                    <p>No reports found</p>
-                </div>
-            `;
+            displayEmptyReportsState(period);
         }
     } catch (error) {
-        console.error('Failed to filter reports:', error);
-        showSnackbar('Failed to filter reports', 'error');
+        console.error('❌ Failed to filter reports:', error);
+        showSnackbar('Failed to load reports', 'error');
     }
 }
 
 // Display filtered reports with audit information
 function displayFilteredReports(reports, period) {
     const reportsList = document.getElementById('admin-reports-list');
+    const filterIndicator = document.getElementById('filter-indicator');
+    
+    if (!reportsList) {
+        console.error('❌ Reports list element not found');
+        return;
+    }
     
     if (reports.length > 0) {
-        reportsList.innerHTML = reports.map(report => {
+        // Show reports
+        reportsList.innerHTML = reports.map((report, index) => {
             // Check if report is from last 24 hours
             const reportDate = new Date(report.date);
             const now = new Date();
             const isNewReport = (now - reportDate) <= (24 * 60 * 60 * 1000);
             
             return `
-                <div class="report-card ${isNewReport ? 'new-report-highlight' : ''}">
+                <div class="report-card ${isNewReport ? 'new-report-highlight' : ''}" style="margin-bottom: 16px;">
                     ${isNewReport ? `
-                        <div style="position: absolute; top: 10px; right: 10px;">
-                            <span style="background: #667eea; color: white; padding: 4px 8px; border-radius: 12px; font-size: 10px; font-weight: 600;">
-                                <i class="fas fa-star" style="margin-right: 4px;"></i>NEW
-                            </span>
+                        <div class="new-badge">
+                            <i class="fas fa-star"></i> NEW
                         </div>
                     ` : ''}
-                    <div class="report-header">
-                        <span class="report-type">${report.problem_type}</span>
-                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                    
+                    <div class="report-header" style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
+                        <span class="report-type" style="font-weight: 600; color: #2563eb;">
+                            <i class="fas fa-${getProblemTypeIcon(report.problem_type)}"></i>
+                            ${report.problem_type}
+                        </span>
+                        <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}" 
+                              style="padding: 4px 12px; border-radius: 20px; font-size: 12px; font-weight: 600;">
                             ${report.status}
                         </span>
                     </div>
-                    <div class="report-location">
-                        <i class="fas fa-location-dot"></i> ${report.location}
+                    
+                    <div class="report-location" style="display: flex; align-items: center; gap: 8px; color: #64748b; margin-bottom: 8px;">
+                        <i class="fas fa-location-dot" style="color: #ef4444;"></i>
+                        <span>${report.location}</span>
                     </div>
-                    <div class="report-issue">${report.issue}</div>
-                    <div class="report-footer">
-                        <span>By: ${report.username}</span>
-                        <span>${report.date}</span>
+                    
+                    <div class="report-issue" style="color: #475569; margin-bottom: 12px; line-height: 1.5;">
+                        ${report.issue}
                     </div>
+                    
+                    <div class="report-footer" style="display: flex; justify-content: space-between; color: #64748b; font-size: 13px; border-top: 1px solid #e2e8f0; padding-top: 12px;">
+                        <span><i class="fas fa-user"></i> ${report.username}</span>
+                        <span><i class="fas fa-calendar"></i> ${formatDate(report.date)}</span>
+                    </div>
+                    
                     ${report.photo_data ? `
-                        <div class="report-photo">
-                            <img src="${report.photo_data}" alt="Report photo" style="max-width: 100%; border-radius: 8px; margin-top: 10px;">
+                        <div class="report-photo" style="margin-top: 12px;">
+                            <img src="${report.photo_data}" alt="Report photo" style="width: 100%; max-height: 200px; object-fit: cover; border-radius: 8px; border: 1px solid #e2e8f0;">
                         </div>
                     ` : ''}
-                    <div class="admin-actions" style="margin-top: 10px; display: flex; gap: 8px; flex-wrap: wrap;">
-                        <select class="status-select" data-report-id="${report.id}" style="flex: 2; padding: 8px; border-radius: 6px; border: 1px solid #e2e8f0; min-width: 120px;" onchange="handleStatusChange(this, ${report.id})">
-                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
-                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
-                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                    
+                    <div class="admin-actions" style="display: flex; gap: 8px; margin-top: 16px; flex-wrap: wrap;">
+                        <select class="status-select" data-report-id="${report.id}" 
+                                onchange="handleStatusChange(this, ${report.id})"
+                                style="flex: 2; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; background: white; min-width: 140px;">
+                            <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>⏳ Pending</option>
+                            <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>🚧 In Progress</option>
+                            <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>✅ Resolved</option>
                         </select>
-                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" style="padding: 8px 12px; flex: 1;">
+                        
+                        <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)" 
+                                style="flex: 1; padding: 8px 12px; font-size: 13px; min-width: 80px;">
                             <i class="fas fa-trash"></i> Delete
                         </button>
                     </div>
-                    ${report.status === 'Resolved' ? `
-                        <div class="resolution-notes" style="margin-top: 10px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
-                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px; flex-wrap: wrap;">
-                                <strong style="color: #1e40af; font-size: 14px;">Resolution Details</strong>
-                                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 4px;">
-                                    ${report.auditor_name ? `
-                                        <span style="color: #64748b; font-size: 12px; font-style: italic;">
-                                            <i class="fas fa-user-check"></i> Audited by: ${report.auditor_name}
-                                        </span>
-                                    ` : ''}
-                                    ${report.resolved_at ? `
-                                        <span style="color: #64748b; font-size: 12px; font-style: italic;">
-                                            <i class="fas fa-clock"></i> Resolved: ${report.resolved_at}
-                                        </span>
-                                    ` : ''}
-                                </div>
+                    
+                    ${report.status === 'Resolved' && (report.resolution_notes || report.auditor_name) ? `
+                        <div class="resolution-notes" style="margin-top: 16px; padding: 12px; background: #f0f9ff; border-radius: 8px; border-left: 4px solid #2563eb;">
+                            <div style="display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 8px;">
+                                <strong style="color: #1e40af; font-size: 14px;">
+                                    <i class="fas fa-check-circle"></i> Resolution Details
+                                </strong>
+                                ${report.resolved_at ? `
+                                    <span style="color: #64748b; font-size: 12px;">
+                                        <i class="fas fa-clock"></i> ${report.resolved_at}
+                                    </span>
+                                ` : ''}
                             </div>
+                            
+                            ${report.auditor_name ? `
+                                <div style="margin-bottom: 8px; font-size: 13px;">
+                                    <i class="fas fa-user-check"></i> 
+                                    <strong>Auditor:</strong> ${report.auditor_name}
+                                </div>
+                            ` : ''}
+                            
                             ${report.resolution_notes ? `
-                                <p style="margin: 8px 0 0 0; color: #475569; font-size: 14px; line-height: 1.4;">${report.resolution_notes}</p>
-                            ` : `
-                                <p style="margin: 8px 0 0 0; color: #64748b; font-size: 14px; font-style: italic;">No resolution details provided.</p>
-                            `}
+                                <p style="margin: 0; color: #475569; font-size: 14px; line-height: 1.4;">
+                                    ${report.resolution_notes}
+                                </p>
+                            ` : ''}
                         </div>
                     ` : ''}
                 </div>
@@ -1841,24 +1889,227 @@ function displayFilteredReports(reports, period) {
         }).join('');
         
         // Update filter indicator
-        const filterIndicator = document.getElementById('filter-indicator');
         if (filterIndicator) {
-            const periodText = period === 'today' ? 'Today' : 
-                             period === 'week' ? 'This Week' : 
-                             period === 'month' ? 'This Month' : 'All Time';
-            filterIndicator.textContent = `Showing: ${periodText} (${reports.length} reports)`;
+            const periodText = getPeriodText(period);
+            filterIndicator.innerHTML = `
+                <div style="display: flex; align-items: center; justify-content: center; gap: 8px;">
+                    <i class="fas fa-filter" style="color: #2563eb;"></i>
+                    <span>Showing: ${periodText}</span>
+                    <span style="background: #2563eb; color: white; padding: 2px 8px; border-radius: 12px; font-size: 12px;">
+                        ${reports.length} report${reports.length !== 1 ? 's' : ''}
+                    </span>
+                </div>
+            `;
         }
     } else {
-        const periodText = period === 'today' ? 'today' : 
-                         period === 'week' ? 'this week' : 
-                         period === 'month' ? 'this month' : 'all time';
+        // Show empty state
+        displayEmptyReportsState(period);
+    }
+}
+
+// ========================
+// HELPER FUNCTIONS
+// ========================
+
+function displayEmptyReportsState(period) {
+    const reportsList = document.getElementById('admin-reports-list');
+    const filterIndicator = document.getElementById('filter-indicator');
+    const periodText = getPeriodText(period);
+    
+    if (reportsList) {
         reportsList.innerHTML = `
-            <div style="text-align: center; padding: 40px 20px; color: #64748b;">
-                <i class="fas fa-file-alt" style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;"></i>
-                <p>No reports found for ${periodText}</p>
+            <div class="empty-state" style="text-align: center; padding: 40px 20px; color: #64748b;">
+                <div style="font-size: 48px; margin-bottom: 16px; opacity: 0.5;">
+                    ${getEmptyStateIcon(period)}
+                </div>
+                <h3 style="font-size: 18px; font-weight: 600; color: #475569; margin-bottom: 8px;">
+                    No Reports Found for ${periodText}
+                </h3>
+                <p style="margin-bottom: 20px; max-width: 300px; margin-left: auto; margin-right: auto;">
+                    ${getEmptyStateMessage(period)}
+                </p>
+                <div style="display: flex; gap: 12px; justify-content: center;">
+                    <button class="btn btn-outline" onclick="filterReports('all')" style="padding: 8px 16px;">
+                        <i class="fas fa-calendar"></i> Show All Reports
+                    </button>
+                    <button class="btn btn-primary" onclick="refreshAdminDashboard()" style="padding: 8px 16px;">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
             </div>
         `;
     }
+    
+    if (filterIndicator) {
+        filterIndicator.innerHTML = `
+            <div style="display: flex; align-items: center; justify-content: center; gap: 8px; color: #ef4444;">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span>No reports found for ${periodText}</span>
+            </div>
+        `;
+    }
+}
+
+function getPeriodText(period) {
+    switch(period) {
+        case 'today': return 'Today';
+        case 'week': return 'This Week';
+        case 'month': return 'This Month';
+        default: return 'All Time';
+    }
+}
+
+function getEmptyStateIcon(period) {
+    switch(period) {
+        case 'today': return '<i class="fas fa-calendar-day"></i>';
+        case 'week': return '<i class="fas fa-calendar-week"></i>';
+        case 'month': return '<i class="fas fa-calendar-alt"></i>';
+        default: return '<i class="fas fa-file-alt"></i>';
+    }
+}
+
+function getEmptyStateMessage(period) {
+    switch(period) {
+        case 'today': 
+            return 'No reports have been submitted today. Check back later or view all reports.';
+        case 'week': 
+            return 'No reports have been submitted this week. Try expanding your search to all time.';
+        case 'month': 
+            return 'No reports have been submitted this month. All caught up!';
+        default: 
+            return 'No reports found in the system.';
+    }
+}
+
+function getProblemTypeIcon(problemType) {
+    const iconMap = {
+        'Pothole': 'road',
+        'Garbage Collection': 'trash',
+        'Street Light': 'lightbulb',
+        'Water Leak': 'tint',
+        'Noise Complaint': 'volume-up',
+        'Other': 'exclamation-triangle'
+    };
+    return iconMap[problemType] || 'exclamation-circle';
+}
+
+function formatDate(dateString) {
+    try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) {
+            return dateString;
+        }
+        
+        // Format as "Dec 25, 2023 - 2:30 PM"
+        return date.toLocaleDateString('en-US', {
+            month: 'short',
+            day: 'numeric',
+            year: 'numeric',
+            hour: 'numeric',
+            minute: '2-digit',
+            hour12: true
+        });
+    } catch (e) {
+        return dateString;
+    }
+}
+
+function updateFilterStats(reports, period) {
+    const total = reports.length;
+    const pending = reports.filter(r => r.status === 'Pending').length;
+    const inProgress = reports.filter(r => r.status === 'In Progress').length;
+    const resolved = reports.filter(r => r.status === 'Resolved').length;
+    
+    const statsContainer = document.getElementById('admin-stats');
+    if (statsContainer) {
+        statsContainer.innerHTML = `
+            <div class="admin-stat-card" style="background: ${total === 0 ? '#f8fafc' : '#f0f9ff'};">
+                <div class="admin-stat-value" style="color: ${total === 0 ? '#94a3b8' : '#2563eb'};">
+                    ${total}
+                </div>
+                <div class="admin-stat-label" style="color: ${total === 0 ? '#94a3b8' : '#64748b'};">
+                    Total Reports
+                </div>
+            </div>
+            <div class="admin-stat-card" style="background: ${pending === 0 ? '#f8fafc' : '#fef3c7'};">
+                <div class="admin-stat-value" style="color: ${pending === 0 ? '#94a3b8' : '#d97706'};">
+                    ${pending}
+                </div>
+                <div class="admin-stat-label" style="color: ${pending === 0 ? '#94a3b8' : '#d97706'};">
+                    Pending
+                </div>
+            </div>
+            <div class="admin-stat-card" style="background: ${inProgress === 0 ? '#f8fafc' : '#dbeafe'};">
+                <div class="admin-stat-value" style="color: ${inProgress === 0 ? '#94a3b8' : '#1d4ed8'};">
+                    ${inProgress}
+                </div>
+                <div class="admin-stat-label" style="color: ${inProgress === 0 ? '#94a3b8' : '#1d4ed8'};">
+                    In Progress
+                </div>
+            </div>
+            <div class="admin-stat-card" style="background: ${resolved === 0 ? '#f8fafc' : '#d1fae5'};">
+                <div class="admin-stat-value" style="color: ${resolved === 0 ? '#94a3b8' : '#059669'};">
+                    ${resolved}
+                </div>
+                <div class="admin-stat-label" style="color: ${resolved === 0 ? '#94a3b8' : '#059669'};">
+                    Resolved
+                </div>
+            </div>
+        `;
+    }
+}
+
+// ========================
+// ADDITIONAL FILTER OPTIONS
+// ========================
+
+function addAdvancedFilterControls() {
+    const filterCard = document.querySelector('.card:has(h3:contains("Filter Reports"))');
+    if (filterCard) {
+        // Add advanced filter section
+        const advancedFilters = document.createElement('div');
+        advancedFilters.className = 'advanced-filters';
+        advancedFilters.style.marginTop = '16px';
+        advancedFilters.style.paddingTop = '16px';
+        advancedFilters.style.borderTop = '1px solid #e2e8f0';
+        
+        advancedFilters.innerHTML = `
+            <div style="margin-bottom: 12px;">
+                <label style="display: block; color: #475569; font-size: 13px; font-weight: 500; margin-bottom: 6px;">
+                    <i class="fas fa-filter"></i> Advanced Filters
+                </label>
+                <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+                    <select id="filter-status" style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 120px;" 
+                            onchange="applyAdvancedFilters()">
+                        <option value="">All Status</option>
+                        <option value="Pending">Pending</option>
+                        <option value="In Progress">In Progress</option>
+                        <option value="Resolved">Resolved</option>
+                    </select>
+                    
+                    <select id="filter-priority" style="flex: 1; padding: 8px 12px; border: 1px solid #e2e8f0; border-radius: 8px; min-width: 120px;"
+                            onchange="applyAdvancedFilters()">
+                        <option value="">All Priority</option>
+                        <option value="Low">Low</option>
+                        <option value="Medium">Medium</option>
+                        <option value="High">High</option>
+                        <option value="Urgent">Urgent</option>
+                    </select>
+                    
+                    <button class="btn btn-outline" onclick="clearAdvancedFilters()" style="padding: 8px 12px;">
+                        <i class="fas fa-times"></i> Clear
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        filterCard.appendChild(advancedFilters);
+    }
+}
+
+// Call this function when admin dashboard loads
+function initializeAdvancedFilters() {
+    addAdvancedFilterControls();
 }
 
 // Update stats for filtered reports
@@ -2666,6 +2917,7 @@ document.addEventListener('keydown', function(e) {
         toggleDarkMode();
     }
 });
+
 
 
 
