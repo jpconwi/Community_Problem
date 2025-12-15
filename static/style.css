@@ -2037,3 +2037,134 @@ input, select, textarea {
         max-width: calc(100vw - 32px);
     }
 }
+
+/* FIX FOR LOGOUT BUTTON VISIBILITY */
+
+/* Ensure dropdown menu is always visible when triggered */
+.dropdown-menu:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    transform: translateY(0) !important;
+}
+
+/* Fix for three-dot menu positioning */
+.three-dot-menu {
+    position: relative;
+    z-index: 1002 !important;
+}
+
+/* Ensure dropdown container has proper stacking */
+.dropdown-container {
+    position: relative;
+    z-index: 1003 !important;
+}
+
+/* Make sure logout button is visible in dropdown */
+.dropdown-item.logout-btn {
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white !important;
+    font-weight: 600;
+    border-radius: var(--radius-sm);
+    margin: var(--space-xs) var(--space-sm);
+    width: calc(100% - 24px);
+}
+
+.dropdown-item.logout-btn:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+/* Fix for admin dashboard specifically */
+.admin-container .dropdown-menu {
+    min-width: 200px;
+    z-index: 1004 !important;
+}
+
+/* Alternative logout button style in header */
+.header-logout-btn {
+    display: flex !important;
+    align-items: center;
+    gap: var(--space-sm);
+    background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);
+    color: white;
+    padding: var(--space-sm) var(--space-md);
+    border-radius: var(--radius-md);
+    font-weight: 600;
+    text-decoration: none;
+    transition: all 0.3s ease;
+    min-height: 44px;
+    min-width: 44px;
+}
+
+.header-logout-btn:hover {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-lg);
+}
+
+/* Ensure dropdown is clickable on mobile */
+@media (max-width: 768px) {
+    .dropdown-menu {
+        position: fixed !important;
+        top: auto !important;
+        bottom: 0 !important;
+        left: 0 !important;
+        right: 0 !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        border-radius: var(--radius-xl) var(--radius-xl) 0 0 !important;
+        animation: slideUp 0.3s ease !important;
+        margin: 0 !important;
+        max-height: 60vh;
+        overflow-y: auto;
+    }
+    
+    .dropdown-item {
+        min-height: 52px;
+        font-size: var(--text-base);
+    }
+}
+
+/* Animation fix */
+@keyframes slideUp {
+    from {
+        opacity: 0;
+        transform: translateY(100%);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Ensure no other elements are covering the dropdown */
+.dashboard-container,
+.admin-container {
+    position: relative;
+}
+
+.dashboard-container > *:not(.dropdown-container),
+.admin-container > *:not(.dropdown-container) {
+    position: relative;
+    z-index: 1;
+}
+
+.dropdown-container {
+    position: relative;
+    z-index: 1000 !important;
+}
+
+/* Fix for backdrop filter conflicts */
+.glass-card,
+.dashboard-container,
+.admin-container {
+    backdrop-filter: none;
+}
+
+/* Ensure logout button icon is visible */
+.dropdown-item.logout-btn i {
+    color: white !important;
+    font-size: var(--text-lg);
+}
