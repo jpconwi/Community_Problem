@@ -1205,71 +1205,32 @@ async function loadAdminDashboard() {
     
     const adminContainer = document.querySelector('.admin-container');
     adminContainer.innerHTML = `
-        <div class="screen-header">
-            <h2>Admin Dashboard</h2>
-            <div class="admin-header-actions">
-                <button class="icon-btn" onclick="showAdminNotifications()">
-                    <i class="fas fa-bell"></i>
-                    <span id="admin-notification-badge" class="badge hidden">0</span>
+    <div class="screen-header">
+        <h2>Admin Dashboard</h2>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="showAdminNotifications()">
+                <i class="fas fa-bell"></i>
+                <span id="admin-notification-badge" class="badge hidden">0</span>
+            </button>
+            <div class="dropdown-container">
+                <button class="three-dot-menu" onclick="toggleAdminDropdown()">
+                    <i class="fas fa-ellipsis-v"></i>
                 </button>
-                <div class="admin-dropdown-container">
-                    <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown()">
-                        <i class="fas fa-ellipsis-v"></i>
-                        OPTIONS
-                        <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
+                <div id="admin-dropdown-menu" class="dropdown-menu hidden">
+                    <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
                     </button>
-                    <div id="admin-dropdown-menu" class="admin-dropdown-menu hidden">
-                        <button class="admin-dropdown-item" onclick="refreshAdminDashboard()">
-                            <i class="fas fa-sync-alt"></i>
-                            Refresh
-                        </button>
-                        <button class="admin-dropdown-item" onclick="logout()">
-                            <i class="fas fa-sign-out-alt"></i>
-                            Logout
-                        </button>
-                    </div>
+                    <button class="dropdown-item" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
                 </div>
             </div>
         </div>
-        
-        <!-- Notification Status -->
-        <div id="admin-notification-status" class="notification-status hidden">
-            <!-- New reports notification will appear here -->
-        </div>
-        
-        <!-- Filter Controls -->
-        <div class="card">
-            <h3>Filter Reports</h3>
-            <div style="display: flex; gap: 10px; flex-wrap: wrap; margin-bottom: 15px;">
-                <button class="btn btn-outline" onclick="filterReports('today')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-day"></i> Today
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('week')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-week"></i> This Week
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('month')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar-alt"></i> This Month
-                </button>
-                <button class="btn btn-outline" onclick="filterReports('all')" style="flex: 1; min-width: 80px;">
-                    <i class="fas fa-calendar"></i> All Time
-                </button>
-            </div>
-            <div id="filter-indicator" style="text-align: center; color: #64748b; font-size: 14px; padding: 10px;">
-                Showing: All Time
-            </div>
-        </div>
-        
-        <div class="admin-stats" id="admin-stats">
-            <!-- Stats will be loaded here -->
-        </div>
-        
-        <div class="card">
-            <h3>Reports</h3>
-            <div id="admin-reports-list">
-                <!-- Reports will be loaded here -->
-            </div>
-        </div>
-    `;
+    </div>
+    ...
+`;
     
     await loadAdminStats();
     await loadAllReports();
@@ -1916,3 +1877,4 @@ async function refreshAdminDashboard() {
         showSnackbar('Failed to refresh dashboard', 'error');
     }
 }
+
