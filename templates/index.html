@@ -47,6 +47,60 @@
     </style>
 </head>
 <body>
+    <!-- Add after body tag -->
+<div id="loading-screen" class="loading-screen active">
+    <div class="loading-container">
+        <div class="loading-spinner"></div>
+        <p>Loading BAYAN...</p>
+    </div>
+</div>
+
+<!-- Add progress indicators to forms -->
+<div id="progress-bar" class="progress-bar hidden">
+    <div class="progress-fill"></div>
+</div>
+
+
+    <!-- Add before closing body tag -->
+<div id="help-modal" class="modal hidden">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>Welcome to BAYAN</h3>
+            <button class="close-btn" onclick="closeHelpModal()">&times;</button>
+        </div>
+        <div class="modal-body">
+            <div class="onboarding-steps">
+                <div class="step">
+                    <div class="step-number">1</div>
+                    <div class="step-content">
+                        <h4>Submit Reports</h4>
+                        <p>Report community issues with photos and location details</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">2</div>
+                    <div class="step-content">
+                        <h4>Track Progress</h4>
+                        <p>Monitor your report status from pending to resolved</p>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-number">3</div>
+                    <div class="step-content">
+                        <h4>Get Notified</h4>
+                        <p>Receive updates when your reports are addressed</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="modal-actions">
+            <button class="btn btn-primary" onclick="closeHelpModal()">
+                Get Started
+            </button>
+        </div>
+    </div>
+</div>
+    
     <div id="app">
         <!-- Login Screen -->
         <div id="login-screen" class="screen active">
@@ -657,4 +711,5 @@
     </script>
 </body>
 </html>
+
 
