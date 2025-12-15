@@ -2550,10 +2550,7 @@ async function loadAdminDashboard() {
                         </button>
 
                         
-                        // <button class="dropdown-item" onclick="toggleDarkMode()">
-                        //     <i class="fas fa-moon"></i>
-                        //     Toggle Dark Mode
-                        // </button>
+                        
 
                         
                         <button class="dropdown-item" onclick="logout()">
@@ -2668,5 +2665,6 @@ document.addEventListener('keydown', function(e) {
         toggleDarkMode();
     }
 });
+
 
 
