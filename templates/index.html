@@ -47,18 +47,17 @@
     </style>
 </head>
 <body>
-    <!-- Add after body tag -->
-<div id="loading-screen" class="loading-screen active">
-    <div class="loading-container">
-        <div class="loading-spinner"></div>
-        <p>Loading BAYAN...</p>
+    <body>
+    <!-- ADD THIS LOADING SCREEN -->
+    <div id="loading-screen" class="loading-screen">
+        <div class="loading-container">
+            <div class="loading-spinner"></div>
+            <h3>Loading BAYAN</h3>
+            <p>Barangay Action for Youth and Neighborhoods</p>
+        </div>
     </div>
-</div>
-
-<!-- Add progress indicators to forms -->
-<div id="progress-bar" class="progress-bar hidden">
-    <div class="progress-fill"></div>
-</div>
+    
+    <!-- Rest of your existing code... -->
 
 
     <!-- Add before closing body tag -->
@@ -709,7 +708,51 @@
         window.handleFileUpload = handleFileUpload;
         window.removePhoto = removePhoto;
     </script>
+
+        <script>
+    // Emergency fix: Show content immediately
+    document.addEventListener('DOMContentLoaded', function() {
+        console.log('Emergency fix applied');
+        
+        // Hide any loading screen if it exists
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.classList.add('hidden');
+        }
+        
+        // Ensure login screen is visible
+        const screens = document.querySelectorAll('.screen');
+        screens.forEach(screen => screen.classList.remove('active'));
+        
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) {
+            loginScreen.classList.add('active');
+            console.log('Login screen activated');
+        }
+        
+        // Remove snowflake background if it's blocking
+        const snowflakes = document.querySelector('.snowflakes');
+        if (snowflakes) {
+            snowflakes.style.opacity = '0.1';
+        }
+    });
+    
+    // Backup: Force show after 3 seconds
+    setTimeout(function() {
+        console.log('Backup timeout triggered');
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+            loadingScreen.remove();
+        }
+        
+        const loginScreen = document.getElementById('login-screen');
+        if (loginScreen) {
+            loginScreen.classList.add('active');
+        }
+    }, 3000);
+</script>
 </body>
 </html>
+
 
 
