@@ -342,7 +342,36 @@
             </div>
         </div>
 
-        
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="screen">
+            <div class="admin-container">
+    <div class="header">
+        <div class="user-info">
+            <h2 id="admin-name">BAYAN Admin Dashboard</h2>
+            <p>Manage community reports</p>
+        </div>
+        <div class="header-actions">
+            <button class="icon-btn" onclick="showAdminNotifications()">
+                <i class="fas fa-bell"></i>
+                <span id="admin-notification-badge" class="badge hidden">0</span>
+            </button>
+            <div class="dropdown-container">
+                <button class="three-dot-menu" onclick="toggleAdminDropdown()">
+                    <i class="fas fa-ellipsis-v"></i>
+                </button>
+                <div id="admin-dropdown-menu" class="dropdown-menu hidden">
+                    <button class="dropdown-item" onclick="refreshAdminDashboard()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                    <button class="dropdown-item" onclick="logout()">
+                        <i class="fas fa-sign-out-alt"></i>
+                        Logout
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
 
                 <!-- Rest of your admin dashboard content -->
                 <div class="admin-stats">
@@ -1628,8 +1657,6 @@ function showSnackbar(message, type) {
 </script>
 </body>
 </html>
-
-
 
 
 
