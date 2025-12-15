@@ -2836,3 +2836,285 @@ input[type="button"] {
 #loading-screen {
     z-index: 10000 !important;
 }
+
+/* ======================== */
+/* DARK MODE IMPLEMENTATION */
+/* ======================== */
+
+/* Dark mode toggle button */
+.dark-mode-toggle {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 8px;
+    border-radius: 50%;
+    font-size: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 44px;
+    min-height: 44px;
+    transition: all 0.3s ease;
+    margin-right: 8px;
+    position: relative;
+    overflow: hidden;
+}
+
+.dark-mode-toggle:hover {
+    background: var(--background-color);
+    color: var(--primary-color);
+}
+
+.dark-mode-toggle:active {
+    transform: scale(0.95);
+}
+
+.dark-mode-toggle i {
+    position: absolute;
+    transition: all 0.3s ease;
+}
+
+.dark-mode-toggle .fa-moon {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+.dark-mode-toggle .fa-sun {
+    opacity: 0;
+    transform: rotate(90deg);
+}
+
+/* Dark mode styles */
+body.dark-mode {
+    --background-color: #0f172a;
+    --surface-color: #1e293b;
+    --text-primary: #f1f5f9;
+    --text-secondary: #cbd5e1;
+    --text-muted: #94a3b8;
+    --border-color: #334155;
+    --primary-light: rgba(37, 99, 235, 0.2);
+    --danger-light: rgba(239, 68, 68, 0.2);
+    --success-light: rgba(22, 163, 74, 0.2);
+    --warning-light: rgba(217, 119, 6, 0.2);
+}
+
+body.dark-mode .auth-container {
+    background: rgba(15, 23, 42, 0.95) !important;
+}
+
+body.dark-mode .dashboard-container,
+body.dark-mode .admin-container {
+    background: rgba(15, 23, 42, 0.95) !important;
+}
+
+body.dark-mode .auth-card,
+body.dark-mode .card,
+body.dark-mode .modal-content,
+body.dark-mode .dropdown-menu,
+body.dark-mode .header,
+body.dark-mode .screen-header {
+    background: var(--surface-color) !important;
+    border-color: var(--border-color) !important;
+}
+
+body.dark-mode .stats-card {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+body.dark-mode .admin-stat-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .form-group input,
+body.dark-mode .form-group select,
+body.dark-mode .form-group textarea {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: var(--text-primary);
+}
+
+body.dark-mode .form-group input:focus,
+body.dark-mode .form-group select:focus,
+body.dark-mode .form-group textarea:focus {
+    border-color: var(--primary-color);
+    background: #2d3748;
+}
+
+body.dark-mode .btn-outline {
+    background: transparent;
+    color: var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+body.dark-mode .btn-outline:hover {
+    background: var(--primary-color);
+    color: white;
+}
+
+body.dark-mode .status-select {
+    background: #2d3748;
+    border-color: #4a5568;
+    color: var(--text-primary);
+}
+
+body.dark-mode .resolution-notes {
+    background: rgba(30, 64, 175, 0.2) !important;
+    border-left-color: var(--primary-color) !important;
+}
+
+body.dark-mode .new-reports-alert {
+    background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+}
+
+body.dark-mode .dropdown-item:hover {
+    background: var(--primary-light);
+}
+
+body.dark-mode .photo-preview {
+    border-color: var(--border-color);
+}
+
+body.dark-mode .snowflakes {
+    opacity: 0.1;
+}
+
+/* Dark mode toggle animation */
+.dark-mode-toggle .fa-moon {
+    color: #64748b;
+}
+
+.dark-mode-toggle .fa-sun {
+    color: #fbbf24;
+}
+
+body.dark-mode .dark-mode-toggle .fa-moon {
+    opacity: 0;
+    transform: rotate(-90deg);
+}
+
+body.dark-mode .dark-mode-toggle .fa-sun {
+    opacity: 1;
+    transform: rotate(0deg);
+}
+
+/* Smooth transition for dark mode */
+body.dark-mode * {
+    transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
+}
+
+/* Dark mode snackbar */
+body.dark-mode .snackbar {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+    color: var(--text-primary);
+}
+
+body.dark-mode .snackbar.error {
+    background: linear-gradient(135deg, #7f1d1d 0%, #991b1b 100%);
+    color: white;
+}
+
+body.dark-mode .snackbar.success {
+    background: linear-gradient(135deg, #065f46 0%, #047857 100%);
+    color: white;
+}
+
+/* Dark mode modal backdrop */
+body.dark-mode .modal {
+    background: rgba(0, 0, 0, 0.7);
+}
+
+/* Dark mode report cards */
+body.dark-mode .report-card {
+    background: var(--surface-color);
+    border: 1px solid var(--border-color);
+}
+
+body.dark-mode .report-header {
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-mode .report-footer {
+    border-top-color: var(--border-color);
+}
+
+/* Dark mode notifications */
+body.dark-mode .notification-item {
+    background: var(--surface-color);
+    border-bottom-color: var(--border-color);
+}
+
+body.dark-mode .notification-item.new-notification {
+    background: rgba(30, 64, 175, 0.3);
+}
+
+body.dark-mode .empty-state,
+body.dark-mode .error-state {
+    color: var(--text-muted);
+}
+
+/* Dark mode loading screen */
+body.dark-mode #loading-screen {
+    background: rgba(15, 23, 42, 0.98);
+}
+
+body.dark-mode .loading-container {
+    background: var(--surface-color);
+    color: var(--text-primary);
+}
+
+/* Status colors in dark mode */
+body.dark-mode .status-pending {
+    background: rgba(245, 158, 11, 0.2);
+    color: #fbbf24;
+}
+
+body.dark-mode .status-in-progress {
+    background: rgba(37, 99, 235, 0.2);
+    color: #60a5fa;
+}
+
+body.dark-mode .status-resolved {
+    background: rgba(34, 197, 94, 0.2);
+    color: #4ade80;
+}
+
+/* Dark mode scrollbar */
+body.dark-mode ::-webkit-scrollbar {
+    width: 10px;
+}
+
+body.dark-mode ::-webkit-scrollbar-track {
+    background: var(--background-color);
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb {
+    background: #4a5568;
+    border-radius: 5px;
+}
+
+body.dark-mode ::-webkit-scrollbar-thumb:hover {
+    background: #718096;
+}
+
+/* Dark mode focus states */
+body.dark-mode *:focus {
+    outline-color: var(--primary-color);
+}
+
+/* Dark mode camera modal */
+body.dark-mode #camera-modal .modal-content {
+    background: var(--surface-color);
+}
+
+/* Dark mode help modal */
+body.dark-mode #help-modal .modal-content {
+    background: var(--surface-color);
+}
+
+/* Dark mode three-dot menu */
+body.dark-mode .three-dot-menu:hover {
+    background: var(--background-color);
+}
