@@ -1207,23 +1207,21 @@ async function loadAdminDashboard() {
     adminContainer.innerHTML = `
         <div class="screen-header">
         <h2>Admin Dashboard</h2>
-        <div class="admin-header-actions">
+        <div class="header-actions">
             <button class="icon-btn" onclick="showAdminNotifications()">
                 <i class="fas fa-bell"></i>
                 <span id="admin-notification-badge" class="badge hidden">0</span>
             </button>
-            <div class="admin-dropdown-container">
-                <button class="btn btn-outline admin-dropdown-btn" onclick="toggleAdminDropdown()">
+            <div class="dropdown-container">
+                <button class="three-dot-menu" onclick="toggleAdminDropdown()">
                     <i class="fas fa-ellipsis-v"></i>
-                    OPTIONS
-                    <i class="fas fa-chevron-down admin-dropdown-arrow"></i>
                 </button>
-                <div id="admin-dropdown-menu" class="admin-dropdown-menu hidden">
-                    <button class="admin-dropdown-item" onclick="refreshAdminDashboard()">
+                <div id="admin-dropdown-menu" class="dropdown-menu hidden">
+                    <button class="dropdown-item" onclick="refreshAdminDashboard()">
                         <i class="fas fa-sync-alt"></i>
                         Refresh
                     </button>
-                    <button class="admin-dropdown-item" onclick="logout()">
+                    <button class="dropdown-item" onclick="logout()">
                         <i class="fas fa-sign-out-alt"></i>
                         Logout
                     </button>
@@ -1916,5 +1914,6 @@ async function refreshAdminDashboard() {
         showSnackbar('Failed to refresh dashboard', 'error');
     }
 }
+
 
 
