@@ -2686,3 +2686,311 @@ document.addEventListener('keydown', function(e) {
     }
 });
 
+// Add these functions to your existing script.js
+
+// Enhanced showScreen function with animations
+function showScreen(screenId) {
+    const currentScreen = document.querySelector('.screen.active');
+    const targetScreen = document.getElementById(screenId);
+    
+    if (!targetScreen) {
+        console.error(`Screen ${screenId} not found`);
+        return;
+    }
+    
+    // Add fade out animation to current screen
+    if (currentScreen && currentScreen !== targetScreen) {
+        currentScreen.classList.add('animate-fade-out');
+        setTimeout(() => {
+            currentScreen.classList.remove('active', 'animate-fade-out');
+            targetScreen.classList.add('active', 'animate-fade-in');
+            setTimeout(() => {
+                targetScreen.classList.remove('animate-fade-in');
+            }, 300);
+        }, 200);
+    } else {
+        targetScreen.classList.add('active', 'animate-fade-in');
+        setTimeout(() => {
+            targetScreen.classList.remove('animate-fade-in');
+        }, 300);
+    }
+    
+    // Special handling for specific screens
+    switch(screenId) {
+        case 'user-dashboard':
+            loadDashboardStats();
+            loadRecentReports();
+            break;
+        case 'my-reports-screen':
+            loadMyReports();
+            break;
+        case 'notifications-screen':
+            loadNotifications();
+            break;
+        case 'admin-dashboard':
+            loadAdminDashboard();
+            break;
+    }
+    
+    // Close any open dropdowns
+    closeAllDropdowns();
+}
+
+// Enhanced togglePassword function
+function togglePassword(inputId) {
+    const input = document.getElementById(inputId);
+    const icon = input.parentElement.querySelector('i.fa-eye, i.fa-eye-slash');
+    
+    if (input.type === 'password') {
+        input.type = 'text';
+        icon.classList.remove('fa-eye');
+        icon.classList.add('fa-eye-slash');
+    } else {
+        input.type = 'password';
+        icon.classList.remove('fa-eye-slash');
+        icon.classList.add('fa-eye');
+    }
+}
+
+// Enhanced logout function
+async function logout() {
+    try {
+        showToast('Logging out', 'Please wait...', 'info');
+        
+        const response = await fetch('/api/logout');
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = null;
+            localStorage.clear();
+            
+            showToast('Logged out', 'You have been logged out successfully', 'success');
+            
+            // Animate logout
+            const currentScreen = document.querySelector('.screen.active');
+            if (currentScreen) {
+                currentScreen.classList.add('animate-fade-out');
+                setTimeout(() => {
+                    currentScreen.classList.remove('active', 'animate-fade-out');
+                    const loginScreen = document.getElementById('login-screen');
+                    if (loginScreen) {
+                        loginScreen.classList.add('active', 'animate-fade-in');
+                        setTimeout(() => {
+                            loginScreen.classList.remove('animate-fade-in');
+                        }, 300);
+                    }
+                }, 200);
+            }
+        } else {
+            showToast('Logout Failed', data.message || 'Unable to logout', 'error');
+        }
+    } catch (error) {
+        console.error('Logout error:', error);
+        showToast('Error', 'Failed to logout. Please try again.', 'error');
+    }
+}
+
+// Enhanced loadStats function
+async function loadStats() {
+    try {
+        const response = await fetch('/api/stats');
+        const data = await response.json();
+        
+        if (data.success) {
+            const stats = data.stats;
+            
+            // Update with animation
+            animateCounter('user-reports-count', stats.my_reports || 0);
+            animateCounter('user-pending-count', stats.pending || 0);
+            animateCounter('user-inprogress-count', stats.in_progress || 0);
+            animateCounter('user-resolved-count', stats.resolved || 0);
+        }
+    } catch (error) {
+        console.error('Failed to load stats:', error);
+    }
+}
+
+// Animated counter function
+function animateCounter(elementId, targetValue) {
+    const element = document.getElementById(elementId);
+    if (!element) return;
+    
+    const currentValue = parseInt(element.textContent) || 0;
+    if (currentValue === targetValue) return;
+    
+    const increment = targetValue > currentValue ? 1 : -1;
+    let current = currentValue;
+    
+    const interval = setInterval(() => {
+        current += increment;
+        element.textContent = current;
+        
+        if (current === targetValue) {
+            clearInterval(interval);
+            element.classList.add('text-green-600');
+            setTimeout(() => {
+                element.classList.remove('text-green-600');
+            }, 1000);
+        }
+    }, 50);
+}
+
+// Enhanced handleLogin with loading state
+async function handleLogin(e) {
+    e.preventDefault();
+    
+    const email = document.getElementById('login-email').value;
+    const password = document.getElementById('login-password').value;
+    
+    if (!email || !password) {
+        showToast('Validation Error', 'Please fill in all fields', 'error');
+        return;
+    }
+    
+    // Show loading state
+    const submitBtn = e.target.querySelector('button[type="submit"]');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Signing In...';
+    submitBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ email, password })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            currentUser = data.user;
+            showToast('Welcome!', `Hello ${currentUser.username}!`, 'success');
+            
+            // Animate transition to dashboard
+            const loginScreen = document.getElementById('login-screen');
+            loginScreen.classList.add('animate-fade-out');
+            
+            setTimeout(() => {
+                loginScreen.classList.remove('active', 'animate-fade-out');
+                
+                if (currentUser.role === 'admin') {
+                    const adminScreen = document.getElementById('admin-dashboard');
+                    adminScreen.classList.add('active', 'animate-fade-in');
+                    setTimeout(() => {
+                        adminScreen.classList.remove('animate-fade-in');
+                        loadAdminDashboard();
+                    }, 300);
+                } else {
+                    const userScreen = document.getElementById('user-dashboard');
+                    userScreen.classList.add('active', 'animate-fade-in');
+                    setTimeout(() => {
+                        userScreen.classList.remove('animate-fade-in');
+                        loadDashboardStats();
+                        loadRecentReports();
+                        updateUserInitials();
+                    }, 300);
+                }
+            }, 300);
+        } else {
+            showToast('Login Failed', data.message || 'Invalid credentials', 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Login error:', error);
+        showToast('Error', 'Failed to login. Please try again.', 'error');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Enhanced handleReportSubmit
+async function handleReportSubmit(e) {
+    e.preventDefault();
+    
+    if (!currentUser) {
+        showToast('Authentication Required', 'Please login first', 'error');
+        return;
+    }
+    
+    // Validate form
+    if (!validateReportForm()) return;
+    
+    // Get form values
+    const problemType = document.getElementById('problem-type').value;
+    const location = document.getElementById('location').value;
+    const issue = document.getElementById('issue').value;
+    const priority = document.getElementById('priority').value;
+    
+    // Show loading
+    const submitBtn = document.getElementById('submit-report-btn');
+    const originalText = submitBtn.innerHTML;
+    submitBtn.innerHTML = '<i class="fas fa-spinner animate-spin"></i> Submitting...';
+    submitBtn.disabled = true;
+    
+    try {
+        const response = await fetch('/api/submit_report', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                problem_type: problemType,
+                location: location,
+                issue: issue,
+                priority: priority,
+                photo_data: photoData
+            })
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+            showToast('Success!', 'Report submitted successfully', 'success');
+            
+            // Reset form with animation
+            const form = document.getElementById('report-form');
+            form.reset();
+            removePhoto();
+            
+            // Animate success
+            submitBtn.innerHTML = '<i class="fas fa-check"></i> Submitted!';
+            submitBtn.classList.add('bg-green-600');
+            
+            setTimeout(() => {
+                submitBtn.innerHTML = originalText;
+                submitBtn.classList.remove('bg-green-600');
+                submitBtn.disabled = false;
+            }, 2000);
+            
+            // Refresh stats
+            loadDashboardStats();
+            loadRecentReports();
+        } else {
+            showToast('Submission Failed', data.message, 'error');
+            submitBtn.innerHTML = originalText;
+            submitBtn.disabled = false;
+        }
+    } catch (error) {
+        console.error('Submit error:', error);
+        showToast('Error', 'Failed to submit report', 'error');
+        submitBtn.innerHTML = originalText;
+        submitBtn.disabled = false;
+    }
+}
+
+// Close all dropdowns
+function closeAllDropdowns() {
+    document.querySelectorAll('.dropdown-menu:not(.hidden)').forEach(dropdown => {
+        dropdown.classList.add('hidden');
+    });
+}
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', function() {
+    // Setup click outside for dropdowns
+    document.addEventListener('click', function(event) {
+        if (!event.target.closest('.dropdown-container') && 
+            !event.target.closest('.user-menu')) {
+            closeAllDropdowns();
+        }
+    });
+});
