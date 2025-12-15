@@ -773,3 +773,117 @@ body {
     transform: translateY(-20px);
     transition: opacity 300ms, transform 300ms;
 }
+
+
+/* FINAL TOUCHES */
+
+/* Custom Scrollbar */
+::-webkit-scrollbar {
+    width: 10px;
+}
+
+::-webkit-scrollbar-track {
+    background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+    background: #888;
+    border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+    background: #555;
+}
+
+/* Selection Color */
+::selection {
+    background-color: var(--primary-500);
+    color: white;
+}
+
+/* Focus Styles */
+:focus-visible {
+    outline: 2px solid var(--primary-500);
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .no-print {
+        display: none !important;
+    }
+    
+    body {
+        background: white !important;
+        color: black !important;
+    }
+    
+    .card-enhanced {
+        box-shadow: none !important;
+        border: 1px solid #ddd !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (prefers-contrast: high) {
+    :root {
+        --primary-500: #0056b3;
+        --primary-600: #004494;
+    }
+    
+    .btn-enhanced {
+        border-width: 3px;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    *,
+    *::before,
+    *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+    }
+}
+
+/* Performance Optimizations */
+.will-change-transform {
+    will-change: transform;
+}
+
+.will-change-opacity {
+    will-change: opacity;
+}
+
+/* Content Visibility */
+.content-visibility-auto {
+    content-visibility: auto;
+}
+
+/* Container Queries */
+@container (min-width: 300px) {
+    .card-responsive {
+        padding: 1rem;
+    }
+}
+
+/* Viewport Units for Mobile */
+.full-viewport {
+    min-height: 100vh;
+    min-height: 100dvh;
+}
+
+/* Touch Target Sizes */
+.touch-target {
+    min-height: 44px;
+    min-width: 44px;
+}
+
+/* Safe Area Insets */
+.safe-area-padding {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+}
