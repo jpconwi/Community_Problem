@@ -477,7 +477,7 @@ async function showAdminNotifications() {
 
 async function loadAdminNotifications() {
     try {
-        const response = await fetch('/api/admin_notifications');
+        const response = await fetch('/api/notifications');
         const data = await response.json();
         
         const notificationsList = document.getElementById('admin-notifications-list');
@@ -676,7 +676,7 @@ async function loadNotificationsCount() {
         const data = await response.json();
         
         const badge = document.getElementById('notification-badge');
-        if (data.count > 0) {
+        if (data.success && data.count > 0) {
             badge.textContent = data.count;
             badge.classList.remove('hidden');
         } else {
@@ -689,11 +689,11 @@ async function loadNotificationsCount() {
 
 async function loadAdminNotificationsCount() {
     try {
-        const response = await fetch('/api/admin_notifications_count');
+        const response = await fetch('/api/notifications_count');
         const data = await response.json();
         
         const badge = document.getElementById('admin-notification-badge');
-        if (data.count > 0) {
+        if (data.success && data.count > 0) {
             badge.textContent = data.count;
             badge.classList.remove('hidden');
         } else {
@@ -998,37 +998,121 @@ async function loadAllReports() {
 
 async function filterReports(period) {
     try {
-        const response = await fetch(`/api/reports?period=${period}`);
+        const response = await fetch('/api/all_reports');
         const data = await response.json();
         
-        if (data.success) {
-            const reportsList = document.getElementById('admin-reports-list');
-            const filterIndicator = document.getElementById('filter-indicator');
+        if (data.success && data.reports.length > 0) {
+            const now = new Date();
+            let filteredReports = [];
             
-            if (data.reports.length > 0) {
-                reportsList.innerHTML = data.reports.map(report => `
-                    <div class="report-card">
-                        <!-- Report card HTML same as above -->
-                    </div>
-                `).join('');
+            data.reports.forEach(report => {
+                const reportDate = new Date(report.date);
+                let include = false;
                 
-                filterIndicator.textContent = `Showing: ${period.charAt(0).toUpperCase() + period.slice(1)} (${data.reports.length} reports)`;
-            } else {
-                reportsList.innerHTML = `
-                    <div class="empty-state">
-                        <i class="fas fa-file-alt"></i>
-                        <h4>No Reports</h4>
-                        <p>No reports found for this period.</p>
-                    </div>
-                `;
-                filterIndicator.textContent = `Showing: ${period.charAt(0).toUpperCase() + period.slice(1)}`;
-            }
+                switch(period) {
+                    case 'today':
+                        // Check if the report is from today
+                        if (reportDate.toDateString() === now.toDateString()) {
+                            include = true;
+                        }
+                        break;
+                    case 'week':
+                        // Check if the report is from the current week
+                        const oneWeekAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+                        if (reportDate >= oneWeekAgo) {
+                            include = true;
+                        }
+                        break;
+                    case 'month':
+                        // Check if the report is from the current month
+                        const oneMonthAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+                        if (reportDate >= oneMonthAgo) {
+                            include = true;
+                        }
+                        break;
+                    case 'all':
+                        include = true;
+                        break;
+                }
+                
+                if (include) {
+                    filteredReports.push(report);
+                }
+            });
             
-            await loadAdminStats();
+            displayFilteredReports(filteredReports, period);
+        } else {
+            const reportsList = document.getElementById('admin-reports-list');
+            reportsList.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-file-alt"></i>
+                    <h4>No Reports</h4>
+                    <p>No reports found.</p>
+                </div>
+            `;
         }
     } catch (error) {
         console.error('Failed to filter reports:', error);
         showSnackbar('Failed to filter reports', 'error');
+    }
+}
+
+function displayFilteredReports(reports, period) {
+    const reportsList = document.getElementById('admin-reports-list');
+    const filterIndicator = document.getElementById('filter-indicator');
+    
+    if (reports.length > 0) {
+        reportsList.innerHTML = reports.map(report => `
+            <div class="report-card">
+                <div class="report-header">
+                    <span class="report-type">${report.problem_type}</span>
+                    <span class="report-status status-${report.status.toLowerCase().replace(' ', '-')}">
+                        ${report.status}
+                    </span>
+                </div>
+                <div class="report-location">
+                    <i class="fas fa-location-dot"></i> ${report.location}
+                </div>
+                <div class="report-issue">${report.issue}</div>
+                <div class="report-footer">
+                    <span>By: ${report.username}</span>
+                    <span>${report.date}</span>
+                </div>
+                ${report.photo_data ? `
+                    <div class="report-photo">
+                        <img src="${report.photo_data}" alt="Report photo">
+                    </div>
+                ` : ''}
+                <div class="admin-actions">
+                    <select class="status-select" onchange="handleStatusChange(this, ${report.id})">
+                        <option value="Pending" ${report.status === 'Pending' ? 'selected' : ''}>Pending</option>
+                        <option value="In Progress" ${report.status === 'In Progress' ? 'selected' : ''}>In Progress</option>
+                        <option value="Resolved" ${report.status === 'Resolved' ? 'selected' : ''}>Resolved</option>
+                    </select>
+                    <button class="btn btn-danger" onclick="deleteReport(${report.id}, true)">
+                        <i class="fas fa-trash"></i> Delete
+                    </button>
+                </div>
+                ${report.status === 'Resolved' && report.resolution_notes ? `
+                    <div class="resolution-notes">
+                        <strong>Resolution Notes:</strong>
+                        <p>${report.resolution_notes}</p>
+                        ${report.auditor_name ? `<small>Audited by: ${report.auditor_name}</small>` : ''}
+                    </div>
+                ` : ''}
+            </div>
+        `).join('');
+        
+        filterIndicator.textContent = `Showing: ${period.charAt(0).toUpperCase() + period.slice(1)} (${reports.length} reports)`;
+    } else {
+        reportsList.innerHTML = `
+            <div class="empty-state">
+                <i class="fas fa-file-alt"></i>
+                <h4>No Reports</h4>
+                <p>No reports found for this period.</p>
+            </div>
+        `;
+        filterIndicator.textContent = `Showing: ${period.charAt(0).toUpperCase() + period.slice(1)}`;
     }
 }
 
