@@ -1915,5 +1915,465 @@ async function refreshAdminDashboard() {
     }
 }
 
+// ========================
+// IMPROVED NAVIGATION
+// ========================
+
+// Add breadcrumb navigation
+function updateBreadcrumb(screen) {
+    const breadcrumb = document.getElementById('breadcrumb');
+    if (!breadcrumb) return;
+    
+    const crumbs = {
+        'login-screen': ['Login'],
+        'user-dashboard': ['Dashboard', 'Home'],
+        'my-reports-screen': ['Dashboard', 'My Reports'],
+        'admin-dashboard': ['Admin', 'Dashboard'],
+        'notifications-screen': ['Dashboard', 'Notifications']
+    };
+    
+    if (crumbs[screen]) {
+        breadcrumb.innerHTML = crumbs[screen].map(crumb => 
+            `<span class="breadcrumb-item">${crumb}</span>`
+        ).join('<span class="breadcrumb-separator">›</span>');
+    }
+}
+
+// Smooth screen transitions
+function showScreen(screenId) {
+    const currentScreen = document.querySelector('.screen.active');
+    const targetScreen = document.getElementById(screenId);
+    
+    if (currentScreen) {
+        currentScreen.classList.add('fade-out');
+        setTimeout(() => {
+            currentScreen.classList.remove('active', 'fade-out');
+            
+            if (targetScreen) {
+                targetScreen.classList.add('fade-in');
+                setTimeout(() => {
+                    targetScreen.classList.add('active');
+                    targetScreen.classList.remove('fade-in');
+                    updateBreadcrumb(screenId);
+                    updatePageTitle(screenId);
+                }, 50);
+            }
+        }, 200);
+    }
+}
+
+// ========================
+// IMPROVED FORM HANDLING
+// ========================
+
+// Real-time form validation
+function setupFormValidation() {
+    const forms = document.querySelectorAll('form[data-validate]');
+    
+    forms.forEach(form => {
+        const inputs = form.querySelectorAll('input, textarea, select');
+        
+        inputs.forEach(input => {
+            input.addEventListener('blur', validateField);
+            input.addEventListener('input', validateField);
+        });
+    });
+}
+
+function validateField(e) {
+    const field = e.target;
+    const errorElement = field.parentElement.querySelector('.field-error');
+    
+    // Clear previous error
+    if (errorElement) {
+        errorElement.remove();
+    }
+    
+    // Validate based on input type
+    let isValid = true;
+    let errorMessage = '';
+    
+    if (field.required && !field.value.trim()) {
+        isValid = false;
+        errorMessage = 'This field is required';
+    } else if (field.type === 'email' && field.value) {
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(field.value)) {
+            isValid = false;
+            errorMessage = 'Please enter a valid email address';
+        }
+    } else if (field.type === 'password' && field.value) {
+        if (field.value.length < 6) {
+            isValid = false;
+            errorMessage = 'Password must be at least 6 characters';
+        }
+    }
+    
+    // Show/hide error
+    if (!isValid) {
+        field.classList.add('error');
+        const errorDiv = document.createElement('div');
+        errorDiv.className = 'field-error';
+        errorDiv.textContent = errorMessage;
+        errorDiv.style.color = 'var(--danger-color)';
+        errorDiv.style.fontSize = 'var(--text-sm)';
+        errorDiv.style.marginTop = '0.25rem';
+        field.parentElement.appendChild(errorDiv);
+    } else {
+        field.classList.remove('error');
+        field.classList.add('success');
+    }
+    
+    return isValid;
+}
+
+// ========================
+// IMPROVED FEEDBACK SYSTEM
+// ========================
+
+// Enhanced snackbar with progress
+function showSnackbar(message, type = 'info', duration = 4000) {
+    // Remove existing snackbar
+    const existing = document.getElementById('snackbar');
+    if (existing) existing.remove();
+    
+    // Create new snackbar
+    const snackbar = document.createElement('div');
+    snackbar.id = 'snackbar';
+    snackbar.className = `snackbar snackbar-${type}`;
+    snackbar.innerHTML = `
+        <div class="snackbar-content">
+            <i class="fas ${getSnackbarIcon(type)}"></i>
+            <span>${message}</span>
+        </div>
+        <div class="snackbar-progress"></div>
+    `;
+    
+    document.body.appendChild(snackbar);
+    
+    // Show with animation
+    setTimeout(() => snackbar.classList.add('show'), 10);
+    
+    // Auto-hide
+    setTimeout(() => {
+        snackbar.classList.remove('show');
+        setTimeout(() => snackbar.remove(), 300);
+    }, duration);
+}
+
+function getSnackbarIcon(type) {
+    const icons = {
+        success: 'fa-check-circle',
+        error: 'fa-exclamation-circle',
+        warning: 'fa-exclamation-triangle',
+        info: 'fa-info-circle'
+    };
+    return icons[type] || 'fa-info-circle';
+}
+
+// ========================
+// IMPROVED IMAGE HANDLING
+// ========================
+
+// Better camera experience
+async function openCamera() {
+    try {
+        showSnackbar('Requesting camera access...', 'info');
+        
+        const stream = await navigator.mediaDevices.getUserMedia({ 
+            video: { 
+                facingMode: 'environment',
+                width: { ideal: 1920 },
+                height: { ideal: 1080 }
+            } 
+        });
+        
+        const modal = document.getElementById('camera-modal');
+        const video = document.getElementById('camera-view');
+        
+        video.srcObject = stream;
+        modal.classList.remove('hidden');
+        
+        // Show camera instructions
+        showCameraInstructions();
+        
+    } catch (error) {
+        console.error('Camera error:', error);
+        showSnackbar('Unable to access camera. Please check permissions.', 'error');
+        
+        // Fallback to file upload
+        setTimeout(() => {
+            document.getElementById('file-upload').click();
+        }, 1000);
+    }
+}
+
+function showCameraInstructions() {
+    const instructions = `
+        <div class="camera-instructions">
+            <p><i class="fas fa-lightbulb"></i> Tips for better photos:</p>
+            <ul>
+                <li>Ensure good lighting</li>
+                <li>Hold camera steady</li>
+                <li>Get close to the issue</li>
+                <li>Include location markers</li>
+            </ul>
+        </div>
+    `;
+    
+    // Add instructions to camera modal
+    const modalBody = document.querySelector('#camera-modal .modal-body');
+    const existing = modalBody.querySelector('.camera-instructions');
+    if (!existing) {
+        const div = document.createElement('div');
+        div.innerHTML = instructions;
+        modalBody.appendChild(div.firstElementChild);
+    }
+}
+
+// ========================
+// IMPROVED DATA LOADING
+// ========================
+
+// Skeleton loading states
+function showSkeletonLoader(containerId, count = 3) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    
+    container.innerHTML = '';
+    
+    for (let i = 0; i < count; i++) {
+        const skeleton = document.createElement('div');
+        skeleton.className = 'skeleton-loader';
+        skeleton.innerHTML = `
+            <div class="skeleton-header"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-line"></div>
+            <div class="skeleton-footer"></div>
+        `;
+        container.appendChild(skeleton);
+    }
+}
+
+// Progressive loading
+async function loadReportsWithPagination() {
+    showSkeletonLoader('reports-list', 3);
+    
+    try {
+        const response = await fetch('/api/reports?page=1&limit=10');
+        const data = await response.json();
+        
+        if (data.success) {
+            displayReports(data.reports);
+            
+            // Setup infinite scroll
+            setupInfiniteScroll();
+        }
+    } catch (error) {
+        console.error('Failed to load reports:', error);
+        showSnackbar('Failed to load reports', 'error');
+    }
+}
+
+// ========================
+// IMPROVED USER ONBOARDING
+// ========================
+
+// First-time user experience
+function checkFirstTimeUser() {
+    const hasSeenOnboarding = localStorage.getItem('hasSeenOnboarding');
+    
+    if (!hasSeenOnboarding && currentUser) {
+        setTimeout(() => {
+            showHelpModal();
+            localStorage.setItem('hasSeenOnboarding', 'true');
+        }, 1000);
+    }
+}
+
+function showHelpModal() {
+    const modal = document.getElementById('help-modal');
+    if (modal) {
+        modal.classList.remove('hidden');
+    }
+}
+
+function closeHelpModal() {
+    const modal = document.getElementById('help-modal');
+    if (modal) {
+        modal.classList.add('hidden');
+    }
+}
+
+// ========================
+// IMPROVED OFFLINE SUPPORT
+// ========================
+
+// Cache reports for offline viewing
+async function cacheReports() {
+    if ('caches' in window) {
+        const cache = await caches.open('bayan-reports-v1');
+        const response = await fetch('/api/user_reports');
+        await cache.put('/api/user_reports', response.clone());
+    }
+}
+
+// Check network status
+function setupNetworkStatusListener() {
+    window.addEventListener('online', () => {
+        showSnackbar('Back online. Syncing data...', 'success');
+        syncOfflineReports();
+    });
+    
+    window.addEventListener('offline', () => {
+        showSnackbar('You are offline. Some features may be limited.', 'warning');
+    });
+}
+
+// Sync offline reports
+async function syncOfflineReports() {
+    const offlineReports = JSON.parse(localStorage.getItem('offlineReports') || '[]');
+    
+    if (offlineReports.length > 0) {
+        showSnackbar(`Syncing ${offlineReports.length} offline reports...`, 'info');
+        
+        for (const report of offlineReports) {
+            try {
+                await submitReport(report);
+            } catch (error) {
+                console.error('Failed to sync report:', error);
+            }
+        }
+        
+        localStorage.removeItem('offlineReports');
+        showSnackbar('All reports synced successfully!', 'success');
+    }
+}
+
+// ========================
+// IMPROVED SEARCH & FILTER
+// ========================
+
+// Instant search functionality
+function setupSearch() {
+    const searchInput = document.getElementById('search-reports');
+    if (!searchInput) return;
+    
+    let searchTimeout;
+    
+    searchInput.addEventListener('input', (e) => {
+        clearTimeout(searchTimeout);
+        
+        searchTimeout = setTimeout(() => {
+            const query = e.target.value.trim();
+            if (query.length >= 2 || query.length === 0) {
+                searchReports(query);
+            }
+        }, 300);
+    });
+}
+
+async function searchReports(query) {
+    try {
+        const response = await fetch(`/api/search_reports?q=${encodeURIComponent(query)}`);
+        const data = await response.json();
+        
+        if (data.success) {
+            displaySearchResults(data.results, query);
+        }
+    } catch (error) {
+        console.error('Search failed:', error);
+    }
+}
+
+// ========================
+// IMPROVED ANALYTICS
+// ========================
+
+// Track user interactions (privacy-friendly)
+function trackInteraction(event, details = {}) {
+    const analyticsData = {
+        event,
+        timestamp: new Date().toISOString(),
+        userId: currentUser?.id,
+        userRole: currentUser?.role,
+        ...details
+    };
+    
+    // Store locally for analytics
+    const interactions = JSON.parse(localStorage.getItem('userInteractions') || '[]');
+    interactions.push(analyticsData);
+    localStorage.setItem('userInteractions', JSON.stringify(interactions.slice(-100))); // Keep last 100
+    
+    // Optional: Send to server
+    if (navigator.onLine) {
+        fetch('/api/track_interaction', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(analyticsData)
+        }).catch(console.error);
+    }
+}
+
+// ========================
+// IMPROVED INITIALIZATION
+// ========================
+
+// Enhanced app initialization
+async function initializeApp() {
+    console.log('🚀 Initializing BAYAN App...');
+    
+    try {
+        // Show loading screen
+        document.getElementById('loading-screen').classList.add('active');
+        
+        // Check authentication
+        await checkAuthStatus();
+        
+        // Setup all event listeners
+        setupEventListeners();
+        
+        // Setup network monitoring
+        setupNetworkStatusListener();
+        
+        // Check for updates
+        checkForAppUpdates();
+        
+        // Setup service worker for PWA
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('/sw.js')
+                .then(registration => {
+                    console.log('ServiceWorker registered:', registration);
+                })
+                .catch(error => {
+                    console.log('ServiceWorker registration failed:', error);
+                });
+        }
+        
+        // Check first-time user
+        checkFirstTimeUser();
+        
+    } catch (error) {
+        console.error('App initialization failed:', error);
+        showSnackbar('Failed to initialize app', 'error');
+    } finally {
+        // Hide loading screen
+        setTimeout(() => {
+            document.getElementById('loading-screen').classList.remove('active');
+        }, 500);
+    }
+}
+
+// Check for app updates
+function checkForAppUpdates() {
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.ready.then(registration => {
+            registration.update();
+        });
+    }
+}
+
+// Initialize on DOM ready
+document.addEventListener('DOMContentLoaded', initializeApp);
 
 
